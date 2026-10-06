@@ -36,5 +36,21 @@ int main(int argc, char** argv)
        || mbedtls_sha256_ret(staged.data(), staged.size(), digest, 0) != 0
        || !aurora_selector::VerifyImage(staged.data(), staged.size(), image, digest))
         return 2;
+    // Revalidation consumes the loaded buffer, not a reopened backing file.
+    // Changing backing bytes cannot change the independently staged image.
+    bytes.back() ^= 1;
+    if(mbedtls_sha256_ret(staged.data(), staged.size(), digest, 0) != 0
+       || !aurora_selector::VerifyImage(staged.data(), staged.size(), image, digest))
+        return 2;
+    // A post-load mutation must fail the same hash/vector predicate used by
+    // both validations in handoff.cpp. This is a host check, not hardware proof.
+    staged.back() ^= 1;
+    if(mbedtls_sha256_ret(staged.data(), staged.size(), digest, 0) != 0
+       || aurora_selector::VerifyImage(staged.data(), staged.size(), image, digest))
+        return 2;
+    staged.back() ^= 1;
+    if(mbedtls_sha256_ret(staged.data(), staged.size(), digest, 0) != 0
+       || !aurora_selector::VerifyImage(staged.data(), staged.size(), image, digest))
+        return 2;
     std::cout << image.sha256 << "\n";
 }

@@ -12,6 +12,34 @@ none establishes an unconditional normal-restore guarantee.
 
 ### Current frozen timing candidate
 
+#### Staged-byte launch invariant — 2026-10-06 review
+
+The candidate's loading/handoff sources remain unchanged from `63d27a5`.
+`StageReadOnlyImage` requires the full expected length and a successful close;
+the selector hashes and checks vectors in the resulting staging buffer.
+`Platform::Validate` in `firmware/handoff.cpp` requires that same fixed staging
+address, bounded size, SHA-256 and catalog/vector match. The shared sequence
+validates before unmount and again after bus-master reset/cache teardown.
+`Jump` passes that same pointer and exact image length to the SRAM4 trampoline;
+it does not reopen a file. The existing complete copy/store census checks every
+payload byte and target readback, with missing/extra-store rejection controls.
+
+The host-only `authenticate_image.cpp` now additionally changes the backing
+bytes after loading (the staged image still verifies), changes one staged byte
+(verification fails), then restores it (verification passes), for both official
+images. `python3 scripts/verify_images.py /home/me` passes on the local supplied
+images; users substitute their own firmware directory. `make test` passes all
+13 host tests, including validation ordering and refusal after failed final
+validation. These checks add no firmware feature and do not change the frozen
+candidate. They do not prove physical DMA/cache quiescence or intact RAM on
+actual hardware.
+
+The existing stale-approval rule remains: loss of media readiness withdraws UI
+approval, requiring a fresh confirmation. Disconnecting media does not inherently
+invalidate intact staged RAM. One small linked synthetic-readiness regression
+is sufficient here; substantial disconnect/USB emulation is not a prerequisite
+to the next physical campaign.
+
 Matching-source synthetic-media discovery/loading now has bounded linked
 execution evidence: both official files, seven cases each, two repetitions
 (28 executions). Normal Freeze verification passes; omitted release, corrupt,
@@ -35,13 +63,18 @@ to the initialized loop. Full register checkpoint SHA-256 is
 The cold bootloader entry is now joined to discovery, Freeze and Shift in one
 process for each official payload, twice each. Two separate omitted-Freeze
 executions stay Selected and refuse launch after Shift. The connected tests
-halt at genuine official reset entries; earlier callback/audio observations are
-a separate slice, not proof of complete current warm switching cycles.
+halt at genuine official reset entries. Subsequent connected continuations and
+both complete same-guest Aurora → FDN → Aurora / FDN → Aurora → FDN cycles
+independently repeat through three startups, 85 callbacks and 8,192 frames per
+phase, with changed second-image controls/audio and complete third-phase PCM.
+These newer results supersede the earlier open warm-cycle boundary, not its
+historical receipts. Prewrite-buffer and timer-phase differences remain explicit;
+complete hardware-state isolation and timing equivalence are not established.
 These externally recorded emulator results are bounded development context,
 not additional claims made by this repository's host tests. The companion is
 not the real-USB BIN, and its media, peripheral and cache models are approximate.
-Current-source full same-guest launch/reset/audio cycles, simultaneous two-file
-discovery and physical recovery remain unproven.
+Simultaneous two-file transport/discovery, real USB and physical recovery remain
+unproven. Do not rerun completed cycles merely to expand media edge coverage.
 
 The user reports selector-launched FDN currently responds normally, but its
 installed selector identity has not been authenticated. The VM-visible drive's

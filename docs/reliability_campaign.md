@@ -1,6 +1,7 @@
 # Reliability campaign and alternative-image onboarding
 
-Status: initial software preparation complete; physical campaign **NOT RUN**.
+Status: repeated bounded official-image virtual cycles complete; physical
+campaign **NOT RUN**. Refocused on official-image reliability, 2026-10-06.
 The hard gate in [recovery_release_gate.md](recovery_release_gate.md) remains
 OPEN. This plan does not admit additional firmware or waive that gate for beta.
 
@@ -19,15 +20,17 @@ are in [verification.md](verification.md#current-frozen-timing-candidate).
 1. Freeze a clean `make package` bundle. Record source commit, manifest, ELF,
    BIN, MAP and toolchain identities. Do not test mutable incremental output as
    a release candidate. A changed BIN starts a new campaign.
-2. Run the full campaign below for exact stock Aurora 1.4.4 and FDN 1.2.2.
-3. Onboard EchoGarden first, then CloudscapeX, one exact image at a time. Use a
-   compatibility tier rather than attempting to certify their musical behavior.
+2. Reuse completed virtual evidence and run the short official-image campaign
+   below for exact stock Aurora 1.4.4 and FDN 1.2.2. Keep ST-Link disconnected:
+   its reported connection-induced resets remain unexplained.
+3. Defer alternatives unless onboarding is small and does not delay official
+   reliability. The intake table is research, not an admission commitment.
 4. Publish a small report with tested hardware/updater scope, raw receipts,
    failed cases, repetitions and remaining limitations. No release until the
    recovery gate passes for every admitted image.
 
-The proposed first-beta target is two official images and at most two community
-images. Dirt Verb/QSPI support, HP-filter staging expansion, arbitrary firmware,
+The immediate target is the two official images. Dirt Verb/QSPI support,
+HP-filter staging expansion, arbitrary firmware,
 new bootloaders and seamless switching are excluded.
 
 ## Record before testing
@@ -43,9 +46,37 @@ their own safe execution plan. Do not interrupt programming as an exploratory
 test or infer a current connection from an old capture. Begin audio monitoring
 attenuated. Debugger halts can perturb timing; label them separately.
 
-## Full official-image checklist
+## Short physical campaign — next user-assisted chunk
 
-All rows below are NOT RUN for the new initialization-error build. Counts are
+Use the frozen package above (BIN
+`dca22d3a9275c84d4367d1ed53fb2befbd439b171a16cb0841236fa2b95c0382`)
+and the exact official payloads in verification.md. No new build is needed for
+documentation or host-test changes. Authenticate the prepared files before
+installation; the currently reported responsive FDN is not exact-build evidence.
+
+1. Record known-good normal Aurora controls/audio and the existing updater
+   procedure, hardware, power and drive. Keep original firmware available.
+2. Install the exact selector through the normal updater. Cold-launch Aurora;
+   verify several controls change both the panel and audio, not merely sound.
+3. Reset/re-enter the selector and launch FDN, then reset/re-enter and return
+   to Aurora. Repeat in the opposite order (FDN → Aurora → FDN). Record each
+   launch and any frozen controls, failed re-entry or audio anomaly.
+4. Restore original Aurora through the ordinary USB updater using the original
+   BIN as the sole root updater BIN. Verify normal controls/audio and relevant
+   calibrated behavior against baseline. This is a required observation, not
+   an assumption that copying a file guarantees recovery.
+
+All four steps are NOT RUN against this exact candidate. Stop for user
+participation before installation, moving media or pressing module controls.
+No ST-Link is required or permitted in this campaign. Start monitoring quietly.
+One cycle each direction is an initial screen, not a reliability guarantee or
+automatic closure of every requirement in recovery_release_gate.md. Additional
+persistent-state/recovery evidence required by that gate remains open; if it
+requires unsafe debugger attachment, report the gap rather than claiming a pass.
+
+## Extended official-image checklist — follow-up, not the next chunk
+
+All physical rows below are NOT RUN for the frozen timing candidate. Counts are
 initial screening targets, not statistical reliability guarantees.
 
 | ID | Action | Required observation | Initial repetitions |
@@ -118,17 +149,16 @@ Stop on frozen controls, unexpected protected/persistent changes, unexplained
 audio anomalies, indeterminate installation or failed normal restore. Preserve
 the exact failure before making a fix; rerun affected rows on a new bundle.
 
-Current matching-companion linked handoff/control-audio and cold bootloader
-entry checks now pass repeated bounded emulator runs. These are not the real-USB
-BIN or whole current reset cycles; see [verification.md](verification.md).
-Cold entry, discovery, Freeze and Shift are also joined to both official reset
-entries; omitted-Freeze firmware executions refuse launch. Vendor continuation
-and warm reset from that connected current route remain open.
-TODO: complete current same-guest reset cycles and remaining virtual failure
-cases before physical tests; older virtual evidence does not automatically
-qualify the new BIN.
-TODO: collect physical B1–R3 results and close the recovery gate independently.
-TODO: complete alternative-image memory/persistence review and compatibility runs.
+Current matching-companion handoff, connected control/audio, both reset returns
+and both full switching cycles now pass repeated bounded emulator runs; see
+[verification.md](verification.md). Reuse them. They are not real-USB BIN or
+physical results. Omitted-Freeze executions refuse launch. Stale approval after
+disconnect is an interaction-consistency safeguard, not evidence that an intact
+staged RAM image is intrinsically invalid; keep its regression small.
+TODO: execute the short physical campaign and independently close remaining
+recovery-release obligations. No virtual result closes ordinary USB recovery.
+TODO (deferred): alternative memory/persistence review and compatibility runs,
+only when small and non-delaying; no new loader features by default.
 TODO: measure loading latency/failure behavior before proposing timeouts/watchdogs;
 synchronous upstream calls may stall, and bounded bytes are not bounded time.
 Use [load_timing.md](load_timing.md) for diagnostic fields and the measurement
