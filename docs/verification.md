@@ -1,5 +1,41 @@
 # Verification status and first physical boundary
 
+## Documentation and isolated packaging (2026-10-06)
+
+The source-guided loader walkthrough and risks are in `how_it_works.md`;
+the proposed normal-boot/selector comparison is in `boot_equivalence_plan.md`.
+The selector's no-flash-write statement excludes installation and launched
+firmware. Neither documentation nor packaging changes qualify launch behavior.
+
+Implementation checkpoint `07858b0f9103dbea9c97bc41d5e399146bbd36da` was tested with:
+
+```sh
+make test
+python3 -m compileall -q scripts tests
+PATH=/home/me/opt/arm/gcc-arm-none-eabi-10-2020-q4-major/bin:/usr/bin:/bin make package
+git diff --check
+```
+
+All 11 portable tests pass, including ambient-output exclusion, failed-build
+and source-drift rejection, plus existing immutable-bundle/ELF-BIN controls.
+The tests' build/conversion tools are synthetic; a separate real package command
+rebuilt libDaisy and the selector from fresh local Git checkouts of tracked
+pinned source. No old archive/object was imported. No installs or hardware
+access occurred. The real command passed and sealed manifest
+`9f2c5575c1e89091b6b9823355db6d6bd7f13bbcd1041c02b431384750b98ddc`.
+
+| Artifact | SHA-256 |
+| --- | --- |
+| BIN (94392 bytes) | `a8d4663c5f0cd2b484006d3b026a09c820c2ef8f4f5693542be5a2a803190cef` |
+| ELF | `91f460be4448a65cea0db049eef4a1f3602e9932ad157f7c9627cb16b1c20751` |
+| MAP | `d9487d43a86247c839bd410541d388d6219b0e27d1b6c3da1117b6eb5a3afd86` |
+
+The fresh BIN equals the previous discovery BIN exactly. ELF/MAP differ with
+build paths; full artifact reproducibility is not claimed. The manifest records
+tool hashes/versions and fixed configuration. This is clean-build traceability,
+not a signed or hermetic supply-chain proof; compiler/runtime libraries and
+the local build host remain trusted. Historic packages/evidence remain intact.
+
 ## Supported-image discovery (2026-10-06)
 
 The current selector discovers only exact authenticated catalog files on media

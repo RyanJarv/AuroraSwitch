@@ -33,6 +33,15 @@ and same-guest switching. Reuse it for baseline/selector runs and raw memory,
 register, control and audio capture; do not build a second emulator here.
 Virtual media is explicitly synthetic and cannot qualify real USB/FatFs.
 
+Historical bounded switching evidence already identifies differences, not exact
+machine equality: an FDN prewrite-memory block changed three times versus two
+in its baseline, and Aurora timer overflow/counter values differed despite
+matching bounded startup audio. These are investigation starting points, not
+differences to suppress. Those results belong to an older virtual-transport
+selector (BIN `13ee50f9079535ef8d8d06a90f6119a7e4434874ff9b56dfb9f0771a5b901e60`),
+not the current discovery image. Repeat against fresh exact identities before
+using them to characterize a release.
+
 The standalone repository must eventually include a reproducible evidence
 recipe (or a documented optional tool dependency), not just an assertion that
 external virtual tests passed. TODO: publish minimal recipes/receipts without
