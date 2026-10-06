@@ -5,6 +5,7 @@ import sys
 import tempfile
 import unittest
 from unittest import mock
+from contextlib import contextmanager
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -24,10 +25,15 @@ class PackageTests(unittest.TestCase):
             (self.build / f"AuroraSwitch.{suffix}").write_bytes(suffix.encode())
         for patcher in (mock.patch.object(bundle, "ROOT", self.root),
                         mock.patch.object(bundle, "setup"),
-                        mock.patch.object(bundle.subprocess, "check_output", side_effect=["", "a" * 40] * 4),
+                        mock.patch.object(bundle, "fresh_build", self.fresh),
+                        mock.patch.object(bundle.subprocess, "check_output", side_effect=["", "a" * 40, "a" * 40, ""] * 4),
                         mock.patch.object(bundle.subprocess, "run", side_effect=self.convert)):
             patcher.start()
             self.addCleanup(patcher.stop)
+
+    @contextmanager
+    def fresh(self, commit):
+        yield self.build, {"gcc": {"version": "synthetic", "sha256": "b" * 64}}, Path("/synthetic-tools")
 
     def convert(self, command, **kwargs):
         Path(command[-1]).write_bytes((self.build / "AuroraSwitch.bin").read_bytes())
@@ -41,6 +47,29 @@ class PackageTests(unittest.TestCase):
     def test_dirty_source_rejects(self):
         with mock.patch.object(bundle.subprocess, "check_output", return_value=" M firmware/selector.cpp"):
             with self.assertRaisesRegex(RuntimeError, "clean committed"):
+                bundle.package()
+        self.assertFalse((self.root / "dist").exists())
+
+    def test_ambient_outputs_not_used(self):
+        ambient = self.root / "firmware/build-experimental-dma"
+        isolated = self.root / "fresh"
+        isolated.mkdir()
+        for suffix in ("elf", "bin", "map"):
+            (isolated / f"AuroraSwitch.{suffix}").write_bytes(b"fresh-" + suffix.encode())
+        self.build = isolated
+        path = bundle.package()
+        self.assertEqual((path / "AuroraSwitch.bin").read_bytes(), b"fresh-bin")
+        self.assertEqual((ambient / "AuroraSwitch.bin").read_bytes(), b"bin")
+
+    def test_source_drift_rejects(self):
+        with mock.patch.object(bundle.subprocess, "check_output", side_effect=["", "a" * 40, "c" * 40]):
+            with self.assertRaisesRegex(RuntimeError, "HEAD changed"):
+                bundle.package()
+        self.assertFalse((self.root / "dist").exists())
+
+    def test_build_failure_rejects(self):
+        with mock.patch.object(bundle, "fresh_build", side_effect=RuntimeError("build failed")):
+            with self.assertRaisesRegex(RuntimeError, "build failed"):
                 bundle.package()
         self.assertFalse((self.root / "dist").exists())
 

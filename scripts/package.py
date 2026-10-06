@@ -5,8 +5,10 @@ import json
 import os
 import subprocess
 import tempfile
+import shutil
+from contextlib import contextmanager
 
-from setup_dependencies import setup
+from setup_dependencies import setup, PINS, DAISY
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -15,28 +17,80 @@ def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+@contextmanager
+def fresh_build(commit: str):
+    """Build tracked source and dependency checkouts, never ambient objects."""
+    gcc = shutil.which("arm-none-eabi-gcc")
+    if gcc is None:
+        raise RuntimeError("GNU Arm 10-2020-q4-major toolchain required on PATH")
+    tool_directory = Path(gcc).resolve().parent
+    tools = {}
+    for name in ("gcc", "g++", "as", "ar", "ld", "objcopy"):
+        path = tool_directory / ("arm-none-eabi-" + name)
+        tools[name] = {"sha256": digest(path.read_bytes()), "version":
+            subprocess.check_output([str(path), "--version"], text=True).splitlines()[0]}
+    if "10-2020-q4-major" not in tools["gcc"]["version"]:
+        raise RuntimeError("release packaging requires GNU Arm 10-2020-q4-major")
+    scratch = ROOT / ".deps"
+    with tempfile.TemporaryDirectory(prefix="release-build-", dir=scratch) as directory:
+        checkout = Path(directory) / "source"
+        subprocess.run(["git", "clone", "--no-local", "--no-checkout", str(ROOT), str(checkout)], check=True)
+        subprocess.run(["git", "-C", str(checkout), "checkout", "--detach", commit], check=True)
+        dependencies = [("Aurora-SDK", PINS["Aurora-SDK"][1]),
+                        ("mbedtls", PINS["mbedtls"][1]),
+                        ("Aurora-SDK/libs/libDaisy", DAISY)]
+        for relative, revision in dependencies:
+            destination = checkout / ".deps" / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            subprocess.run(["git", "clone", "--no-local", "--no-checkout",
+                str(ROOT / ".deps" / relative), str(destination)], check=True)
+            subprocess.run(["git", "-C", str(destination), "checkout", "--detach", revision], check=True)
+        # No dependency archive or application object is copied into this tree.
+        library = checkout / ".deps/Aurora-SDK/libs/libDaisy"
+        # Do not inherit MAKEFLAGS/-e, CFLAGS or configuration overrides.
+        build_environment = {"PATH": str(tool_directory) + os.pathsep + os.defpath,
+                             "LC_ALL": "C"}
+        subprocess.run(["make", "-j2", "-C", str(library), f"GCC_PATH={tool_directory}"],
+                       check=True, env=build_environment)
+        subprocess.run(["make", "-j2", "-C", str(checkout / "firmware"),
+            f"GCC_PATH={tool_directory}", "EXPERIMENTAL_HANDOFF=1",
+            "DMA_ARENA_CLEANUP=1", "VIRTUAL_TRANSPORT=0"], check=True, env=build_environment)
+        yield checkout / "firmware/build-experimental-dma", tools, tool_directory
+
+
 def package() -> Path:
     setup()
     if subprocess.check_output(["git", "-C", str(ROOT), "status", "--porcelain"], text=True).strip():
         raise RuntimeError("development packaging requires a clean committed source tree")
     commit = subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip()
-    build = ROOT / "firmware/build-experimental-dma"
+    with fresh_build(commit) as (build, tools, tool_directory):
+        return seal(build, commit, tools, tool_directory)
+
+
+def seal(build: Path, commit: str, tools: dict, tool_directory: Path) -> Path:
     payload = {f"AuroraSwitch.{suffix}": (build / f"AuroraSwitch.{suffix}").read_bytes()
                for suffix in ("elf", "bin", "map")}
     with tempfile.TemporaryDirectory(prefix="aurora-package-check-") as directory:
         converted = Path(directory) / "from-elf.bin"
-        subprocess.run(["arm-none-eabi-objcopy", "-O", "binary",
+        subprocess.run([str(tool_directory / "arm-none-eabi-objcopy"), "-O", "binary",
             str(build / "AuroraSwitch.elf"), str(converted)], check=True)
         if converted.read_bytes() != payload["AuroraSwitch.bin"]:
             raise RuntimeError("ELF/BIN identity mismatch")
     manifest = {"schema": "aurora-switch-development-bundle-v1", "development_only": True,
         "physical_qualified": False, "source_commit": commit,
+        "build_provenance": {"method": "fresh-isolated-tracked-checkouts",
+            "toolchain": tools, "configuration": {"EXPERIMENTAL_HANDOFF": 1,
+                "DMA_ARENA_CLEANUP": 1, "VIRTUAL_TRANSPORT": 0}},
         "files": {name: {"bytes": len(data), "sha256": digest(data)}
                   for name, data in payload.items()},
         "dependency_revisions": {"Aurora-SDK": "69b74a88b25e2fb4d722fc269bfd9395dd28edb5",
             "libDaisy": "63fcabd38a20e14bc744499f0460e47925ea753e",
             "mbedtls": "2fc8413bfcb51354c8e679141b17b3f1a5942561"}}
     manifest_bytes = (json.dumps(manifest, sort_keys=True, indent=2) + "\n").encode()
+    if subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip() != commit:
+        raise RuntimeError("source HEAD changed during packaging")
+    if subprocess.check_output(["git", "-C", str(ROOT), "status", "--porcelain"], text=True).strip():
+        raise RuntimeError("source changed during packaging")
     identity = digest(manifest_bytes)
     payload["manifest.json"] = manifest_bytes
     destination = ROOT / "dist" / identity

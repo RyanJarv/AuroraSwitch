@@ -28,11 +28,16 @@ and MAP. The default is the actual USB/FatFs transport, SRAM launch and DMA
 arena cleanup. There are deliberately no programming targets. See
 [verification boundaries](docs/verification.md) before using the output.
 
-After committing changes, `make package` checks the clean source tree and
-ELF/BIN agreement, then seals an exact development ELF/BIN/MAP/manifest bundle
+After committing changes, `make package` checks the clean source tree, rebuilds
+the application **and libDaisy** in isolated tracked-source checkouts using the
+required toolchain, checks ELF/BIN agreement, then seals a development bundle
 under `dist/<manifest-sha256>/`. Identical inputs reuse the same bundle;
 modified existing bundles reject. This includes no vendor binaries, is not an
 installer, and does not qualify hardware behavior.
+The manifest records compiler/tool hashes and fixed build configuration.
+Existing local objects/archives are never packaging inputs. Full ELF/MAP
+reproducibility across temporary paths is not yet guaranteed; reuse requires
+identical artifact and manifest bytes, not merely the same source commit.
 
 ## Supported images
 
@@ -88,9 +93,19 @@ Aurora's documented recovery/updater process to restore it, with exactly the
 intended updater BIN at the USB root. Payload files for the selector belong in
 the `aurora/` subdirectory, not alongside updater BINs at the root.
 
-The firmware does not program internal flash, replace the bootloader, or write
-QSPI. Installing the selector initially is a separate, state-changing operation
+The selector's loading/handoff code does not program internal flash, replace
+the bootloader, or write QSPI. **This is not a sandbox or a guarantee about the
+launched firmware:** it has normal hardware access and may write settings,
+calibration, USB files or flash according to its own behavior. Hashes identify
+expected bytes; they are not vendor signatures or a firmware-safety audit.
+Installing the selector initially is a separate, state-changing operation
 which must preserve a recovery backup. No installer or raw programming command
 is supplied here. See [architecture](docs/architecture.md) and
 [verification](docs/verification.md) for the inherited clock/MPU and DMA/cache
 constraints and the required first physical test.
+
+For a source-guided walkthrough and risk explanation, read
+[how it works](docs/how_it_works.md). The
+[validation and boot-equivalence plan](docs/boot_equivalence_plan.md) explains
+how to compare normal boot with selector launch without confusing bounded
+software evidence with whole-device equivalence.

@@ -9,5 +9,5 @@ test:
 	python3 -m unittest discover -s tests -v
 verify-images: setup
 	python3 scripts/verify_images.py "$(FIRMWARE_DIR)"
-package: all
+package:
 	python3 scripts/package.py
