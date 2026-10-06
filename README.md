@@ -61,6 +61,33 @@ Aurora builds, QSPI-linked images and oversized images are not supported.
 Adding an image requires reviewing its memory/link/runtime contract and
 extending the tests; changing a hash alone is insufficient.
 
+### Prepare user-supplied firmware
+
+The repository and selector packages contain no third-party firmware. Download
+supported versions from their authors, keep them locally (for example in ignored
+`local-firmware/`), then prepare a new folder:
+
+```sh
+make setup
+python3 scripts/prepare_payloads.py --output prepared-payloads \
+  local-firmware/AR_FDN_v1_2_2.bin local-firmware/Aurora_v1_4_4.bin
+```
+
+Either image may be omitted. The helper authenticates private copies using the
+selector's own catalog and verification predicate, restores the required
+filenames and writes `prepared-payloads/aurora/` plus `payloads.json`. It refuses
+unknown/changed bytes and existing output directories. Use a new output folder
+for another run. Copy the verified `aurora/` folder onto the USB yourself; this
+command does not install a selector, access hardware or overwrite recovery files.
+The receipt proves bytes, not working controls/audio or physical recovery.
+
+Community-image onboarding is tracked in
+[alternative firmware](docs/alternative_firmware.md). The three supplied SRAM
+images are not yet launch-catalog entries. Older versions will be admitted as
+separate exact images after review; never replace a supported hash with “latest.”
+Optional fetching from pinned public releases is a follow-up, not required for
+the offline/manual workflow. Discord-only files remain user-supplied.
+
 ## Controls
 
 At startup or drive reconnect, the selector reads and authenticates the two

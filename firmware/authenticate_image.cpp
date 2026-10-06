@@ -10,10 +10,29 @@
 
 int main(int argc, char** argv)
 {
-    if(argc != 3 || (std::string(argv[1]) != "fdn"
-                    && std::string(argv[1]) != "spectral"))
+    // Export the launch catalog instead of maintaining another host allowlist.
+    // This helper is not linked into the selector application.
+    if(argc == 2 && std::string(argv[1]) == "--list")
+    {
+        for(const auto& image : aurora_selector::Images)
+            std::cout << image.path << '\t' << image.size << '\t'
+                      << image.sha256 << '\t' << image.vectors.stack << '\t'
+                      << image.vectors.reset << '\n';
+        return 0;
+    }
+    if(argc != 3)
         return 2;
-    const auto& image = aurora_selector::Images[std::string(argv[1]) == "fdn" ? 0 : 1];
+    std::string name = argv[1];
+    // Retain the historical probe interface while accepting every catalog file.
+    if(name == "fdn") name = "AR_FDN_v1_2_2.bin";
+    if(name == "spectral") name = "Aurora_v1_4_4.bin";
+    const aurora_selector::Image* selected = nullptr;
+    for(const auto& candidate : aurora_selector::Images)
+        if(name == std::string(candidate.path).substr(std::string(candidate.path).find_last_of('/') + 1))
+            selected = &candidate;
+    if(selected == nullptr)
+        return 2;
+    const auto& image = *selected;
     std::ifstream input(argv[2], std::ios::binary);
     if(!input)
         return 2;

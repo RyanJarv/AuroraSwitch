@@ -132,6 +132,11 @@ tests do not inject real USB/FatFs initialization failures or prove LED hardware
 
 ## Alternative compatibility tier
 
+The current bounded first-batch work and file-acquisition/version policy are in
+[alternative_firmware.md](alternative_firmware.md). The Oscillator Is a Lie joins
+EchoGarden and CloudscapeX for review; none is admitted yet. This does not waive
+the official physical campaign or stock-recovery release gate below.
+
 These are received-byte intake identities, not source/vendor attestations:
 
 | Candidate | Bytes | SHA-256 | Initial stack / reset |
