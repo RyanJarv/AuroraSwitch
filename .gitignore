@@ -1,0 +1,6 @@
+.deps/
+firmware/build*/
+__pycache__/
+*.pyc
+dist/
+local-firmware/

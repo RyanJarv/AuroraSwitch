@@ -1,0 +1,57 @@
+#pragma once
+
+#include "../support/sram_image_vectors.hpp"
+
+namespace aurora_selector
+{
+    struct Image
+    {
+        const char* path;
+        const char* sha256;
+        std::size_t size;
+        daisy_development::SramImageVectors vectors;
+    };
+
+    // Local byte identities, not signed vendor/source provenance.
+    constexpr Image Images[] = {
+        {"0:/aurora/AR_FDN_v1_2_2.bin",
+         "13e774782ce3367675bcee895900f63915d414127d1c2d797e254e020c55f916",
+         104196U, {0x20020000U, 0x24000959U}},
+        {"0:/aurora/Aurora_v1_4_4.bin",
+         "0ec2dc67748c6864edad7b7910bf65c26d2db4f6c38034f07cfcf286615882e4",
+         181868U, {0x20020000U, 0x2400070dU}},
+    };
+
+    constexpr std::size_t StagingCapacity()
+    {
+        std::size_t maximum = 0;
+        for(const auto& image : Images)
+            if(image.size > maximum)
+                maximum = image.size;
+        return (maximum + 31U) & ~std::size_t(31U);
+    }
+    constexpr std::uintptr_t StagingAddress = 0x30008000U;
+    constexpr std::uintptr_t StagingLimit = 0x30040000U;
+    static_assert(StagingCapacity() <= StagingLimit - StagingAddress,
+                  "Reviewed image set exceeds internal staging SRAM");
+
+    inline bool VerifyImage(const std::uint8_t* bytes, std::size_t size,
+                            const Image& image, const std::uint8_t* digest)
+    {
+        daisy_development::SramImageVectors vectors{};
+        if(digest == nullptr || size != image.size
+           || !daisy_development::ReadSramImageVectors(
+               bytes, size, 480U * 1024U, vectors)
+           || vectors.stack != image.vectors.stack
+           || vectors.reset != image.vectors.reset)
+            return false;
+        constexpr char hex[] = "0123456789abcdef";
+        for(std::size_t i = 0; i < 32U; ++i)
+        {
+            if(hex[digest[i] >> 4] != image.sha256[i * 2U]
+               || hex[digest[i] & 15U] != image.sha256[i * 2U + 1U])
+                return false;
+        }
+        return image.sha256[64] == '\0';
+    }
+}
