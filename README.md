@@ -88,6 +88,15 @@ gesture in the supplied vendor images.
 
 ## Recovery and safety
 
+**Hard release gate — currently unproven:** the worst permitted outcome of
+supported selector installation/use is a malfunction recoverable by Aurora's
+normal USB updater using the known-good original firmware. Recovery may require
+the documented updater-entry controls, reset or power cycling, but must not
+require ST-Link, ROM DFU, opening the module, recalibration or restoring internal
+backups. Any violation blocks release; an experimental label does not waive it.
+This is a release requirement, **not an established “always recoverable” claim**.
+See [the recovery release gate](docs/recovery_release_gate.md).
+
 Keep an independently known-working original Aurora firmware available. Use
 Aurora's documented recovery/updater process to restore it, with exactly the
 intended updater BIN at the USB root. Payload files for the selector belong in

@@ -111,9 +111,11 @@ safety of third-party firmware based on a read-only selector.
 ## Release evidence and stopping rules
 
 Publish a compact matrix: exact build, target, hardware, scenario, repetitions,
-pass/fail, known divergence, raw receipt and untested boundary. A release is
-experimental until transport, functional launch, both reset cycles and known-good
-restore are demonstrated for that build. Wider hardware claims need coverage.
+pass/fail, known divergence, raw receipt and untested boundary. No release is
+allowed until the hard normal-USB-restore gate in `recovery_release_gate.md`
+passes, alongside transport, functional launch and both reset cycles for that
+build. An experimental label cannot waive that gate. Wider hardware claims
+need coverage.
 
 Stop on a frozen panel, unexpected persistent write, invalid target entry,
 indeterminate installation or failed recovery. Preserve evidence before reset

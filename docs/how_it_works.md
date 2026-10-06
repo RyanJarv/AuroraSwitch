@@ -70,6 +70,11 @@ a known recovery process and preserve the existing bootloader. Do not confuse
 
 ## Failure and user-risk boundaries
 
+The non-negotiable release requirement is that supported-use failures need at
+most the original USB updater/original firmware restore. Any need for debug
+tools, internal backups or recalibration blocks release. This is currently
+unproven, not an unconditional safety guarantee; see `recovery_release_gate.md`.
+
 - Wrong/missing/corrupt catalog files fail closed; unknown/renamed files are
   not discovered. New image support requires reviewing layout/startup/runtime
   behavior, not just adding a hash.

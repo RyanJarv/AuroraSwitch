@@ -1,5 +1,13 @@
 # Verification status and first physical boundary
 
+## Hard recovery release gate
+
+`recovery_release_gate.md` is the mandatory acceptance condition: all supported
+selector failures must be recoverable using only the original USB updater and
+original firmware, with no internal backup restore, recalibration or debug tool.
+This gate is OPEN and release is blocked. Historical evidence is unchanged;
+none establishes an unconditional normal-restore guarantee.
+
 ## Documentation and isolated packaging (2026-10-06)
 
 The source-guided loader walkthrough and risks are in `how_it_works.md`;
