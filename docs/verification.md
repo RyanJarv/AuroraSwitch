@@ -222,8 +222,12 @@ retained-loader/selector copy to the initialized selector, with guest-cleared
 selection and synthetic-media descriptor. This is not a complete switch cycle:
 current opposite-image discovery, confirmation and launch now independently
 repeat in both directions through the next image's reset entry. That image's
-startup/audio and the full current reset/switch cycles still need connected
-validation; ordinary USB recovery also remains open.
+startup/audio now also continues through both repeated complete current
+companion A→B→A cycles: three linked launches, two modeled retained-bootloader
+returns, second-image changed controls and complete cold-equivalent third-entry
+audio. FDN prewrite-buffer and Aurora final timer-phase differences remain
+explicit limitations; whole-state/timing equivalence is not claimed. Real USB
+transport and ordinary stock USB recovery remain open.
 
 Stop before installation/testing until a recovery backup and known-good restore
 path are confirmed. The first physical campaign must then verify:
