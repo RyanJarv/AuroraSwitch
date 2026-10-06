@@ -210,6 +210,15 @@ claims full virtual or physical qualification.
 
 ## Required first physical test — not yet performed
 
+The current timing/initialization source's separately authenticated
+synthetic-media companion now independently repeats both official cold-entry
+routes through discovery, confirmation, launch, vendor startup and 85 callbacks
+with 8192 captured frames and a checked control change. Complete ordered traces
+and audio match between repetitions; omitted/extra observation controls reject.
+This does not transfer the historical reset-cycle evidence to the current
+discovery build, or qualify the actual USB-transport image. Current reset/switch
+cycles and ordinary USB recovery remain open.
+
 Stop before installation/testing until a recovery backup and known-good restore
 path are confirmed. The first physical campaign must then verify:
 
