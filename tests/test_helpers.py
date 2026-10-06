@@ -25,6 +25,14 @@ class HelperTests(unittest.TestCase):
                 str(executable)], check=True)
             subprocess.run([str(executable)], check=True)
 
+    def test_operation_timing(self):
+        with tempfile.TemporaryDirectory(prefix="aurora-timing-tests-") as directory:
+            executable = Path(directory) / "timing_test"
+            subprocess.run(["c++", "-std=c++17", "-Wall", "-Wextra", "-Werror",
+                str(ROOT / "firmware/operation_timing_test.cpp"), "-o",
+                str(executable)], check=True)
+            subprocess.run([str(executable)], check=True)
+
     def test_supported_image_discovery(self):
         with tempfile.TemporaryDirectory(prefix="aurora-menu-tests-") as directory:
             executable = Path(directory) / "menu_test"

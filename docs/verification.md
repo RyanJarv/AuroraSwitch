@@ -10,6 +10,14 @@ none establishes an unconditional normal-restore guarantee.
 
 ## Documentation and isolated packaging (2026-10-06)
 
+Load/discovery timing instrumentation adds last-operation, maximum and completion
+fields without imposing a timeout or changing authentication/launch decisions.
+The host suite passes 13 tests, including zero duration, accumulated maximum,
+clock wrap and incomplete timing records. Compile checks, diff checks and the
+pinned-toolchain incremental ARM build pass. See `load_timing.md`; real USB
+measurements and physical tests remain NOT RUN. The older frozen package below
+is preserved, not automatically the timing build's evidence authority.
+
 The next preparation tranche adds a fail-closed initialization guard: USB,
 filesystem and mount setup stop on their first error. The live loop refuses
 media pumping, discovery, loading and launch after any initialization failure;

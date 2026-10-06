@@ -126,3 +126,5 @@ how to compare normal boot with selector launch without confusing bounded
 software evidence with whole-device equivalence.
 The [reliability campaign](docs/reliability_campaign.md) gives the official-image
 test checklist and the smaller compatibility tier for proposed alternative images.
+The [load-timing recipe](docs/load_timing.md) describes diagnostic measurements;
+no load timeout or watchdog is currently imposed.

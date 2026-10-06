@@ -4,6 +4,7 @@
 #include "../support/read_only_image_staging.hpp"
 #include "../support/supported_image_menu.hpp"
 #include "../support/media_initialization.hpp"
+#include "../support/operation_timing.hpp"
 #ifdef SELECTOR_VIRTUAL_TRANSPORT
 #include "../support/backed_image_reader.hpp"
 // Exact ELF symbol, not a profile copied from another image. Payload is mapped
@@ -36,8 +37,10 @@ namespace
     {
         std::uint32_t attempts, selection, staging_result, fatfs_result;
         std::uint32_t file_size, bytes_read, authenticated;
+        daisy_development::OperationTiming timing;
     };
     volatile LoadDiagnostic load_diagnostic{};
+    volatile daisy_development::OperationTiming discovery_timing{};
     __attribute__((section(".selector_staging"), aligned(32)))
     std::uint8_t staged[aurora_selector::StagingCapacity()];
     unsigned selected = 0;
@@ -113,6 +116,7 @@ namespace
 
     bool AuthenticateFile(unsigned index)
     {
+        load_diagnostic.timing.Begin(daisy::System::GetNow());
         // One read into staging; hash and later handoff consume these same bytes.
         // Never validate a file, close it, and then reopen an unvalidated copy.
 #ifdef SELECTOR_VIRTUAL_TRANSPORT
@@ -145,6 +149,7 @@ namespace
                && mbedtls_sha256_ret(staged, image.size, digest, 0) == 0
                && aurora_selector::VerifyImage(staged, image.size, image, digest);
         load_diagnostic.authenticated = authenticated;
+        load_diagnostic.timing.Finish(daisy::System::GetNow());
         return authenticated;
     }
 }
@@ -230,9 +235,11 @@ int main()
             // staging and therefore always revokes any previous launch approval.
             state = State::Loading;
             SetStatus(0.4f, 0.2f, 0.f);
+            discovery_timing.Begin(daisy::System::GetNow());
             menu.Discover([](std::size_t index) {
                 return AuthenticateFile(static_cast<unsigned>(index));
             }, [] { return MediaReady(); });
+            discovery_timing.Finish(daisy::System::GetNow());
             selected = static_cast<unsigned>(menu.Selected());
             state = !MediaReady() ? State::Waiting
                 : menu.HasSelection() ? State::Selected : State::Empty;

@@ -4,11 +4,12 @@ Status: initial software preparation complete; physical campaign **NOT RUN**.
 The hard gate in [recovery_release_gate.md](recovery_release_gate.md) remains
 OPEN. This plan does not admit additional firmware or waive that gate for beta.
 
-Frozen initial candidate: source `893ca5b`, manifest
+Preserved initial candidate: source `893ca5b`, manifest
 `1ab83ea9407e0e53521b2dd59702f4125c6d2bbfcaf842ac82ddbd8b6b60dda1`.
 See [verification.md](verification.md#frozen-initialization-error-candidate)
-for full artifact hashes and bounded software results. Use this package for
-the initial campaign; do not replace it with newer documentation-head outputs.
+for full artifact hashes and bounded software results. Timing instrumentation
+now requires a new frozen package; do not silently transfer these results to it.
+The latest candidate will be recorded in `verification.md` before hardware tests.
 
 ## Scope and order
 
@@ -115,5 +116,7 @@ TODO: collect physical B1–R3 results and close the recovery gate independently
 TODO: complete alternative-image memory/persistence review and compatibility runs.
 TODO: measure loading latency/failure behavior before proposing timeouts/watchdogs;
 synchronous upstream calls may stall, and bounded bytes are not bounded time.
+Use [load_timing.md](load_timing.md) for diagnostic fields and the measurement
+recipe; no real measurements have been recorded yet.
 TODO: retain raw records and publish an exact-image report; do not mark planned
 rows PASS or present these repetition targets as a reliability guarantee.
