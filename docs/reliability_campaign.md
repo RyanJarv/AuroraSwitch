@@ -121,6 +121,9 @@ the exact failure before making a fix; rerun affected rows on a new bundle.
 Current matching-companion linked handoff/control-audio and cold bootloader
 entry checks now pass repeated bounded emulator runs. These are not the real-USB
 BIN or whole current reset cycles; see [verification.md](verification.md).
+Cold entry, discovery, Freeze and Shift are also joined to both official reset
+entries; omitted-Freeze firmware executions refuse launch. Vendor continuation
+and warm reset from that connected current route remain open.
 TODO: complete current same-guest reset cycles and remaining virtual failure
 cases before physical tests; older virtual evidence does not automatically
 qualify the new BIN.

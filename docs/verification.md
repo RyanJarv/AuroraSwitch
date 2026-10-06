@@ -32,6 +32,11 @@ full 491,520-byte copy and real branch into this companion's reset/main and
 initialized loop (`0x24001be2`, stack `0x2001ff88`). It does not use a host jump
 to the initialized loop. Full register checkpoint SHA-256 is
 `50842c6535b974ac2ffa839e27f4fb8c10e4dc05c025c6ae66ceb959b7de05f5`.
+The cold bootloader entry is now joined to discovery, Freeze and Shift in one
+process for each official payload, twice each. Two separate omitted-Freeze
+executions stay Selected and refuse launch after Shift. The connected tests
+halt at genuine official reset entries; earlier callback/audio observations are
+a separate slice, not proof of complete current warm switching cycles.
 These externally recorded emulator results are bounded development context,
 not additional claims made by this repository's host tests. The companion is
 not the real-USB BIN, and its media, peripheral and cache models are approximate.
