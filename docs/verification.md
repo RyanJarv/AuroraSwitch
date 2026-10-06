@@ -220,7 +220,10 @@ discovery build, or qualify the actual USB-transport image. Both current
 companion modeled reset returns now independently repeat through unchanged
 retained-loader/selector copy to the initialized selector, with guest-cleared
 selection and synthetic-media descriptor. This is not a complete switch cycle:
-current opposite-image relaunch/cycles and ordinary USB recovery remain open.
+current opposite-image discovery, confirmation and launch now independently
+repeat in both directions through the next image's reset entry. That image's
+startup/audio and the full current reset/switch cycles still need connected
+validation; ordinary USB recovery also remains open.
 
 Stop before installation/testing until a recovery backup and known-good restore
 path are confirmed. The first physical campaign must then verify:
