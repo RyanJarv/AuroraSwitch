@@ -1,6 +1,6 @@
 # Reliability campaign and alternative-image onboarding
 
-Status: **paused at the Cloudscape control/audio gap**; physical campaign
+Status: **bounded virtual checks complete; stop before hardware**; physical campaign
 **NOT RUN**. See [the changed-build checkpoint](community_virtual_checkpoint.md).
 The hard gate in [recovery_release_gate.md](recovery_release_gate.md) remains
 OPEN. Catalog admission and bounded virtual results do not waive that gate for beta.
@@ -28,8 +28,8 @@ are in [the checkpoint](community_virtual_checkpoint.md).
   regression; do not start a 16-execution media-edge campaign. These full cycles
   remain bound to the earlier companion. The changed build adds repeated bounded
   official/EchoGarden/Oscillator launch/control/audio checks, not new reset cycles.
-- [ ] Resolve scope at the Cloudscape control/audio gap: defer it or authorize
-  a bounded control-producer investigation. Do not add more infrastructure now.
+- [x] Resolve Cloudscape's control/audio comparison with an existing late-impulse
+  stimulus. All three custom images pass the bounded screen; no new model.
 - [ ] Run the short exact-build physical campaign below, with ST-Link
   disconnected. Stop and ask for user participation before physical actions.
 - [ ] Demonstrate ordinary stock USB recovery and resolve the scoped release
@@ -92,9 +92,9 @@ installation; the currently reported responsive FDN is not exact-build evidence.
    calibrated behavior against baseline. This is a required observation, not
    an assumption that copying a file guarantees recovery.
 
-A small EchoGarden/Oscillator launch and controls/audio screen may be included
-before restoring stock. Cloudscape is not a completed software-control pass;
-decide its scope before treating it as verified. No physical action is authorized
+A small EchoGarden/Cloudscape/Oscillator launch and controls/audio screen may be
+included before restoring stock. Bounded virtual passes do not physically
+qualify any image. No physical action is authorized
 by this document alone.
 
 All four steps are NOT RUN against this exact candidate. Stop for user

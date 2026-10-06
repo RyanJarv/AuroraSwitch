@@ -1,6 +1,6 @@
 # Community-image virtual checkpoint
 
-Status: **paused at Cloudscape's unresolved control/audio check**, 2026-10-06.
+Status: **bounded virtual checks complete; stop before physical testing**, 2026-10-06.
 No new emulator subsystem or loader feature was required for this intake.
 Nothing has been installed on hardware in this tranche.
 
@@ -14,8 +14,8 @@ callback buffers and captured audio, not just a “started” message.
 - Official Aurora and FDN: repeated launch, control-input and changed-audio checks.
 - EchoGarden: repeated launch, control-input and changed-audio checks.
 - The Oscillator Is a Lie: repeated launch, control-input and changed-audio checks.
-- Cloudscape: repeated launch/audio activity and raw control-input consumption;
-  **the changed-audio check does not pass**.
+- Cloudscape: repeated launch, control-input and changed-audio checks after the
+  audio stimulus was moved after the control change.
 
 Each launch observes 85 balanced callbacks and all 8192 captured stereo frames,
 with the complete ordered control/buffer observations. The new catalog changes
@@ -26,19 +26,19 @@ seam repeats independently. All 28 host tests pass. Two representative linked
 loading controls omit Freeze or corrupt the input and verify refusal before
 retry; no substantial media model was added.
 
-## Why Cloudscape is paused
+## Cloudscape's corrected stimulus
 
-Its callback sees the tested raw control change, but all captured audio bytes
-match the unchanged-control run. A separate second-control trial gives the
-same result. This could reflect control-service timing, what that parameter
-does, or the limited capture window; the cause has not been localized.
+Initially, its callback saw the raw control change but all captured audio bytes
+matched baseline. A second-control trial also gave no difference. The important
+ordering issue was that the input impulse arrived **before** the control change.
+This short dry-response comparison could not establish a control effect.
 
-The all-image campaign intentionally stops on that comparison. The preserved
-observation report labels it `blocked-cloudscape-control-audio`, not PASS.
-Continuing would mean investigating this firmware's control producer or effect
-behavior, beyond straightforward image onboarding. Next decide whether to
-defer Cloudscape or authorize that bounded investigation. Do not replace this
-check with a weaker “ADC changed” claim or implement DSP behavior in the host.
+Using the existing late-impulse parameter (frame 7000 rather than 4096) puts the
+input after the observed ADC change. One baseline and two changed-control runs
+now produce different complete PCM hashes, with identical changed repetitions.
+No firmware, callback binding, peripheral model or host DSP approximation was
+changed. The original blocked report remains historical, not silently relabeled.
+The all-image campaign still stops if an observable audio effect is absent.
 
 ## Frozen changed builds
 
@@ -46,7 +46,10 @@ Both builds come from source `25c393e794c5ef3002b261a6ee7a6aaa11f91809`.
 Packaging rebuilds application and libDaisy from fresh isolated tracked
 checkouts, records pinned dependencies/toolchain and checks ELF/BIN agreement.
 The complete manifests, hashes and bounded result summaries are in
-[the machine-readable record](evidence/community_virtual_20261006.json).
+[the current machine-readable record](evidence/community_late_impulse_20261006.json).
+The [earlier inconclusive comparison](evidence/community_virtual_20261006.json)
+is preserved separately. Existing passing receipts for the other four images
+were reused rather than rerunning their completed live campaigns.
 
 | Build | Manifest / package identity | BIN SHA-256 |
 | --- | --- | --- |
@@ -74,8 +77,8 @@ timing, exact normal-boot state or target persistence safety. Third-party
 firmware remains unsandboxed after launch. Payload bytes are not distributed.
 
 The remaining physical screen is both official launch directions, responsive
-controls/audio, reset/re-entry, a small EchoGarden/Oscillator compatibility
-screen, then ordinary stock USB restore. It requires user participation; keep
+controls/audio, reset/re-entry, a small compatibility screen of the three custom
+images, then ordinary stock USB restore. It requires user participation; keep
 ST-Link disconnected because it has caused resets. Virtual results do not close
 the [recovery release gate](recovery_release_gate.md). More modeling and whole
 state equivalence are not prerequisites to that physical screen.

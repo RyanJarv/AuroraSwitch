@@ -4,8 +4,9 @@
 
 The authoritative short status is [the community checkpoint](community_virtual_checkpoint.md):
 official images, EchoGarden and Oscillator pass bounded repeated virtual
-launch/control/audio checks; Cloudscape consumes raw control input but has no
-observed PCM effect. Work is paused at that unresolved boundary. The changed
+launch/control/audio checks; Cloudscape also passes after its input impulse was
+moved after the observed control change. Its earlier inconclusive comparison
+is preserved, not relabeled. Work stops before physical testing. The changed
 real-USB candidate has fresh source/build authentication but **no physical or
 stock-recovery pass**. Earlier evidence below remains tied to earlier binaries.
 

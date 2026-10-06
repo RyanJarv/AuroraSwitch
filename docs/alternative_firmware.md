@@ -55,14 +55,14 @@ startup success nor compatible handoff.
   callback/control addresses, without substituting official-image PCs.
 - [x] Add exact catalog entries and distinct menu colors. Preserve staging size,
   handoff, launch-time revalidation and DMA cleanup unchanged.
-- [x] Finish bounded repeated launch/control/audio checks for EchoGarden and
-  Oscillator. Cloudscape's raw control change is consumed but PCM does not
-  change; do not count that as a responsive-DSP pass.
+- [x] Finish bounded repeated launch/control/audio checks for all three custom
+  images. Cloudscape needed only a late input impulse after the control change;
+  preserve its earlier inconclusive comparison as history.
 - [x] Authenticate fresh real-USB and synthetic-media builds; rerun affected
   cleanup/copy/DMA checks, official bounded launch/audio checks and preserved
   primary switching-cycle replay. No new-catalog reset-cycle pass is claimed.
-- [ ] Decide whether to defer Cloudscape or inspect its real control producer
-  using existing models. Work pauses before expanding this investigation.
+- [x] Resolve Cloudscape's bounded comparison without a new model or producer
+  workaround. No broader reverse-engineering tranche is needed for this screen.
 - [ ] User-assisted physical compatibility checks and ordinary stock recovery;
   software results do not close the [release gate](recovery_release_gate.md).
 
@@ -73,7 +73,7 @@ capability is an exact-image startup/continuation binding, not another USB stack
 or emulator. No new loader features or broad framework are authorized here.
 An ELF/MAP or source from an author could simplify that work, but is not
 assumed available. The authenticated changed-build observations and explicit
-Cloudscape failure are now recorded in
+Cloudscape timing correction are now recorded in
 [the current checkpoint](community_virtual_checkpoint.md). Do not transfer
 historical results or infer a full community-image pass.
 

@@ -6,9 +6,9 @@ from SRAM without replacing the recovery bootloader or writing the selected
 image into flash. A reset returns to the installed selector through the
 existing bootloader.
 
-**Development status:** official Aurora, FDN, EchoGarden and The Oscillator Is
-a Lie pass bounded virtual launch/control/audio checks. Cloudscape launches,
-but a control-to-audio response is still unproven. All images in the new catalog
+**Development status:** official Aurora, FDN, EchoGarden, Cloudscape and The
+Oscillator Is a Lie pass bounded virtual launch/control/audio checks.
+All images in the new catalog
 still need physical testing and ordinary stock recovery remains unproven.
 See [the current checkpoint](docs/community_virtual_checkpoint.md).
 
@@ -57,8 +57,8 @@ included. Exact accepted hashes, lengths, vectors and paths are listed in
 - CloudscapeX `AuroraCloudscapeX.bin` (98968 bytes).
 - The Oscillator Is a Lie `TheOscillatorIsALie_v0_0_2.bin` (103604 bytes).
 
-Catalog membership identifies exact accepted bytes; it is not a qualification
-claim. Cloudscape's outstanding control/audio check is documented above.
+Catalog membership identifies exact accepted bytes; it is not a physical
+qualification claim. The virtual testing scope is documented above.
 
 ```sh
 make verify-images FIRMWARE_DIR=/path/to/your/files
