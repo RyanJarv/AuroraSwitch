@@ -20,8 +20,23 @@ after reconnect/reload. Complete guest snapshot arrays, including timing fields,
 repeat exactly. These runs use a **different** virtual-transport BIN
 `4d48a3a8b394a724b5973e98f9d9c17144b23173d715cebdd0509a7c7210c2d6`,
 not the real-USB candidate below. It presents one file at a time and skips
-USB/FatFs initialization. Current-source full launch/reset/audio cycles,
-simultaneous two-file discovery and physical recovery remain unproven.
+USB/FatFs initialization.
+
+Subsequent matching-companion development runs cover four linked Shift handoffs
+(each official payload twice), complete selected-image/DMA-arena boundary
+readbacks, 85 linked callbacks and 8,192 modeled stereo frames per run, with a
+checked control change. Repetitions match; omitted/extra boundary, missing
+callback and truncated-output verifier controls reject. Another repeated
+development slice executes the authenticated original bootloader's timeout,
+full 491,520-byte copy and real branch into this companion's reset/main and
+initialized loop (`0x24001be2`, stack `0x2001ff88`). It does not use a host jump
+to the initialized loop. Full register checkpoint SHA-256 is
+`50842c6535b974ac2ffa839e27f4fb8c10e4dc05c025c6ae66ceb959b7de05f5`.
+These externally recorded emulator results are bounded development context,
+not additional claims made by this repository's host tests. The companion is
+not the real-USB BIN, and its media, peripheral and cache models are approximate.
+Current-source full same-guest launch/reset/audio cycles, simultaneous two-file
+discovery and physical recovery remain unproven.
 
 The user reports selector-launched FDN currently responds normally, but its
 installed selector identity has not been authenticated. The VM-visible drive's

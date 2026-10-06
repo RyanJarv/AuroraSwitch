@@ -118,8 +118,12 @@ Stop on frozen controls, unexpected protected/persistent changes, unexplained
 audio anomalies, indeterminate installation or failed normal restore. Preserve
 the exact failure before making a fix; rerun affected rows on a new bundle.
 
-TODO: execute exact current-build virtual handoff checks before physical tests;
-older virtual evidence does not automatically qualify the new BIN.
+Current matching-companion linked handoff/control-audio and cold bootloader
+entry checks now pass repeated bounded emulator runs. These are not the real-USB
+BIN or whole current reset cycles; see [verification.md](verification.md).
+TODO: complete current same-guest reset cycles and remaining virtual failure
+cases before physical tests; older virtual evidence does not automatically
+qualify the new BIN.
 TODO: collect physical B1–R3 results and close the recovery gate independently.
 TODO: complete alternative-image memory/persistence review and compatibility runs.
 TODO: measure loading latency/failure behavior before proposing timeouts/watchdogs;
