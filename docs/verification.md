@@ -10,6 +10,27 @@ none establishes an unconditional normal-restore guarantee.
 
 ## Documentation and isolated packaging (2026-10-06)
 
+### Current frozen timing candidate
+
+Source `63d27a5` is the current physical-campaign candidate. The clean isolated
+`make package` command (same pinned PATH below) sealed manifest/package
+`f8ea8d874781642b29e244cb7cce302657b80d2aeaab8cdd804b70804c45571e`.
+
+| Artifact | SHA-256 |
+| --- | --- |
+| BIN (94552 bytes) | `dca22d3a9275c84d4367d1ed53fb2befbd439b171a16cb0841236fa2b95c0382` |
+| ELF | `0cf1f80b4999ab292355bf13fb558081493887a3f3a7fed2fa823f14acfb1563` |
+| MAP | `dc34198a442eb45f3669451661656c052d7783a245a434c9b9bc0a714dda6c26` |
+
+Fresh bounded CPU checks consumed this exact sealed ELF/BIN. The complete
+20-store cleanup census passes with inherited MPU unchanged. Both official
+images pass two trampoline executions each matching the complete frozen
+copy/DMA-clear records and readback. Package hashes are unchanged before/after.
+The same limits below apply: no USB discovery/full startup/cycle/hardware pass.
+The 13-test host suite, compile/diff checks, incremental ARM build and fresh
+isolated package pass; hosted CI for implementation `63d27a5` also passed
+(run `37518492274`). Real load times and all physical campaign rows are NOT RUN.
+
 Load/discovery timing instrumentation adds last-operation, maximum and completion
 fields without imposing a timeout or changing authentication/launch decisions.
 The host suite passes 13 tests, including zero duration, accumulated maximum,

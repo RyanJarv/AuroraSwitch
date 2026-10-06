@@ -9,7 +9,10 @@ Preserved initial candidate: source `893ca5b`, manifest
 See [verification.md](verification.md#frozen-initialization-error-candidate)
 for full artifact hashes and bounded software results. Timing instrumentation
 now requires a new frozen package; do not silently transfer these results to it.
-The latest candidate will be recorded in `verification.md` before hardware tests.
+The current timing candidate is source `63d27a5`, manifest
+`f8ea8d874781642b29e244cb7cce302657b80d2aeaab8cdd804b70804c45571e`.
+Use that sealed package for hardware tests; full identities and bounded results
+are in [verification.md](verification.md#current-frozen-timing-candidate).
 
 ## Scope and order
 
@@ -84,6 +87,11 @@ These are received-byte intake identities, not source/vendor attestations:
 Neither is in `firmware/images.hpp`. Size/vector checks alone are insufficient.
 Local `sha256sum`, `stat` and `od -An -N8 -tx4` checks on 2026-10-06 confirmed
 these received bytes still match this table; no target code was executed.
+An additional offline screen of the first 166 words (the pinned STM32H750
+startup table length) found 150 nonzero handler entries in each candidate;
+all are Thumb addresses inside that candidate's SRAM image extent. This assumes
+the pinned table layout applies; it is not independent SDK/version identification
+or proof of startup, memory initialization, persistence or runtime compatibility.
 Before adding each exact entry:
 
 - Check full startup/vector and memory contract against selector staging,
