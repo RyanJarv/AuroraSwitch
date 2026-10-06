@@ -1,5 +1,6 @@
 """Seal a clean development ELF/BIN/MAP bundle; never package vendor firmware."""
 from pathlib import Path
+import argparse
 import hashlib
 import json
 import os
@@ -18,7 +19,7 @@ def digest(data: bytes) -> str:
 
 
 @contextmanager
-def fresh_build(commit: str):
+def fresh_build(commit: str, *, virtual: bool = False):
     """Build tracked source and dependency checkouts, never ambient objects."""
     gcc = shutil.which("arm-none-eabi-gcc")
     if gcc is None:
@@ -52,35 +53,40 @@ def fresh_build(commit: str):
                              "LC_ALL": "C"}
         subprocess.run(["make", "-j2", "-C", str(library), f"GCC_PATH={tool_directory}"],
                        check=True, env=build_environment)
+        build_directory = "build-virtual-experimental-dma" if virtual else "build-experimental-dma"
         subprocess.run(["make", "-j2", "-C", str(checkout / "firmware"),
             f"GCC_PATH={tool_directory}", "EXPERIMENTAL_HANDOFF=1",
-            "DMA_ARENA_CLEANUP=1", "VIRTUAL_TRANSPORT=0"], check=True, env=build_environment)
-        yield checkout / "firmware/build-experimental-dma", tools, tool_directory
+            "DMA_ARENA_CLEANUP=1", f"VIRTUAL_TRANSPORT={int(virtual)}",
+            f"BUILD_DIR={build_directory}"], check=True, env=build_environment)
+        yield checkout / "firmware" / build_directory, tools, tool_directory
 
 
-def package() -> Path:
+def package(*, virtual: bool = False) -> Path:
+    if type(virtual) is not bool:
+        raise ValueError("virtual must be a boolean")
     setup()
     if subprocess.check_output(["git", "-C", str(ROOT), "status", "--porcelain"], text=True).strip():
         raise RuntimeError("development packaging requires a clean committed source tree")
     commit = subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip()
-    with fresh_build(commit) as (build, tools, tool_directory):
-        return seal(build, commit, tools, tool_directory)
+    with fresh_build(commit, virtual=virtual) as (build, tools, tool_directory):
+        return seal(build, commit, tools, tool_directory, virtual=virtual)
 
 
-def seal(build: Path, commit: str, tools: dict, tool_directory: Path) -> Path:
-    payload = {f"AuroraSwitch.{suffix}": (build / f"AuroraSwitch.{suffix}").read_bytes()
+def seal(build: Path, commit: str, tools: dict, tool_directory: Path, *, virtual: bool = False) -> Path:
+    target = "AuroraSwitchVirtual" if virtual else "AuroraSwitch"
+    payload = {f"{target}.{suffix}": (build / f"{target}.{suffix}").read_bytes()
                for suffix in ("elf", "bin", "map")}
     with tempfile.TemporaryDirectory(prefix="aurora-package-check-") as directory:
         converted = Path(directory) / "from-elf.bin"
         subprocess.run([str(tool_directory / "arm-none-eabi-objcopy"), "-O", "binary",
-            str(build / "AuroraSwitch.elf"), str(converted)], check=True)
-        if converted.read_bytes() != payload["AuroraSwitch.bin"]:
+            str(build / f"{target}.elf"), str(converted)], check=True)
+        if converted.read_bytes() != payload[f"{target}.bin"]:
             raise RuntimeError("ELF/BIN identity mismatch")
     manifest = {"schema": "aurora-switch-development-bundle-v1", "development_only": True,
         "physical_qualified": False, "source_commit": commit,
         "build_provenance": {"method": "fresh-isolated-tracked-checkouts",
             "toolchain": tools, "configuration": {"EXPERIMENTAL_HANDOFF": 1,
-                "DMA_ARENA_CLEANUP": 1, "VIRTUAL_TRANSPORT": 0}},
+                "DMA_ARENA_CLEANUP": 1, "VIRTUAL_TRANSPORT": int(virtual)}},
         "files": {name: {"bytes": len(data), "sha256": digest(data)}
                   for name, data in payload.items()},
         # Record the same pins used to authenticate and clone build inputs.
@@ -110,11 +116,14 @@ def seal(build: Path, commit: str, tools: dict, tool_directory: Path) -> Path:
             os.rename(staging, destination)
     # Mutable build output is checked again after sealing.
     for suffix in ("elf", "bin", "map"):
-        if (build / f"AuroraSwitch.{suffix}").read_bytes() != payload[f"AuroraSwitch.{suffix}"]:
+        if (build / f"{target}.{suffix}").read_bytes() != payload[f"{target}.{suffix}"]:
             raise RuntimeError("build changed during packaging")
     print(f"DEVELOPMENT ONLY: {destination}")
     return destination
 
 
 if __name__ == "__main__":
-    package()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--virtual", action="store_true",
+                        help="seal a synthetic-media test build, never install this on hardware")
+    package(virtual=parser.parse_args().virtual)

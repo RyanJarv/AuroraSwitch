@@ -51,6 +51,9 @@ included. Exact accepted hashes, lengths, vectors and paths are listed in
 
 - Original Aurora `Aurora_v1_4_4.bin` (181868 bytes).
 - FDN `AR_FDN_v1_2_2.bin` (104196 bytes).
+- EchoGarden `AuroraEchoGarden_v0_3_1_STABLE.bin` (94704 bytes).
+- CloudscapeX `AuroraCloudscapeX.bin` (98968 bytes).
+- The Oscillator Is a Lie `TheOscillatorIsALie_v0_0_2.bin` (103604 bytes).
 
 ```sh
 make verify-images FIRMWARE_DIR=/path/to/your/files
@@ -73,7 +76,7 @@ python3 scripts/prepare_payloads.py --output prepared-payloads \
   local-firmware/AR_FDN_v1_2_2.bin local-firmware/Aurora_v1_4_4.bin
 ```
 
-Either image may be omitted. The helper authenticates private copies using the
+Any supported image may be omitted. The helper authenticates private copies using the
 selector's own catalog and verification predicate, restores the required
 filenames and writes `prepared-payloads/aurora/` plus `payloads.json`. It refuses
 unknown/changed bytes and existing output directories. Use a new output folder
@@ -83,14 +86,15 @@ The receipt proves bytes, not working controls/audio or physical recovery.
 
 Community-image onboarding is tracked in
 [alternative firmware](docs/alternative_firmware.md). The three supplied SRAM
-images are not yet launch-catalog entries. Older versions will be admitted as
+images have exact catalog entries; see that document for their testing status.
+Older versions will be admitted as
 separate exact images after review; never replace a supported hash with “latest.”
 Optional fetching from pinned public releases is a follow-up, not required for
 the offline/manual workflow. Discord-only files remain user-supplied.
 
 ## Controls
 
-At startup or drive reconnect, the selector reads and authenticates the two
+At startup or drive reconnect, the selector reads and authenticates the five
 catalog filenames under `aurora/`. Only files with the exact supported size,
 SHA-256 and vectors enter the menu. Unknown filenames are ignored; missing or
 corrupt files are omitted. No selector rebuild is needed to add/remove these
@@ -102,8 +106,9 @@ loading/launch; reconnecting the drive does not clear an initialization fault.
 
 With the selector running:
 
-1. Reverse cycles through available entries: FDN (blue) or original Aurora
-   (green). With only one present it stays on that entry. No available image
+1. Reverse cycles through available entries: FDN (blue), original Aurora
+   (green), EchoGarden (cyan), CloudscapeX (magenta), or The Oscillator Is a Lie
+   (amber). With only one present it stays on that entry. No available image
    leaves Reverse dark and Freeze red; no media leaves Freeze dim blue.
 2. Freeze reads and authenticates the selected file. Freeze status is dim blue
    without media, white when selectable, amber while scanning/loading, green when

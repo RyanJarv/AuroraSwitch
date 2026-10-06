@@ -72,9 +72,12 @@ namespace
         leds.SetLed(3, r);
         leds.SetLed(4, g);
         leds.SetLed(5, b);
-        // SDK LED_REVERSE indicates selected firmware: FDN blue / spectral green.
-        leds.SetLed(1, menu.HasSelection() && selected == 1 ? 0.4f : 0.f);
-        leds.SetLed(2, menu.HasSelection() && selected == 0 ? 0.4f : 0.f);
+        // Selection colors belong to the exact catalog, not two special indices.
+        const auto color = menu.HasSelection()
+            ? aurora_selector::Images[selected].menu_color
+            : std::array<float, 3>{0.f, 0.f, 0.f};
+        for(unsigned component = 0; component < color.size(); ++component)
+            leds.SetLed(component, color[component]);
         leds.SwapBuffersAndTransmit();
     }
 

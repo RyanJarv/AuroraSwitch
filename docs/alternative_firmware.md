@@ -30,7 +30,8 @@ must pass the same checks as a future automatically fetched file.
 
 ## First batch — 2026-10-06
 
-Received files were inspected offline again; no code was executed or installed.
+Initial intake inspected the received files offline. The subsequent linked
+catalog build is being validated virtually; nothing has been installed on a module.
 
 | Image | Bytes | SHA-256 | Stack / reset |
 | --- | ---: | --- | --- |
@@ -50,24 +51,25 @@ startup success nor compatible handoff.
   authentication; no binary redistribution or parallel allowlist.
 - [x] Reconfirm received hashes, sizes and startup-table structural bounds for
   the first three candidates.
-- [ ] Review EchoGarden's startup/memory/persistence contract first. Bind its
-  actual callback/control addresses if needed for existing virtual tests.
-- [ ] Add it only after review, with an exact catalog entry, distinguishable
-  menu color, authentication controls and bounded handoff/control/audio checks.
-- [ ] Repeat for CloudscapeX and The Oscillator Is a Lie, deferring any image
-  needing substantial new emulation or reverse engineering.
+- [x] Review all three reset/data/BSS/main/StartAudio paths and bind their own
+  callback/control addresses, without substituting official-image PCs.
+- [x] Add exact catalog entries and distinct menu colors. Preserve staging size,
+  handoff, launch-time revalidation and DMA cleanup unchanged.
+- [ ] Finish bounded launch/control/audio checks for the authenticated changed
+  build, deferring any image needing substantial new emulation.
 - [ ] Authenticate a new selector build after linked firmware/catalog changes;
   rerun affected checks and the official primary switching-cycle regression.
 - [ ] User-assisted physical compatibility checks and ordinary stock recovery;
   software results do not close the [release gate](recovery_release_gate.md).
 
-The existing virtual continuation evidence binds to the two official images.
+The historical virtual continuation evidence binds to the two official images.
 Custom-image execution needs its own reviewed linked addresses and input/audio
 observations; copying official PCs would be false evidence. The minimum missing
 capability is an exact-image startup/continuation binding, not another USB stack
 or emulator. No new loader features or broad framework are authorized here.
-An ELF/MAP or source from an author could simplify that work, but is not yet
-assumed available. There is no custom-image runtime pass at this checkpoint.
+An ELF/MAP or source from an author could simplify that work, but is not
+assumed available. Prototype runs are diagnostic only until the clean changed
+build and its bounded evidence are authenticated and recorded.
 
 Dirt Verb and other QSPI-linked images remain deferred. HP-filter Aurora remains
 excluded. Official-image reliability and ordinary stock recovery remain open
@@ -94,7 +96,8 @@ python3 scripts/prepare_payloads.py --output /path/to/new-local-folder \
   /path/to/official-files/Aurora_v1_4_4.bin
 ```
 
-No selector-linked source, handoff, DMA-cleanup, memory layout or launch catalog
-changed in this chunk. The host-only `authenticate_image.cpp` is not linked into
+No selector-linked source changed in the earlier preparation-only chunk
+(`28d21cd`). The later catalog additions change the selector image, not its
+handoff, DMA-cleanup or staging memory contract. The host-only `authenticate_image.cpp` is not linked into
 the selector. The existing frozen physical candidate remains source `63d27a5`
 with its original manifest and evidence; it is not relabeled as a new build.

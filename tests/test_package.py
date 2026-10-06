@@ -33,11 +33,27 @@ class PackageTests(unittest.TestCase):
             self.addCleanup(patcher.stop)
 
     @contextmanager
-    def fresh(self, commit):
+    def fresh(self, commit, *, virtual=False):
         yield self.build, {"gcc": {"version": "synthetic", "sha256": "b" * 64}}, Path("/synthetic-tools")
 
     def convert(self, command, **kwargs):
-        Path(command[-1]).write_bytes((self.build / "AuroraSwitch.bin").read_bytes())
+        target = "AuroraSwitchVirtual" if "AuroraSwitchVirtual.elf" in command[-2] else "AuroraSwitch"
+        Path(command[-1]).write_bytes((self.build / (target + ".bin")).read_bytes())
+
+    def test_virtual_companion_has_distinct_files_and_configuration(self):
+        for suffix in ("elf", "bin", "map"):
+            (self.build / f"AuroraSwitchVirtual.{suffix}").write_bytes(b"virtual-" + suffix.encode())
+        path = bundle.package(virtual=True)
+        manifest = json.loads((path / "manifest.json").read_text())
+        self.assertEqual(manifest["build_provenance"]["configuration"]["VIRTUAL_TRANSPORT"], 1)
+        self.assertEqual(set(manifest["files"]),
+                         {f"AuroraSwitchVirtual.{suffix}" for suffix in ("elf", "bin", "map")})
+        self.assertFalse(manifest["physical_qualified"])
+        self.assertNotIn("AuroraSwitch.bin", manifest["files"])
+
+    def test_virtual_configuration_rejects_non_boolean(self):
+        with self.assertRaises(ValueError):
+            bundle.package(virtual=1)
 
     def test_exact_reuse(self):
         first = bundle.package()

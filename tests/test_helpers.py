@@ -31,6 +31,9 @@ class HelperTests(unittest.TestCase):
     def test_supported_image_discovery(self):
         self.compile_and_run("menu_test")
 
+    def test_catalog_colors_and_capacity(self):
+        self.compile_and_run("catalog_test")
+
     def test_no_programming_targets(self):
         for target in ("program", "program-dfu", "program-boot"):
             result = subprocess.run(["make", "-n", "-C", str(ROOT / "firmware"), target],
