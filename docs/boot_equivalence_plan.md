@@ -1,5 +1,12 @@
 # Validation and normal-boot equivalence plan
 
+Historical research plan, not the active completion checklist. Current authority
+is [reliability_campaign.md](reliability_campaign.md#active-checklist).
+Whole-memory/controller and exact normal-boot state equivalence are not release
+requirements. Reuse completed switching cycles; investigate additional state
+only for demonstrated failures or concrete hazards. The stages and TODOs below
+are preserved research context, not instructions to expand emulator qualification.
+
 Status: plan, not completed qualification. No hardware inspection, installation,
 reset or measurements are authorized by this document alone. Existing virtual
 results apply only to their exact images and bounded models; see verification.md.

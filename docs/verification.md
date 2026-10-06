@@ -262,17 +262,13 @@ audio. FDN prewrite-buffer and Aurora final timer-phase differences remain
 explicit limitations; whole-state/timing equivalence is not claimed. Real USB
 transport and ordinary stock USB recovery remain open.
 
-Stop before installation/testing until a recovery backup and known-good restore
-path are confirmed. The first physical campaign must then verify:
-
-1. The exact intended selector build is installed with bootloader/recovery
-   preserved, and Reverse/Freeze status responds normally.
-2. The real USB/FatFs path loads each exact file; missing/corrupt media fails
-   visibly without launching.
-3. Shift launches each image; panel controls continue responding and audio
-   changes with controls, rather than merely passing sound while frozen.
-4. Reset returns to the selector, and both A→B→A sequences work repeatedly.
-5. Restoring the original image works using the single-drive recovery process.
+Stop before installation/testing until the user is available and recovery
+preparation is confirmed. The single active checklist and short exact-build
+physical campaign are in [reliability_campaign.md](reliability_campaign.md#active-checklist).
+Do not expand completed virtual campaigns or require whole-memory/controller
+equivalence. Staged-byte corruption rejection remains a separate safeguard;
+ordinary stock USB recovery remains unproven and required. ST-Link stays
+disconnected because the user reports connection-induced resets.
 
 Do not infer a physical pass from a green build, native tests, or initial sound.
 No automatic flashing or recovery command is provided. Future broader image

@@ -81,9 +81,9 @@ unproven, not an unconditional safety guarantee; see `recovery_release_gate.md`.
 - File count and read sizes are bounded, but the selector has no overarching
   wall-clock load deadline. USB/FatFs calls depend on upstream error handling;
   a bad drive can leave the UI unresponsive. No automatic recovery is promised.
-- An initialization failure is currently not latched: the loop can replace an
-  Error status with Waiting when media is absent. TODO: distinguish fatal
-  transport initialization from ordinary unplugged media with a focused test.
+- Initialization failure is latched as Error before media pumping or control
+  handling. Shared host tests cover short-circuiting and the distinction from
+  ordinary absent media; physical USB initialization failure is not injected.
 - After irreversible teardown, a failure halts rather than retrying a partially
   destroyed runtime. Reset or power cycling may be required.
 - Retained peripheral/cache/memory state can produce frozen UI or incorrect
@@ -108,5 +108,6 @@ trusts the local compiler, Git and build host. It is not a signed distribution
 system or a fully hermetic/reproducible supply-chain proof. Temporary build
 paths may affect ELF/MAP bytes; historical packages stay unchanged.
 
-See `verification.md` for current evidence limits and `boot_equivalence_plan.md`
-for the comparison campaign required before stronger safety claims.
+See `verification.md` for current evidence limits and `reliability_campaign.md`
+for the active checklist. `boot_equivalence_plan.md` is historical research,
+not a requirement for whole-machine equality or further emulator expansion.

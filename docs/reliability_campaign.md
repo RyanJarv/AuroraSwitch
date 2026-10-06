@@ -8,26 +8,46 @@ OPEN. This plan does not admit additional firmware or waive that gate for beta.
 Preserved initial candidate: source `893ca5b`, manifest
 `1ab83ea9407e0e53521b2dd59702f4125c6d2bbfcaf842ac82ddbd8b6b60dda1`.
 See [verification.md](verification.md#frozen-initialization-error-candidate)
-for full artifact hashes and bounded software results. Timing instrumentation
-now requires a new frozen package; do not silently transfer these results to it.
+for historical artifact hashes and bounded software results. The newer timing
+candidate below is already frozen; do not silently transfer older results to it.
 The current timing candidate is source `63d27a5`, manifest
 `f8ea8d874781642b29e244cb7cce302657b80d2aeaab8cdd804b70804c45571e`.
 Use that sealed package for hardware tests; full identities and bounded results
 are in [verification.md](verification.md#current-frozen-timing-candidate).
 
-## Scope and order
+## Active checklist
 
-1. Freeze a clean `make package` bundle. Record source commit, manifest, ELF,
-   BIN, MAP and toolchain identities. Do not test mutable incremental output as
-   a release candidate. A changed BIN starts a new campaign.
-2. Reuse completed virtual evidence and run the short official-image campaign
-   below for exact stock Aurora 1.4.4 and FDN 1.2.2. Keep ST-Link disconnected:
-   its reported connection-induced resets remain unexplained.
-3. Defer alternatives unless onboarding is small and does not delay official
-   reliability. The intake table is research, not an admission commitment.
-4. Publish a small report with tested hardware/updater scope, raw receipts,
-   failed cases, repetitions and remaining limitations. No release until the
-   recovery gate passes for every admitted image.
+- [x] Freeze and authenticate the exact official-image candidate; retain the
+  sealed manifest/ELF/BIN/MAP. No rebuild for documentation-only changes.
+- [x] Verify fully loaded staged bytes, launch-time revalidation and exact
+  copy/DMA cleanup. Keep staged-byte corruption rejection as a separate safeguard.
+- [x] Complete repeated virtual Aurora → FDN → Aurora and FDN → Aurora → FDN
+  control/audio/reset cycles. Reuse these results and the small stale-approval
+  regression; do not start a 16-execution media-edge campaign.
+- [ ] Run the short exact-build physical campaign below, with ST-Link
+  disconnected. Stop and ask for user participation before physical actions.
+- [ ] Demonstrate ordinary stock USB recovery and resolve the scoped release
+  gate, then publish exact-build results and remaining limitations. Recovery is
+  a requirement, not an assumed guarantee.
+
+Whole-memory/controller or exact normal-boot state equivalence is not required.
+Preserve reviewed handoff invariants; investigate more state only for a
+demonstrated failure or concrete hazard. Virtual results prove neither real
+USB behavior nor physical handoff/recovery. Alternative images are deferred if
+they need substantial emulation/reverse engineering or delay official testing.
+No new loader features, USB stack or verification framework is planned.
+
+### Regression policy
+
+The complete switching-cycle test is the primary integration regression. Keep
+intermediate tests and historical receipts, but rerun intermediate live campaigns
+only for changes affecting their code or invariants. Replay existing receipts
+for verifier changes; run complete live cycles for relevant handoff/runtime
+changes. Documentation-only edits need link/diff checks, not emulator campaigns.
+Keep exact artifact authentication, launch-time staged-byte verification,
+corruption rejection, DMA cleanup regressions and the stock-recovery release
+gate fail-closed. The host test and image-authentication commands remain in
+verification.md; the latest repeated cycle results are recorded there as well.
 
 The immediate target is the two official images. Dirt Verb/QSPI support,
 HP-filter staging expansion, arbitrary firmware,
@@ -75,6 +95,10 @@ persistent-state/recovery evidence required by that gate remains open; if it
 requires unsafe debugger attachment, report the gap rather than claiming a pass.
 
 ## Extended official-image checklist — follow-up, not the next chunk
+
+This preserved screening menu is optional planning context, not an instruction
+to execute every row or achieve whole-state equality before proceeding. Select
+extra tests only for concrete hazards/failures or remaining recovery-gate needs.
 
 All physical rows below are NOT RUN for the frozen timing candidate. Counts are
 initial screening targets, not statistical reliability guarantees.
@@ -159,7 +183,7 @@ TODO: execute the short physical campaign and independently close remaining
 recovery-release obligations. No virtual result closes ordinary USB recovery.
 TODO (deferred): alternative memory/persistence review and compatibility runs,
 only when small and non-delaying; no new loader features by default.
-TODO: measure loading latency/failure behavior before proposing timeouts/watchdogs;
+Optional follow-up: measure loading latency/failure behavior before proposing timeouts/watchdogs;
 synchronous upstream calls may stall, and bounded bytes are not bounded time.
 Use [load_timing.md](load_timing.md) for diagnostic fields and the measurement
 recipe; no real measurements have been recorded yet.

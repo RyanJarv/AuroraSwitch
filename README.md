@@ -121,10 +121,10 @@ constraints and the required first physical test.
 
 For a source-guided walkthrough and risk explanation, read
 [how it works](docs/how_it_works.md). The
-[validation and boot-equivalence plan](docs/boot_equivalence_plan.md) explains
-how to compare normal boot with selector launch without confusing bounded
-software evidence with whole-device equivalence.
-The [reliability campaign](docs/reliability_campaign.md) gives the official-image
-test checklist and the smaller compatibility tier for proposed alternative images.
+[validation and boot-equivalence plan](docs/boot_equivalence_plan.md) preserves
+historical comparison research, not a whole-state completion requirement.
+The [reliability campaign](docs/reliability_campaign.md#active-checklist) is the
+single active checklist: reliable official-image handoff and ordinary stock
+recovery first; alternatives only when small and non-delaying.
 The [load-timing recipe](docs/load_timing.md) describes diagnostic measurements;
 no load timeout or watchdog is currently imposed.
