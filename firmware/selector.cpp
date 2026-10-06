@@ -3,6 +3,7 @@
 #include "images.hpp"
 #include "../support/read_only_image_staging.hpp"
 #include "../support/supported_image_menu.hpp"
+#include "../support/media_initialization.hpp"
 #ifdef SELECTOR_VIRTUAL_TRANSPORT
 #include "../support/backed_image_reader.hpp"
 // Exact ELF symbol, not a profile copied from another image. Payload is mapped
@@ -45,6 +46,8 @@ namespace
     enum class State { Waiting, Empty, Selected, Loading, Verified, Error };
     State state = State::Waiting;
     bool media_was_ready = false;
+    volatile daisy_development::MediaInitialization media_initialization =
+        daisy_development::MediaInitialization::Ready;
 
 #ifdef SELECTOR_VIRTUAL_TRANSPORT
     daisy_development::BackedImageReader MakeReader()
@@ -182,21 +185,29 @@ int main()
 
 #ifndef SELECTOR_VIRTUAL_TRANSPORT
     daisy::USBHostHandle::Config usb_config;
-    if(aurora::usb.Init(usb_config) != daisy::USBHostHandle::Result::OK)
-        state = State::Error;
     daisy::FatFSInterface::Config fs_config;
     fs_config.media = daisy::FatFSInterface::Config::MEDIA_USB;
-    if(selector_filesystem.Init(fs_config) != daisy::FatFSInterface::Result::OK)
-        state = State::Error;
-    if(f_mount(&selector_filesystem.GetUSBFileSystem(),
-               selector_filesystem.GetUSBPath(), 0) != FR_OK)
-        state = State::Error;
+    media_initialization = daisy_development::InitializeMedia(
+        [&] { return aurora::usb.Init(usb_config) == daisy::USBHostHandle::Result::OK; },
+        [&] { return selector_filesystem.Init(fs_config) == daisy::FatFSInterface::Result::OK; },
+        [&] { return f_mount(&selector_filesystem.GetUSBFileSystem(),
+                            selector_filesystem.GetUSBPath(), 0) == FR_OK; });
 
 #endif
 
     std::uint32_t last_control = daisy::System::GetNow();
     while(true)
     {
+        if(media_initialization != daisy_development::MediaInitialization::Ready)
+        {
+            // Latched until reset; neither readiness nor a button can hide it
+            // or authorize loading/launch. Do not pump failed USB handles.
+            menu.Clear();
+            state = State::Error;
+            SetStatus(0.4f, 0.f, 0.f);
+            daisy::System::Delay(20);
+            continue;
+        }
         PumpMedia();
         const auto now = daisy::System::GetNow();
         if(now == last_control)

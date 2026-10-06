@@ -10,6 +10,22 @@ none establishes an unconditional normal-restore guarantee.
 
 ## Documentation and isolated packaging (2026-10-06)
 
+The next preparation tranche adds a fail-closed initialization guard: USB,
+filesystem and mount setup stop on their first error. The live loop refuses
+media pumping, discovery, loading and launch after any initialization failure;
+Freeze remains red until reset. A native synthetic test checks all three
+failure points, call order/short-circuiting and the all-success case. The host
+suite now passes 12 tests. `python3 -m compileall -q scripts tests`,
+`git diff --check` and an incremental pinned-toolchain ARM build pass. The
+incremental build is compilation evidence, not clean package provenance.
+
+[reliability_campaign.md](reliability_campaign.md) records the full official
+campaign and smaller alternative compatibility tier; physical rows are NOT RUN.
+EchoGarden/CloudscapeX received-byte hashes, sizes and initial vectors were
+rechecked locally against the intake identities on 2026-10-06. Neither was
+executed or admitted. No hardware or drive access occurred for this preparation.
+The hard recovery gate remains OPEN.
+
 The source-guided loader walkthrough and risks are in `how_it_works.md`;
 the proposed normal-boot/selector comparison is in `boot_equivalence_plan.md`.
 The selector's no-flash-write statement excludes installation and launched

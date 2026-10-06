@@ -17,6 +17,14 @@ class HelperTests(unittest.TestCase):
                         str(ROOT / "firmware" / (source + ".cpp")), "-o", str(executable)], check=True)
                     subprocess.run([str(executable)], check=True)
 
+    def test_media_initialization_fail_closed(self):
+        with tempfile.TemporaryDirectory(prefix="aurora-init-tests-") as directory:
+            executable = Path(directory) / "initialization_test"
+            subprocess.run(["c++", "-std=c++17", "-Wall", "-Wextra", "-Werror",
+                str(ROOT / "firmware/media_initialization_test.cpp"), "-o",
+                str(executable)], check=True)
+            subprocess.run([str(executable)], check=True)
+
     def test_supported_image_discovery(self):
         with tempfile.TemporaryDirectory(prefix="aurora-menu-tests-") as directory:
             executable = Path(directory) / "menu_test"

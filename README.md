@@ -10,6 +10,10 @@ existing bootloader.
 The current cleanup build still requires real-module USB, launch, audio, panel
 and recovery testing. Do not treat those software checks as physical approval.
 
+AuroraSwitch is beta software with limited testing. Switching restarts the
+selected firmware. Keep the original Aurora firmware available for restoration
+using the normal USB updater.
+
 ## Build
 
 Requirements: Git, GNU Make, Python 3, a host C/C++ compiler, and the GNU Arm
@@ -66,6 +70,8 @@ corrupt files are omitted. No selector rebuild is needed to add/remove these
 supported files. Keep their catalog filenames; renamed copies are not discovered.
 After changing the drive contents, safely eject and reconnect it to rescan.
 Discovery briefly shows amber and does not itself authorize launch.
+USB/filesystem initialization failure stays red until reset and disables
+loading/launch; reconnecting the drive does not clear an initialization fault.
 
 With the selector running:
 
@@ -118,3 +124,5 @@ For a source-guided walkthrough and risk explanation, read
 [validation and boot-equivalence plan](docs/boot_equivalence_plan.md) explains
 how to compare normal boot with selector launch without confusing bounded
 software evidence with whole-device equivalence.
+The [reliability campaign](docs/reliability_campaign.md) gives the official-image
+test checklist and the smaller compatibility tier for proposed alternative images.
