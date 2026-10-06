@@ -17,6 +17,13 @@ class HelperTests(unittest.TestCase):
                         str(ROOT / "firmware" / (source + ".cpp")), "-o", str(executable)], check=True)
                     subprocess.run([str(executable)], check=True)
 
+    def test_supported_image_discovery(self):
+        with tempfile.TemporaryDirectory(prefix="aurora-menu-tests-") as directory:
+            executable = Path(directory) / "menu_test"
+            subprocess.run(["c++", "-std=c++17", "-Wall", "-Wextra", "-Werror",
+                str(ROOT / "firmware/menu_test.cpp"), "-o", str(executable)], check=True)
+            subprocess.run([str(executable)], check=True)
+
     def test_no_programming_targets(self):
         for target in ("program", "program-dfu", "program-boot"):
             result = subprocess.run(["make", "-n", "-C", str(ROOT / "firmware"), target],

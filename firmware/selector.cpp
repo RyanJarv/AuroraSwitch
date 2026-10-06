@@ -1,7 +1,8 @@
-// Development-only selector. Default preview has no guest launch path.
+// Development-only selector. Launch requires exact catalog authentication.
 #include "aurora.h"
 #include "images.hpp"
 #include "../support/read_only_image_staging.hpp"
+#include "../support/supported_image_menu.hpp"
 #ifdef SELECTOR_VIRTUAL_TRANSPORT
 #include "../support/backed_image_reader.hpp"
 // Exact ELF symbol, not a profile copied from another image. Payload is mapped
@@ -39,8 +40,11 @@ namespace
     __attribute__((section(".selector_staging"), aligned(32)))
     std::uint8_t staged[aurora_selector::StagingCapacity()];
     unsigned selected = 0;
-    enum class State { Waiting, Selected, Loading, Verified, Error };
+    daisy_development::SupportedImageMenu<
+        sizeof(aurora_selector::Images) / sizeof(aurora_selector::Images[0])> menu;
+    enum class State { Waiting, Empty, Selected, Loading, Verified, Error };
     State state = State::Waiting;
+    bool media_was_ready = false;
 
 #ifdef SELECTOR_VIRTUAL_TRANSPORT
     daisy_development::BackedImageReader MakeReader()
@@ -63,8 +67,8 @@ namespace
         leds.SetLed(4, g);
         leds.SetLed(5, b);
         // SDK LED_REVERSE indicates selected firmware: FDN blue / spectral green.
-        leds.SetLed(1, selected == 1 ? 0.4f : 0.f);
-        leds.SetLed(2, selected == 0 ? 0.4f : 0.f);
+        leds.SetLed(1, menu.HasSelection() && selected == 1 ? 0.4f : 0.f);
+        leds.SetLed(2, menu.HasSelection() && selected == 0 ? 0.4f : 0.f);
         leds.SwapBuffersAndTransmit();
     }
 
@@ -104,7 +108,7 @@ namespace
     };
 #endif
 
-    bool LoadSelected()
+    bool AuthenticateFile(unsigned index)
     {
         // One read into staging; hash and later handoff consume these same bytes.
         // Never validate a file, close it, and then reopen an unvalidated copy.
@@ -114,7 +118,7 @@ namespace
         UsbFileReader reader;
 #endif
         load_diagnostic.attempts = load_diagnostic.attempts + 1U;
-        load_diagnostic.selection = selected;
+        load_diagnostic.selection = index;
         load_diagnostic.staging_result = 0xffffffffU;
         // Synthetic transport has no FatFs result, including on success.
 #ifdef SELECTOR_VIRTUAL_TRANSPORT
@@ -125,7 +129,7 @@ namespace
         load_diagnostic.file_size = 0;
         load_diagnostic.bytes_read = 0;
         load_diagnostic.authenticated = 0;
-        const auto& image = aurora_selector::Images[selected];
+        const auto& image = aurora_selector::Images[index];
         const auto result = daisy_development::StageReadOnlyImage(
             reader, image.path, staged, sizeof(staged), image.size);
 #ifdef SELECTOR_VIRTUAL_TRANSPORT
@@ -203,23 +207,42 @@ int main()
 #ifdef SELECTOR_EXPERIMENTAL_HANDOFF
         launch_button.Debounce();
 #endif
-        if(!MediaReady() && state != State::Error)
+        const bool media_ready = MediaReady();
+        if(!media_ready)
+        {
+            menu.Clear();
             state = State::Waiting;
-        if(MediaReady() && state == State::Waiting)
-            state = State::Selected;
+        }
+        if(media_ready && !media_was_ready)
+        {
+            // Discovery reuses the exact staging/hash/vector path. It overwrites
+            // staging and therefore always revokes any previous launch approval.
+            state = State::Loading;
+            SetStatus(0.4f, 0.2f, 0.f);
+            menu.Discover([](std::size_t index) {
+                return AuthenticateFile(static_cast<unsigned>(index));
+            }, [] { return MediaReady(); });
+            selected = static_cast<unsigned>(menu.Selected());
+            state = !MediaReady() ? State::Waiting
+                : menu.HasSelection() ? State::Selected : State::Empty;
+        }
+        media_was_ready = MediaReady();
         if(next_button.FallingEdge())
         {
-            selected ^= 1U;
-            state = MediaReady() ? State::Selected : State::Waiting;
+            menu.Next();
+            selected = static_cast<unsigned>(menu.Selected());
+            state = !MediaReady() ? State::Waiting
+                : menu.HasSelection() ? State::Selected : State::Empty;
         }
-        if(load_button.FallingEdge() && MediaReady())
+        if(load_button.FallingEdge() && MediaReady() && menu.HasSelection())
         {
             state = State::Loading;
             SetStatus(0.4f, 0.2f, 0.f);
-            state = LoadSelected() ? State::Verified : State::Error;
+            state = AuthenticateFile(selected) ? State::Verified : State::Error;
         }
 #ifdef SELECTOR_EXPERIMENTAL_HANDOFF
         if(launch_button.FallingEdge() && state == State::Verified
+           && MediaReady() && menu.HasSelection()
            && !load_button.FallingEdge() && !next_button.FallingEdge())
         {
 #ifdef SELECTOR_VIRTUAL_TRANSPORT
@@ -238,6 +261,7 @@ int main()
             switch(state)
             {
                 case State::Waiting: SetStatus(0.f, 0.f, 0.1f); break;
+                case State::Empty: SetStatus(0.4f, 0.f, 0.f); break;
                 case State::Selected: SetStatus(0.15f, 0.15f, 0.15f); break;
                 case State::Loading: SetStatus(0.4f, 0.2f, 0.f); break;
                 case State::Verified: SetStatus(0.f, 0.4f, 0.f); break;

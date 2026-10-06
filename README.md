@@ -54,12 +54,24 @@ extending the tests; changing a hash alone is insufficient.
 
 ## Controls
 
+At startup or drive reconnect, the selector reads and authenticates the two
+catalog filenames under `aurora/`. Only files with the exact supported size,
+SHA-256 and vectors enter the menu. Unknown filenames are ignored; missing or
+corrupt files are omitted. No selector rebuild is needed to add/remove these
+supported files. Keep their catalog filenames; renamed copies are not discovered.
+After changing the drive contents, safely eject and reconnect it to rescan.
+Discovery briefly shows amber and does not itself authorize launch.
+
 With the selector running:
 
-1. Reverse selects FDN (blue) or original Aurora (green).
+1. Reverse cycles through available entries: FDN (blue) or original Aurora
+   (green). With only one present it stays on that entry. No available image
+   leaves Reverse dark and Freeze red; no media leaves Freeze dim blue.
 2. Freeze reads and authenticates the selected file. Freeze status is dim blue
-   without media, white when selectable, amber while loading, green when
-   verified, or red on failure. Reverse changes invalidate the loaded selection.
+   without media, white when selectable, amber while scanning/loading, green when
+   verified, or red on failure. Reverse presses and media disconnect invalidate
+   the loaded selection. Freeze reloads and authenticates the file again, so
+   replacing a file after discovery cannot bypass the launch checks.
 3. Shift launches only a verified image; it rechecks the same staged bytes
    before irreversible teardown. It does not reopen an unchecked file.
 

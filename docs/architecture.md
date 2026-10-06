@@ -9,6 +9,18 @@ reads once into bounded internal SRAM, checks exact size, hash and vectors,
 then validates the same bytes again immediately before handoff. It never
 validates one file and launches a separately reopened copy.
 
+Supported-image discovery is a bounded walk of the compiled compatibility
+catalog, not general directory enumeration or arbitrary-BIN support. It reuses
+that same read-only staging and exact authentication path for each catalog
+filename at initial media readiness and after disconnect/reconnect. A tiny
+transport-independent menu helper remembers only authenticated availability
+and cycles over it. A disconnect during any probe clears the whole menu.
+Discovery overwrites staging but never marks it launchable: Freeze must reload
+and reauthenticate the selected file, then the handoff verifies those staged
+bytes again. Missing, corrupt, mismatched and unknown images cannot gain an
+entry or execution permission. Adding a new image still needs a reviewed
+catalog/memory contract, tests and a selector rebuild.
+
 FatFs objects are aligned inside the DMA-accessible arena. Staging starts at
 `0x30008000`, outside that arena, and ends at `0x30034680` for the supported
 image set (181888-byte capacity). File writes, unlink, persistent storage and

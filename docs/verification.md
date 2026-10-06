@@ -1,5 +1,22 @@
 # Verification status and first physical boundary
 
+## Supported-image discovery (2026-10-06)
+
+The current selector discovers only exact authenticated catalog files on media
+connection. Native synthetic tests execute the shared menu helper for empty,
+single and multiple entries, cycling past unavailable entries, preserving a
+still-valid selection, removal, and disconnect during either an intermediate
+or final probe. Existing staging tests cover read/size/close/disconnect failures;
+existing image authentication and launch checks remain in use.
+
+This discovery change has host-test and ARM-build coverage, not a new linked
+USB/virtual lifecycle or physical pass. The older virtual cycles described
+below apply to the preceding selector image, not automatically to this new
+BIN. TODO: execute this exact new build against real FAT media with zero, one,
+and both supported files, corrupt/renamed/unknown files, reconnect, failed load
+and launch after discovery; repeat reset and both switching directions before
+claiming end-to-end discovery/launch support.
+
 The development selector's DMA-clean SRAM trampoline has passed complete
 architectural write checks: ordered image-copy stores, all 8192 ascending zero
 stores and exactly one VTOR store; full zero readback, unchanged source, exact
