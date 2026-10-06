@@ -12,6 +12,25 @@ none establishes an unconditional normal-restore guarantee.
 
 ### Current frozen timing candidate
 
+Matching-source synthetic-media discovery/loading now has bounded linked
+execution evidence: both official files, seven cases each, two repetitions
+(28 executions). Normal Freeze verification passes; omitted release, corrupt,
+truncated, wrong-path, disconnected and absent media refuse approval and recover
+after reconnect/reload. Complete guest snapshot arrays, including timing fields,
+repeat exactly. These runs use a **different** virtual-transport BIN
+`4d48a3a8b394a724b5973e98f9d9c17144b23173d715cebdd0509a7c7210c2d6`,
+not the real-USB candidate below. It presents one file at a time and skips
+USB/FatFs initialization. Current-source full launch/reset/audio cycles,
+simultaneous two-file discovery and physical recovery remain unproven.
+
+The user reports selector-launched FDN currently responds normally, but its
+installed selector identity has not been authenticated. The VM-visible drive's
+selector is still the earlier `a8d4663c…190cef` build, with both exact official
+payloads present. Read-only inspection and safe unmount changed no drive bytes.
+The user reports crashes/resets when attaching ST-Link; its cause is unresolved.
+Keep it disconnected during the virtual-first tranche. This observation is not
+a pass for any exact-build physical campaign row or justification to flash.
+
 Source `63d27a5` is the current physical-campaign candidate. The clean isolated
 `make package` command (same pinned PATH below) sealed manifest/package
 `f8ea8d874781642b29e244cb7cce302657b80d2aeaab8cdd804b70804c45571e`.
