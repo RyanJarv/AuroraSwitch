@@ -1,5 +1,6 @@
 """Synthetic packaging controls, independent of firmware/hardware qualification."""
 import importlib.util
+import json
 from pathlib import Path
 import sys
 import tempfile
@@ -43,6 +44,13 @@ class PackageTests(unittest.TestCase):
         self.assertEqual(first, bundle.package())
         self.assertEqual({path.name for path in first.iterdir()},
                          {"AuroraSwitch.elf", "AuroraSwitch.bin", "AuroraSwitch.map", "manifest.json"})
+
+    def test_manifest_records_build_dependency_pins(self):
+        path = bundle.package()
+        manifest = json.loads((path / "manifest.json").read_text())
+        self.assertEqual(manifest["dependency_revisions"],
+                         {**{name: revision for name, (_, revision) in bundle.PINS.items()},
+                          "libDaisy": bundle.DAISY})
 
     def test_dirty_source_rejects(self):
         with mock.patch.object(bundle.subprocess, "check_output", return_value=" M firmware/selector.cpp"):

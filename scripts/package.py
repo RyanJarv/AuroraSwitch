@@ -83,9 +83,9 @@ def seal(build: Path, commit: str, tools: dict, tool_directory: Path) -> Path:
                 "DMA_ARENA_CLEANUP": 1, "VIRTUAL_TRANSPORT": 0}},
         "files": {name: {"bytes": len(data), "sha256": digest(data)}
                   for name, data in payload.items()},
-        "dependency_revisions": {"Aurora-SDK": "69b74a88b25e2fb4d722fc269bfd9395dd28edb5",
-            "libDaisy": "63fcabd38a20e14bc744499f0460e47925ea753e",
-            "mbedtls": "2fc8413bfcb51354c8e679141b17b3f1a5942561"}}
+        # Record the same pins used to authenticate and clone build inputs.
+        "dependency_revisions": {**{name: revision for name, (_, revision) in PINS.items()},
+            "libDaisy": DAISY}}
     manifest_bytes = (json.dumps(manifest, sort_keys=True, indent=2) + "\n").encode()
     if subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip() != commit:
         raise RuntimeError("source HEAD changed during packaging")
