@@ -1,29 +1,35 @@
 # Reliability campaign and alternative-image onboarding
 
-Status: repeated bounded official-image virtual cycles complete; physical
-campaign **NOT RUN**. Refocused on official-image reliability, 2026-10-06.
+Status: **paused at the Cloudscape control/audio gap**; physical campaign
+**NOT RUN**. See [the changed-build checkpoint](community_virtual_checkpoint.md).
 The hard gate in [recovery_release_gate.md](recovery_release_gate.md) remains
-OPEN. This plan does not admit additional firmware or waive that gate for beta.
+OPEN. Catalog admission and bounded virtual results do not waive that gate for beta.
 
 Preserved initial candidate: source `893ca5b`, manifest
 `1ab83ea9407e0e53521b2dd59702f4125c6d2bbfcaf842ac82ddbd8b6b60dda1`.
 See [verification.md](verification.md#frozen-initialization-error-candidate)
 for historical artifact hashes and bounded software results. The newer timing
 candidate below is already frozen; do not silently transfer older results to it.
-The current timing candidate is source `63d27a5`, manifest
+The earlier official-only timing candidate is source `63d27a5`, manifest
 `f8ea8d874781642b29e244cb7cce302657b80d2aeaab8cdd804b70804c45571e`.
-Use that sealed package for hardware tests; full identities and bounded results
-are in [verification.md](verification.md#current-frozen-timing-candidate).
+Its evidence remains historical. The changed real-USB candidate is source
+`25c393e`, manifest `e1daea377e4067f2efe96e1f426b088deb160a80e6173fe5eafa897acadd3908`.
+Use its exact package for the next physical screen; identities and limitations
+are in [the checkpoint](community_virtual_checkpoint.md).
 
 ## Active checklist
 
-- [x] Freeze and authenticate the exact official-image candidate; retain the
+- [x] Freeze and authenticate the changed catalog candidate; retain the
   sealed manifest/ELF/BIN/MAP. No rebuild for documentation-only changes.
 - [x] Verify fully loaded staged bytes, launch-time revalidation and exact
   copy/DMA cleanup. Keep staged-byte corruption rejection as a separate safeguard.
 - [x] Complete repeated virtual Aurora → FDN → Aurora and FDN → Aurora → FDN
   control/audio/reset cycles. Reuse these results and the small stale-approval
-  regression; do not start a 16-execution media-edge campaign.
+  regression; do not start a 16-execution media-edge campaign. These full cycles
+  remain bound to the earlier companion. The changed build adds repeated bounded
+  official/EchoGarden/Oscillator launch/control/audio checks, not new reset cycles.
+- [ ] Resolve scope at the Cloudscape control/audio gap: defer it or authorize
+  a bounded control-producer investigation. Do not add more infrastructure now.
 - [ ] Run the short exact-build physical campaign below, with ST-Link
   disconnected. Stop and ask for user participation before physical actions.
 - [ ] Demonstrate ordinary stock USB recovery and resolve the scoped release
@@ -68,8 +74,8 @@ attenuated. Debugger halts can perturb timing; label them separately.
 
 ## Short physical campaign — next user-assisted chunk
 
-Use the frozen package above (BIN
-`dca22d3a9275c84d4367d1ed53fb2befbd439b171a16cb0841236fa2b95c0382`)
+Use the changed frozen package above (BIN
+`e79ed1ec20a5187f8e770a9cd77d41041f03d9deef79920f53fd5bf43782d6e7`)
 and the exact official payloads in verification.md. No new build is needed for
 documentation or host-test changes. Authenticate the prepared files before
 installation; the currently reported responsive FDN is not exact-build evidence.
@@ -85,6 +91,11 @@ installation; the currently reported responsive FDN is not exact-build evidence.
    BIN as the sole root updater BIN. Verify normal controls/audio and relevant
    calibrated behavior against baseline. This is a required observation, not
    an assumption that copying a file guarantees recovery.
+
+A small EchoGarden/Oscillator launch and controls/audio screen may be included
+before restoring stock. Cloudscape is not a completed software-control pass;
+decide its scope before treating it as verified. No physical action is authorized
+by this document alone.
 
 All four steps are NOT RUN against this exact candidate. Stop for user
 participation before installation, moving media or pressing module controls.

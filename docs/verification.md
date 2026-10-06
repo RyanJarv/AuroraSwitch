@@ -1,5 +1,14 @@
 # Verification status and first physical boundary
 
+## Latest changed catalog — 2026-10-06
+
+The authoritative short status is [the community checkpoint](community_virtual_checkpoint.md):
+official images, EchoGarden and Oscillator pass bounded repeated virtual
+launch/control/audio checks; Cloudscape consumes raw control input but has no
+observed PCM effect. Work is paused at that unresolved boundary. The changed
+real-USB candidate has fresh source/build authentication but **no physical or
+stock-recovery pass**. Earlier evidence below remains tied to earlier binaries.
+
 ## Hard recovery release gate
 
 `recovery_release_gate.md` is the mandatory acceptance condition: all supported

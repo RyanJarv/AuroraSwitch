@@ -1,0 +1,875 @@
+{
+  "builds": {
+    "AuroraSwitch": {
+      "cleanup_store_count": 20,
+      "cpu_census": {
+        "fdn": {
+          "dma_stores": 8192,
+          "dma_zero_readback": true,
+          "record_sha256": "de19fdc067b60967b6ed80bb65f2f1745e16dbda9518dd566a35ecd05d50d3b6"
+        },
+        "spectral": {
+          "dma_stores": 8192,
+          "dma_zero_readback": true,
+          "record_sha256": "1b58adb9a0cb9817722dbdcf17eaad2423beb24b1bdf0c77af2151405fb7aaf6"
+        }
+      },
+      "manifest": {
+        "build_provenance": {
+          "configuration": {
+            "DMA_ARENA_CLEANUP": 1,
+            "EXPERIMENTAL_HANDOFF": 1,
+            "VIRTUAL_TRANSPORT": 0
+          },
+          "method": "fresh-isolated-tracked-checkouts",
+          "toolchain": {
+            "ar": {
+              "sha256": "c3589c574f2f445c559e8b5bca4a60720e3b0ad5bbb61f43748f45c8834c886b",
+              "version": "GNU ar (GNU Arm Embedded Toolchain 10-2020-q4-major) 2.35.1.20201028"
+            },
+            "as": {
+              "sha256": "0837b0540b896d51eae6b8b56037e002fb4871d9db731fe9718af1a3b49c8f38",
+              "version": "GNU assembler (GNU Arm Embedded Toolchain 10-2020-q4-major) 2.35.1.20201028"
+            },
+            "g++": {
+              "sha256": "cc7e69e575b9fcc1cf6848cc049656dfb44ea3e6b709273a34d3c1073dcae68e",
+              "version": "arm-none-eabi-g++ (GNU Arm Embedded Toolchain 10-2020-q4-major) 10.2.1 20201103 (release)"
+            },
+            "gcc": {
+              "sha256": "245274e4617d1933b102723513747fc1e25357b314925f9f7d16f3878e701bf1",
+              "version": "arm-none-eabi-gcc (GNU Arm Embedded Toolchain 10-2020-q4-major) 10.2.1 20201103 (release)"
+            },
+            "ld": {
+              "sha256": "f04328e96b7bf8a4e07736fe1988ee5bf99ade251a2a903b4868669d5a3435b2",
+              "version": "GNU ld (GNU Arm Embedded Toolchain 10-2020-q4-major) 2.35.1.20201028"
+            },
+            "objcopy": {
+              "sha256": "ca6ce717ba397b56406e3abf3175d88cea51f022e98b676884ff1a4870b82098",
+              "version": "GNU objcopy (GNU Arm Embedded Toolchain 10-2020-q4-major) 2.35.1.20201028"
+            }
+          }
+        },
+        "dependency_revisions": {
+          "Aurora-SDK": "69b74a88b25e2fb4d722fc269bfd9395dd28edb5",
+          "libDaisy": "63fcabd38a20e14bc744499f0460e47925ea753e",
+          "mbedtls": "2fc8413bfcb51354c8e679141b17b3f1a5942561"
+        },
+        "development_only": true,
+        "files": {
+          "AuroraSwitch.bin": {
+            "bytes": 95032,
+            "sha256": "e79ed1ec20a5187f8e770a9cd77d41041f03d9deef79920f53fd5bf43782d6e7"
+          },
+          "AuroraSwitch.elf": {
+            "bytes": 1928808,
+            "sha256": "f1413ba017fd853e4d510003c08981e1b53cd84efcb5f1ca2731406e2f18b050"
+          },
+          "AuroraSwitch.map": {
+            "bytes": 832428,
+            "sha256": "69a480b21538fbf8e31fea0f2aeee56c307c7180ed9ff0592eeaeb9ec647ad45"
+          }
+        },
+        "physical_qualified": false,
+        "schema": "aurora-switch-development-bundle-v1",
+        "source_commit": "25c393e794c5ef3002b261a6ee7a6aaa11f91809"
+      },
+      "manifest_sha256": "e1daea377e4067f2efe96e1f426b088deb160a80e6173fe5eafa897acadd3908",
+      "trampoline_sha256": "f37788c27c210f14e4ac4ee1b189bb446dd34b6c57883488c1e57b07aee87688"
+    },
+    "AuroraSwitchVirtual": {
+      "cleanup_store_count": null,
+      "cpu_census": {
+        "fdn": {
+          "dma_stores": 8192,
+          "dma_zero_readback": true,
+          "record_sha256": "de19fdc067b60967b6ed80bb65f2f1745e16dbda9518dd566a35ecd05d50d3b6"
+        },
+        "spectral": {
+          "dma_stores": 8192,
+          "dma_zero_readback": true,
+          "record_sha256": "1b58adb9a0cb9817722dbdcf17eaad2423beb24b1bdf0c77af2151405fb7aaf6"
+        }
+      },
+      "manifest": {
+        "build_provenance": {
+          "configuration": {
+            "DMA_ARENA_CLEANUP": 1,
+            "EXPERIMENTAL_HANDOFF": 1,
+            "VIRTUAL_TRANSPORT": 1
+          },
+          "method": "fresh-isolated-tracked-checkouts",
+          "toolchain": {
+            "ar": {
+              "sha256": "c3589c574f2f445c559e8b5bca4a60720e3b0ad5bbb61f43748f45c8834c886b",
+              "version": "GNU ar (GNU Arm Embedded Toolchain 10-2020-q4-major) 2.35.1.20201028"
+            },
+            "as": {
+              "sha256": "0837b0540b896d51eae6b8b56037e002fb4871d9db731fe9718af1a3b49c8f38",
+              "version": "GNU assembler (GNU Arm Embedded Toolchain 10-2020-q4-major) 2.35.1.20201028"
+            },
+            "g++": {
+              "sha256": "cc7e69e575b9fcc1cf6848cc049656dfb44ea3e6b709273a34d3c1073dcae68e",
+              "version": "arm-none-eabi-g++ (GNU Arm Embedded Toolchain 10-2020-q4-major) 10.2.1 20201103 (release)"
+            },
+            "gcc": {
+              "sha256": "245274e4617d1933b102723513747fc1e25357b314925f9f7d16f3878e701bf1",
+              "version": "arm-none-eabi-gcc (GNU Arm Embedded Toolchain 10-2020-q4-major) 10.2.1 20201103 (release)"
+            },
+            "ld": {
+              "sha256": "f04328e96b7bf8a4e07736fe1988ee5bf99ade251a2a903b4868669d5a3435b2",
+              "version": "GNU ld (GNU Arm Embedded Toolchain 10-2020-q4-major) 2.35.1.20201028"
+            },
+            "objcopy": {
+              "sha256": "ca6ce717ba397b56406e3abf3175d88cea51f022e98b676884ff1a4870b82098",
+              "version": "GNU objcopy (GNU Arm Embedded Toolchain 10-2020-q4-major) 2.35.1.20201028"
+            }
+          }
+        },
+        "dependency_revisions": {
+          "Aurora-SDK": "69b74a88b25e2fb4d722fc269bfd9395dd28edb5",
+          "libDaisy": "63fcabd38a20e14bc744499f0460e47925ea753e",
+          "mbedtls": "2fc8413bfcb51354c8e679141b17b3f1a5942561"
+        },
+        "development_only": true,
+        "files": {
+          "AuroraSwitchVirtual.bin": {
+            "bytes": 64832,
+            "sha256": "8d00bd882b45fd2777563c95f1d209dfd18a5a3d29710c6f60ad10244fe8eb06"
+          },
+          "AuroraSwitchVirtual.elf": {
+            "bytes": 1489796,
+            "sha256": "352fb4462384f9a1ca1fcb4e37e4cbbd48c22ad6561e2ea15452eb652b7a7fa5"
+          },
+          "AuroraSwitchVirtual.map": {
+            "bytes": 775856,
+            "sha256": "5cd43876c293700733c9f0867afcfce9c07ae8de503e749284ed8985bd85a15a"
+          }
+        },
+        "physical_qualified": false,
+        "schema": "aurora-switch-development-bundle-v1",
+        "source_commit": "25c393e794c5ef3002b261a6ee7a6aaa11f91809"
+      },
+      "manifest_sha256": "245ccecf580f14220165084fe1e5fd05411d840294c1d96a8269f7624027c289",
+      "trampoline_sha256": "f37788c27c210f14e4ac4ee1b189bb446dd34b6c57883488c1e57b07aee87688"
+    }
+  },
+  "control_audio_effect": {
+    "cloudscape": false,
+    "echo-garden": true,
+    "fdn": true,
+    "oscillator": true,
+    "spectral": true
+  },
+  "development_only": true,
+  "executions": 15,
+  "images": {
+    "cloudscape": [
+      {
+        "call_events": 255,
+        "callbacks": 85,
+        "changed_output_blocks": 3,
+        "first_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          0,
+          0,
+          0,
+          32768
+        ],
+        "last_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          0,
+          0,
+          0,
+          32768
+        ],
+        "pcm": {
+          "callback_proven": false,
+          "format": "stereo-interleaved-u24-in-u32le",
+          "frames": 8192,
+          "impulse_frame": 4096,
+          "limit": 8192,
+          "nonzero_words": 2,
+          "rate_hypothesis": 48000,
+          "sha256": "6e6d448e3c75c8286ebbaca7ccc3bb9979e11744cc5ef71b6236aca8e187c9cf",
+          "stimulus": "impulse-both"
+        }
+      },
+      {
+        "call_events": 255,
+        "callbacks": 85,
+        "changed_output_blocks": 3,
+        "first_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          0,
+          0,
+          0,
+          32768
+        ],
+        "last_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          49152,
+          0,
+          0,
+          32768
+        ],
+        "pcm": {
+          "callback_proven": false,
+          "format": "stereo-interleaved-u24-in-u32le",
+          "frames": 8192,
+          "impulse_frame": 4096,
+          "limit": 8192,
+          "nonzero_words": 2,
+          "rate_hypothesis": 48000,
+          "sha256": "6e6d448e3c75c8286ebbaca7ccc3bb9979e11744cc5ef71b6236aca8e187c9cf",
+          "stimulus": "impulse-both"
+        }
+      },
+      {
+        "call_events": 255,
+        "callbacks": 85,
+        "changed_output_blocks": 3,
+        "first_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          0,
+          0,
+          0,
+          32768
+        ],
+        "last_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          49152,
+          0,
+          0,
+          32768
+        ],
+        "pcm": {
+          "callback_proven": false,
+          "format": "stereo-interleaved-u24-in-u32le",
+          "frames": 8192,
+          "impulse_frame": 4096,
+          "limit": 8192,
+          "nonzero_words": 2,
+          "rate_hypothesis": 48000,
+          "sha256": "6e6d448e3c75c8286ebbaca7ccc3bb9979e11744cc5ef71b6236aca8e187c9cf",
+          "stimulus": "impulse-both"
+        }
+      }
+    ],
+    "echo-garden": [
+      {
+        "call_events": 255,
+        "callbacks": 85,
+        "changed_output_blocks": 12,
+        "first_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          0,
+          0,
+          0,
+          32768
+        ],
+        "last_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          0,
+          0,
+          0,
+          32768
+        ],
+        "pcm": {
+          "callback_proven": false,
+          "format": "stereo-interleaved-u24-in-u32le",
+          "frames": 8192,
+          "impulse_frame": 4096,
+          "limit": 8192,
+          "nonzero_words": 2,
+          "rate_hypothesis": 48000,
+          "sha256": "657ef018a1c62417df295d775c16bf02d0c47a40a7ec111a7f80e3f71fed8690",
+          "stimulus": "impulse-both"
+        }
+      },
+      {
+        "call_events": 255,
+        "callbacks": 85,
+        "changed_output_blocks": 17,
+        "first_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          0,
+          0,
+          0,
+          32768
+        ],
+        "last_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          49152,
+          0,
+          0,
+          32768
+        ],
+        "pcm": {
+          "callback_proven": false,
+          "format": "stereo-interleaved-u24-in-u32le",
+          "frames": 8192,
+          "impulse_frame": 4096,
+          "limit": 8192,
+          "nonzero_words": 118,
+          "rate_hypothesis": 48000,
+          "sha256": "057d20aa81af04d82c7a7e43d916ed671615aa076aaa80b567d62c049f3e47b3",
+          "stimulus": "impulse-both"
+        }
+      },
+      {
+        "call_events": 255,
+        "callbacks": 85,
+        "changed_output_blocks": 17,
+        "first_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          0,
+          0,
+          0,
+          32768
+        ],
+        "last_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          49152,
+          0,
+          0,
+          32768
+        ],
+        "pcm": {
+          "callback_proven": false,
+          "format": "stereo-interleaved-u24-in-u32le",
+          "frames": 8192,
+          "impulse_frame": 4096,
+          "limit": 8192,
+          "nonzero_words": 118,
+          "rate_hypothesis": 48000,
+          "sha256": "057d20aa81af04d82c7a7e43d916ed671615aa076aaa80b567d62c049f3e47b3",
+          "stimulus": "impulse-both"
+        }
+      }
+    ],
+    "fdn": [
+      {
+        "call_events": 1356,
+        "callbacks": 85,
+        "changed_output_blocks": 3,
+        "first_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          0,
+          0,
+          0,
+          32768
+        ],
+        "last_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          0,
+          0,
+          0,
+          32768
+        ],
+        "pcm": {
+          "callback_proven": false,
+          "format": "stereo-interleaved-u24-in-u32le",
+          "frames": 8192,
+          "impulse_frame": 4096,
+          "limit": 8192,
+          "nonzero_words": 2,
+          "rate_hypothesis": 48000,
+          "sha256": "6e6d448e3c75c8286ebbaca7ccc3bb9979e11744cc5ef71b6236aca8e187c9cf",
+          "stimulus": "impulse-both"
+        }
+      },
+      {
+        "call_events": 1356,
+        "callbacks": 85,
+        "changed_output_blocks": 24,
+        "first_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          0,
+          0,
+          0,
+          32768
+        ],
+        "last_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          49152,
+          0,
+          0,
+          32768
+        ],
+        "pcm": {
+          "callback_proven": false,
+          "format": "stereo-interleaved-u24-in-u32le",
+          "frames": 8192,
+          "impulse_frame": 4096,
+          "limit": 8192,
+          "nonzero_words": 1158,
+          "rate_hypothesis": 48000,
+          "sha256": "5572e3e504716a035f2be68a9b16103de862772155162079fa75b905b9e3a4fc",
+          "stimulus": "impulse-both"
+        }
+      },
+      {
+        "call_events": 1356,
+        "callbacks": 85,
+        "changed_output_blocks": 24,
+        "first_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          0,
+          0,
+          0,
+          32768
+        ],
+        "last_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          49152,
+          0,
+          0,
+          32768
+        ],
+        "pcm": {
+          "callback_proven": false,
+          "format": "stereo-interleaved-u24-in-u32le",
+          "frames": 8192,
+          "impulse_frame": 4096,
+          "limit": 8192,
+          "nonzero_words": 1158,
+          "rate_hypothesis": 48000,
+          "sha256": "5572e3e504716a035f2be68a9b16103de862772155162079fa75b905b9e3a4fc",
+          "stimulus": "impulse-both"
+        }
+      }
+    ],
+    "oscillator": [
+      {
+        "call_events": 255,
+        "callbacks": 85,
+        "changed_output_blocks": 85,
+        "first_adc": [
+          32768,
+          32768,
+          32768,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "last_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          0,
+          0,
+          0,
+          32768
+        ],
+        "pcm": {
+          "callback_proven": false,
+          "format": "stereo-interleaved-u24-in-u32le",
+          "frames": 8192,
+          "impulse_frame": 4096,
+          "limit": 8192,
+          "nonzero_words": 15998,
+          "rate_hypothesis": 48000,
+          "sha256": "831a86ec419e12e1296b87e3a61ea3e9bdd228035fe7cdcc48aff1def8846aec",
+          "stimulus": "impulse-both"
+        }
+      },
+      {
+        "call_events": 255,
+        "callbacks": 85,
+        "changed_output_blocks": 85,
+        "first_adc": [
+          32768,
+          32768,
+          32768,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "last_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          49152,
+          0,
+          0,
+          32768
+        ],
+        "pcm": {
+          "callback_proven": false,
+          "format": "stereo-interleaved-u24-in-u32le",
+          "frames": 8192,
+          "impulse_frame": 4096,
+          "limit": 8192,
+          "nonzero_words": 15998,
+          "rate_hypothesis": 48000,
+          "sha256": "1383e9aa6ff8749f98c3662da7d1863ec4303947fac63cbd6892b093a11ab4c8",
+          "stimulus": "impulse-both"
+        }
+      },
+      {
+        "call_events": 255,
+        "callbacks": 85,
+        "changed_output_blocks": 85,
+        "first_adc": [
+          32768,
+          32768,
+          32768,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "last_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          49152,
+          0,
+          0,
+          32768
+        ],
+        "pcm": {
+          "callback_proven": false,
+          "format": "stereo-interleaved-u24-in-u32le",
+          "frames": 8192,
+          "impulse_frame": 4096,
+          "limit": 8192,
+          "nonzero_words": 15998,
+          "rate_hypothesis": 48000,
+          "sha256": "1383e9aa6ff8749f98c3662da7d1863ec4303947fac63cbd6892b093a11ab4c8",
+          "stimulus": "impulse-both"
+        }
+      }
+    ],
+    "spectral": [
+      {
+        "call_events": 255,
+        "callbacks": 85,
+        "changed_output_blocks": 12,
+        "first_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          0,
+          0,
+          0,
+          32768
+        ],
+        "last_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          0,
+          0,
+          0,
+          32768
+        ],
+        "pcm": {
+          "callback_proven": false,
+          "format": "stereo-interleaved-u24-in-u32le",
+          "frames": 8192,
+          "impulse_frame": 7000,
+          "limit": 8192,
+          "nonzero_words": 2,
+          "rate_hypothesis": 48000,
+          "sha256": "87bd1b4f77a8e09e1ca3848f72da12f9a2e0a2a6f802b7957217bccea6d2ba97",
+          "stimulus": "impulse-both"
+        },
+        "timer": {
+          "arr": 64000,
+          "counter": 28612,
+          "limit": 64000,
+          "omitted": 0,
+          "overflows": 1310,
+          "transfers": 1
+        }
+      },
+      {
+        "call_events": 255,
+        "callbacks": 85,
+        "changed_output_blocks": 12,
+        "first_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          0,
+          0,
+          0,
+          32768
+        ],
+        "last_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          49152,
+          0,
+          0,
+          32768
+        ],
+        "pcm": {
+          "callback_proven": false,
+          "format": "stereo-interleaved-u24-in-u32le",
+          "frames": 8192,
+          "impulse_frame": 7000,
+          "limit": 8192,
+          "nonzero_words": 2,
+          "rate_hypothesis": 48000,
+          "sha256": "37e839f0ba793004825a80f6fe19bbd1925dbb6728ca82c004e9c1723a9b7a24",
+          "stimulus": "impulse-both"
+        },
+        "timer": {
+          "arr": 64000,
+          "counter": 28612,
+          "limit": 64000,
+          "omitted": 0,
+          "overflows": 1310,
+          "transfers": 1
+        }
+      },
+      {
+        "call_events": 255,
+        "callbacks": 85,
+        "changed_output_blocks": 12,
+        "first_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          0,
+          0,
+          0,
+          32768
+        ],
+        "last_adc": [
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          32768,
+          0,
+          32768,
+          49152,
+          0,
+          0,
+          32768
+        ],
+        "pcm": {
+          "callback_proven": false,
+          "format": "stereo-interleaved-u24-in-u32le",
+          "frames": 8192,
+          "impulse_frame": 7000,
+          "limit": 8192,
+          "nonzero_words": 2,
+          "rate_hypothesis": 48000,
+          "sha256": "37e839f0ba793004825a80f6fe19bbd1925dbb6728ca82c004e9c1723a9b7a24",
+          "stimulus": "impulse-both"
+        },
+        "timer": {
+          "arr": 64000,
+          "counter": 28612,
+          "limit": 64000,
+          "omitted": 0,
+          "overflows": 1310,
+          "transfers": 1
+        }
+      }
+    ]
+  },
+  "nonclaims": [
+    "real USB enumeration/MSC/FatFs execution",
+    "physical handoff, recovery or calibrated behavior",
+    "all controls or sound quality",
+    "new catalog full warm-reset switching cycles",
+    "whole-state or normal-boot equivalence",
+    "third-party firmware persistence safety"
+  ],
+  "observation_archive_sha256": "ee9cbf2d3963c5d7202a98d00484d3445e8427b5763cd05cd6496749448610fd",
+  "physical_tested": false,
+  "schema": "aurora-switch-community-virtual-summary-v1",
+  "source_commit": "25c393e794c5ef3002b261a6ee7a6aaa11f91809",
+  "status": "blocked-cloudscape-control-audio",
+  "stock_recovery_proven": false
+}

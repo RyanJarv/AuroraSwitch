@@ -6,9 +6,11 @@ from SRAM without replacing the recovery bootloader or writing the selected
 image into flash. A reset returns to the installed selector through the
 existing bootloader.
 
-**Development status:** bounded virtual switching and CPU safety checks pass.
-The current cleanup build still requires real-module USB, launch, audio, panel
-and recovery testing. Do not treat those software checks as physical approval.
+**Development status:** official Aurora, FDN, EchoGarden and The Oscillator Is
+a Lie pass bounded virtual launch/control/audio checks. Cloudscape launches,
+but a control-to-audio response is still unproven. All images in the new catalog
+still need physical testing and ordinary stock recovery remains unproven.
+See [the current checkpoint](docs/community_virtual_checkpoint.md).
 
 AuroraSwitch is beta software with limited testing. Switching restarts the
 selected firmware. Keep the original Aurora firmware available for restoration
@@ -43,7 +45,7 @@ Existing local objects/archives are never packaging inputs. Full ELF/MAP
 reproducibility across temporary paths is not yet guaranteed; reuse requires
 identical artifact and manifest bytes, not merely the same source commit.
 
-## Supported images
+## Image catalog (experimental)
 
 Supply your own legally obtained files. No vendor firmware or manuals are
 included. Exact accepted hashes, lengths, vectors and paths are listed in
@@ -55,9 +57,15 @@ included. Exact accepted hashes, lengths, vectors and paths are listed in
 - CloudscapeX `AuroraCloudscapeX.bin` (98968 bytes).
 - The Oscillator Is a Lie `TheOscillatorIsALie_v0_0_2.bin` (103604 bytes).
 
+Catalog membership identifies exact accepted bytes; it is not a qualification
+claim. Cloudscape's outstanding control/audio check is documented above.
+
 ```sh
 make verify-images FIRMWARE_DIR=/path/to/your/files
 ```
+
+This command checks the complete catalog. To prepare only the images you own,
+use the subset-friendly helper below.
 
 Files must match the exact supported bytes, not just their filenames. Other
 Aurora builds, QSPI-linked images and oversized images are not supported.
