@@ -1,8 +1,14 @@
 # Reliability campaign and alternative-image onboarding
 
-Status: software preparation in progress; physical campaign **NOT RUN**.
+Status: initial software preparation complete; physical campaign **NOT RUN**.
 The hard gate in [recovery_release_gate.md](recovery_release_gate.md) remains
 OPEN. This plan does not admit additional firmware or waive that gate for beta.
+
+Frozen initial candidate: source `893ca5b`, manifest
+`1ab83ea9407e0e53521b2dd59702f4125c6d2bbfcaf842ac82ddbd8b6b60dda1`.
+See [verification.md](verification.md#frozen-initialization-error-candidate)
+for full artifact hashes and bounded software results. Use this package for
+the initial campaign; do not replace it with newer documentation-head outputs.
 
 ## Scope and order
 

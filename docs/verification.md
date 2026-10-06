@@ -26,6 +26,40 @@ rechecked locally against the intake identities on 2026-10-06. Neither was
 executed or admitted. No hardware or drive access occurred for this preparation.
 The hard recovery gate remains OPEN.
 
+### Frozen initialization-error candidate
+
+Source `893ca5b4b8625b51d97177f2314be339a93a7bfa` was packaged with:
+
+```sh
+PATH=/home/me/opt/arm/gcc-arm-none-eabi-10-2020-q4-major/bin:/usr/bin:/bin make package
+make verify-images FIRMWARE_DIR=/home/me
+```
+
+Frozen manifest/package identity:
+`1ab83ea9407e0e53521b2dd59702f4125c6d2bbfcaf842ac82ddbd8b6b60dda1`.
+
+| Artifact | SHA-256 |
+| --- | --- |
+| BIN (94472 bytes) | `6a14102e8d51169f4a9adda866cedf5313b528ce53568633d6dcdc32694720e7` |
+| ELF | `0381917bb8b551855c7ae4e7cf2ff34b79b697d517bf2416c7e0e864fd377357` |
+| MAP | `80b6a7d94838c6bbc496829b35e51c964d48d3d52b6a655ad31ca63336904eb6` |
+
+The isolated application/library rebuild passed; both supplied official images
+passed the firmware's host authentication path. Reused development CPU probes
+checked this sealed ELF/BIN pair (not just the incremental build): the linked
+20-store cleanup census passes with inherited MPU unchanged, and both official
+images pass two trampoline executions each with byte-identical frozen complete
+copy/DMA-clear store records, zero readback and unchanged source. Package bytes
+were independently hashed before and after execution and remained unchanged.
+The linked trampoline remains 104 bytes, SHA-256
+`f37788c27c210f14e4ac4ee1b189bb446dd34b6c57883488c1e57b07aee87688`.
+
+These are bounded synthetic CPU/register-storage checks. They do not execute
+USB discovery, the entire teardown, target reset handlers, full switching cycles,
+initialization failures on hardware or physical recovery. A portable standalone
+recipe for the optional CPU probes remains TODO in `boot_equivalence_plan.md`.
+Do not substitute this pass for campaign rows B1–R3 or the recovery gate.
+
 The source-guided loader walkthrough and risks are in `how_it_works.md`;
 the proposed normal-boot/selector comparison is in `boot_equivalence_plan.md`.
 The selector's no-flash-write statement excludes installation and launched
