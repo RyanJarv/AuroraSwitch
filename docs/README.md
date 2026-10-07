@@ -1,6 +1,8 @@
 # Documentation
 
 - [User guide](user_guide.md): build, USB layout, and firmware selection.
+- [Firmware control reference](firmware_reference.md): selector colors, knobs,
+  buttons, gates, modes, and version differences in one place.
 - [Firmware downloads](alternative_firmware.md): get supported files.
 - [How it works](how_it_works.md): the loader and its design choices.
 
