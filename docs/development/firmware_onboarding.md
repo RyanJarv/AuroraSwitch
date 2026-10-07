@@ -67,6 +67,15 @@ Next: bind the released BIN to its actual persistence call sites and check
 whether existing emulation can observe the erase/write behavior. Stop if that
 requires substantial new flash infrastructure. No persistence pass is claimed.
 
+Cross-image concern: FataMorgana also uses offset `8192`, but its
+`PistonSettings` layout differs from Tempest's `DistortionSettings`. The pinned
+`PersistentStorage::Init` recognizes only the common FACTORY/USER marker, not
+an image-specific schema. A prior record can therefore be interpreted as the
+other firmware's settings; saving replaces the shared sector. This is a
+source-level finding, not an observed hardware failure. Both images must not
+be described as having isolated retained settings without resolving or testing
+that interaction. No selector flash write or automatic clearing is added.
+
 ## FataMorgana — blocked
 
 Reviewed source: `jfriess/Aurora-Firmwares` commit
@@ -95,3 +104,28 @@ Intake commands: `gh api repos/<author>/<repo>/releases`,
 --dir .deps/older-release-intake`, `sha256sum`, and `od -An -tx4 -N8`.
 `make check` passed all 35 host tests and Python compilation; `git diff --check`
 passed. No emulator campaign was run for this documentation-only checkpoint.
+
+## Development implementation checkpoint
+
+Branch `codex/older-firmware-onboarding`, source
+`c38592934a96f1dd09c9282a2df6497feb3a5ff4`, stages the three older entries.
+`make check`: 35 tests plus Python compilation passed. Preparing all three real
+assets through `prepare_payloads.py` passed the compiled firmware predicate,
+including independent staging and post-load corruption rejection.
+Hosted host-test run `37564301702` passed for that commit.
+
+Fresh isolated `make package-virtual`, using GNU Arm 10-2020-q4-major, produced
+manifest `a35ff9b3545c2d3203087e3f18f2235152abff24769b8e2bfd23d7898d57d3bd`:
+
+| Artifact | Bytes | SHA-256 |
+| --- | ---: | --- |
+| Virtual BIN | 65484 | `e262bdcdd81d753465b64337e3391bd4ccc963423d0e3445989dbaff59ce77ce` |
+| Virtual ELF | 1489896 | `30d462461b57f15d373e5b50828cc13202b62024c28d53caec77b5e3301ff17e` |
+| Virtual MAP | 775809 | `1230a4080967d60ebe9a3f5fb2e5c3d55456a1ca253f7545ddb86ddd0bef05fc` |
+
+Never install this synthetic-media build on hardware. Packaging proves build
+identity, not runtime compatibility. The existing virtual campaign pins the
+previous seven-image ELF/BIN/MAP, catalog count, data symbols, reset PCs, and
+callback observations. New selector and per-version observation bindings are
+required; do not overwrite those historical pins or substitute current-version
+callback addresses. No new linked virtual pass is claimed yet.
