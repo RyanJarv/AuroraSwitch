@@ -1,7 +1,8 @@
-"""Check the static directory, page freshness and links without network access."""
+"""Check SPA data, HTML fallbacks, pinned assets and links without a browser."""
 
 import hashlib
 from html.parser import HTMLParser
+import json
 from pathlib import Path
 import re
 import unittest
@@ -26,6 +27,7 @@ class ReferenceParser(HTMLParser):
         self.current = []
         self.h1_count = 0
         self.nav_labels = []
+        self.scripts = []
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
@@ -40,6 +42,9 @@ class ReferenceParser(HTMLParser):
                 self.current.append(attrs["href"])
         if tag == "link" and attrs.get("rel") == "stylesheet":
             self.links.append(attrs["href"])
+        if tag == "script":
+            self.links.append(attrs["src"])
+            self.scripts.append(attrs)
         if tag == "meta":
             self.metadata[attrs.get("name")] = attrs.get("content")
         if tag == "h1":
@@ -125,7 +130,7 @@ class ReferenceSiteTests(unittest.TestCase):
                     if entry.availability == "Development":
                         self.assertIn(f"{entry.name} · {entry.color} · development", page)
 
-    def test_pages_are_plain_html_with_accessible_navigation(self):
+    def test_html_fallbacks_have_accessible_navigation_and_local_spa(self):
         for filename, parser in self.pages.items():
             page = (SITE / filename).read_text()
             with self.subTest(page=filename):
@@ -133,11 +138,43 @@ class ReferenceSiteTests(unittest.TestCase):
                 self.assertIn("main", parser.ids)
                 self.assertIn("Firmware directory", parser.nav_labels)
                 self.assertIn("Mobile firmware directory", parser.nav_labels)
-                self.assertNotRegex(page, r"<script\b")
+                self.assertEqual(len(parser.scripts), 1)
+                script = parser.scripts[0]
+                self.assertEqual(script["type"], "module")
+                self.assertEqual(urlsplit(script["src"]).path, "app.js")
+                self.assertEqual(urlsplit(script["data-reference"]).path, "reference.json")
+                reference = parser.metadata["reference-sha256"]
+                renderer = parser.metadata["renderer-sha256"]
+                self.assertEqual(urlsplit(script["data-reference"]).query, f"v={reference}-{renderer}")
+                digest = hashlib.sha256((SITE / "app.js").read_bytes()).hexdigest()
+                self.assertEqual(urlsplit(script["src"]).query, f"v={digest}")
                 self.assertIn('name="viewport"', page)
                 self.assertIn('lang="en"', page)
                 self.assertIn('class="mobile-menu"', page)
                 self.assertIn('class="skip-link"', page)
+
+    def test_spa_data_matches_every_fallback(self):
+        data = json.loads((SITE / "reference.json").read_text())
+        self.assertEqual(set(data["pages"]), set(self.pages))
+        for filename, parser in self.pages.items():
+            page = (SITE / filename).read_text()
+            with self.subTest(page=filename):
+                for field in ("reference", "renderer"):
+                    self.assertEqual(data[f"{field}_sha256"], parser.metadata[f"{field}-sha256"])
+                body = re.search(r'<main id="main">\n(.*?)\n</main>', page, re.S)[1]
+                self.assertEqual(data["pages"][filename]["body"], body)
+                self.assertIn("AuroraSwitch", data["pages"][filename]["title"])
+        menu = ReferenceParser()
+        menu.feed(data["menu"])
+        self.assertEqual(set(menu.links), set(data["pages"]))
+
+    def test_preact_files_match_pinned_upstream_bytes(self):
+        for file, digest in {
+            "preact.module.js": "a1cefabf06ec626adcb92731537e1e04fd09a7908e22551bab50540106dc950d",
+            "LICENSE": "1fe6958409c8c257a70c587a18b6f7f412b179b456630790d30b2ec9a8e4b7d4",
+        }.items():
+            with self.subTest(file=file):
+                self.assertEqual(hashlib.sha256((SITE / "vendor" / file).read_bytes()).hexdigest(), digest)
 
     def test_control_descriptions_and_caveats_are_preserved(self):
         self.assertIn("Mix is not dry/wet.", (SITE / "tempest-100.html").read_text())

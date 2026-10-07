@@ -1,4 +1,4 @@
-/* Static reference layout: a color directory and one control page per firmware. */
+/* Shared SPA / no-JS layout: a color directory and firmware controls. */
 :root {
     color-scheme: light dark;
     --bg: #f7f8fa;
