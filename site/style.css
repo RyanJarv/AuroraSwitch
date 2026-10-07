@@ -42,11 +42,11 @@ a:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outli
 .site-header nav { display: flex; gap: 1.2rem; white-space: nowrap; }
 .brand { color: var(--fg); font-weight: 750; text-decoration: none; line-height: 1.3; }
 .brand span { display: block; color: var(--muted); font-size: .8rem; font-weight: 400; }
-.layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 2.5rem; max-width: 1300px; margin: auto; padding: 1.6rem 1rem; }
+.layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 2.5rem; max-width: 1300px; margin: auto; padding: 1.6rem 1rem; }
 .sidebar { position: sticky; top: 6rem; align-self: start; max-height: calc(100dvh - 7rem); overflow-y: auto; padding-right: .5rem; }
 .sidebar h2, .mobile-menu h2 { font-size: .75rem; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; margin: 1.5rem 0 .5rem; border: 0; padding: 0; }
 .sidebar ul, .mobile-menu ul { list-style: none; padding: 0; margin: 0 0 1rem; }
-.sidebar li a, .mobile-menu li a { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .5rem; padding: .45rem .65rem; border-radius: .2rem; text-decoration: none; color: var(--fg); }
+.sidebar li a, .mobile-menu li a { display: grid; grid-template-columns: minmax(0, 1fr) 5rem; align-items: baseline; gap: .5rem; padding: .45rem .65rem; border-radius: .2rem; text-decoration: none; color: var(--fg); }
 .sidebar .color-label, .mobile-menu .color-label { color: var(--muted); font-size: .75rem; gap: .35rem; }
 .sidebar a:hover, .mobile-menu li a:hover, a[aria-current="page"] { background: var(--selected); }
 .index-link { display: block; font-size: .9rem; margin: .5rem 0; }
