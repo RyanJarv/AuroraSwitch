@@ -76,11 +76,10 @@ Module installation and physical results remain unconfirmed.
 
 The [next firmware batch](firmware_onboarding.md) tracks older versions and
 Tempest's bounded persistence/control/audio review and Fata's experimental RAM
-build. Its upstream QSPI configuration remains unsupported. Dirt Verb is now
-an opt-in development experiment; see [QSPI status](qspi_feasibility.md).
-It is not part of the default release or the physical results above.
-Oversized HP-filter Aurora remains excluded. Onboarding must not delay
-official recovery testing.
+build. The opt-in QSPI branch now also admits exact Dirt Verb, FataMorgana QSPI,
+and HP-filter entries; see the [additional-image checkpoint](qspi_additional_images.md).
+Their virtual checks do not extend the physical results above, and they remain
+excluded from default releases. Onboarding must not delay official recovery testing.
 
 ## Short physical campaign
 

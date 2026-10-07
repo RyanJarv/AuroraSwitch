@@ -33,13 +33,15 @@ Do not create a new emulator for a difficult image; defer it.
 
 ## Working notes
 
-- [Next firmware batch](firmware_onboarding.md): older versions, Tempest, and
-  the FataMorgana blocker. Intake is not supported-image evidence.
+- [Firmware onboarding record](firmware_onboarding.md): older versions, Tempest,
+  and the FataMorgana RAM experiment. Intake is not supported-image evidence.
 - [Architecture](architecture.md): source map, memory, and handoff.
 - [Builds and releases](releases.md): tag workflow and build-only CI.
 - [Verification status](verification.md) and [active checklist](reliability_campaign.md#active-checklist).
 - [Recovery checks](recovery_release_gate.md) and [optional timing diagnostics](load_timing.md).
-- [QSPI feasibility](qspi_feasibility.md): Dirt Verb investigation; no implemented support.
+- [QSPI feasibility](qspi_feasibility.md): updater boundaries and Dirt Verb implementation.
+- [Additional-image checkpoint](qspi_additional_images.md): current opt-in
+  FataMorgana QSPI and HP-filter software checks; physical testing remains open.
 - [Current checkpoint](checkpoints/public_releases_20261006.md) and [machine-readable evidence](evidence/public_releases_20261006.json).
 
 Historical records stay in `history/`. Do not transfer their results to changed
