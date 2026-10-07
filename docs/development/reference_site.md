@@ -30,6 +30,11 @@ Commit source and generated files together.
 Offline tests check fingerprints, links, versions, colors, pinned Preact bytes
 and equality between SPA content and fallbacks. The Pages workflow refuses stale pages.
 
+`site/aurora-panel.svg` is an original simplified drawing of the manual's panel
+layout, not copied artwork. Knobs 1–6 and buttons 7–9 match table labels added by
+the renderer; functions still come only from Markdown. Secondary LED/settings
+details and source caveats live in one collapsed section per firmware.
+
 For changes to navigation, also run the real-browser smoke test against an
 installed Firefox and a running `geckodriver` (no Python packages required):
 
@@ -39,7 +44,7 @@ geckodriver --port 4444
 python3 scripts/check_reference_browser.py --webdriver http://127.0.0.1:4444
 ```
 
-It checks no-reload switching, Back/Forward, deep links, mobile layouts and
+It checks no-reload switching, the panel drawing, expandable details, Back/Forward, mobile layouts and
 ordinary page navigation with JavaScript disabled or SPA data missing/stale.
 
 Repository **Settings → Pages → Source** must be **GitHub Actions**.

@@ -4,12 +4,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="reference-sha256" content="c3b9da1d4832c8d19c8a3a225f14a803bbd876cef56a5c8b82698e24cfbe72e8">
-<meta name="renderer-sha256" content="19f3522673b0809e8280fbe99c1c566d42ad7ce8f89c5a93236799360f830d20">
+<meta name="reference-sha256" content="b1e6cf7183049a108df1080d83e3c2c549bc1b38131954401f9540d1ef311047">
+<meta name="renderer-sha256" content="6d827332e6d0ec85e1e6559735dde84ca40d9e9db9596096e5f734dead7b38e4">
 <meta name="description" content="AuroraSwitch firmware colors, knobs, buttons, gates and modes.">
 <title>Tempest 1.0.0 · AuroraSwitch</title>
 <link rel="stylesheet" href="style.css">
-<script type="module" src="app.js?v=30c48a50c9d8163084c1cb584d39e8010fb652c33c126a0e7e657ab7acd070a0" data-reference="reference.json?v=c3b9da1d4832c8d19c8a3a225f14a803bbd876cef56a5c8b82698e24cfbe72e8-19f3522673b0809e8280fbe99c1c566d42ad7ce8f89c5a93236799360f830d20"></script>
+<script type="module" src="app.js?v=30c48a50c9d8163084c1cb584d39e8010fb652c33c126a0e7e657ab7acd070a0" data-reference="reference.json?v=b1e6cf7183049a108df1080d83e3c2c549bc1b38131954401f9540d1ef311047-6d827332e6d0ec85e1e6559735dde84ca40d9e9db9596096e5f734dead7b38e4"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to controls</a>
@@ -54,13 +54,11 @@
 </ul>
 <a class="index-link" href="outside-the-selector-catalog.html">Other firmware / limitations</a></nav></details>
 <main id="main">
-<a class="back-link" href="index.html">← All firmware &amp; colors</a><h1 id="tempest-100--pale-red">Tempest 1.0.0</h1><div class="version-labels" aria-label="Versions and selector colors"><span class="version-label"><span class="swatch" style="background:#ec9292" aria-hidden="true"></span>Tempest 1.0.0 · Pale red · development</span></div><details class="conventions"><summary>How to read the controls</summary>
-<p>Names refer to the original Aurora panel. <strong>Shift + control</strong> means hold Shift
-while using that control. CCW / CW mean counterclockwise / clockwise. Selector colors are
-not the firmware’s running LED colors.</p></details><nav class="page-links" aria-label="On this page"><a href="#knobs-and-cv">Knobs and CV</a><a href="#buttons-and-gates">Buttons and gates</a><a href="#algorithm-banks">Algorithm banks</a></nav>
-<p>Stereo distortion: low frequencies bypass the distortion through a crossover;<br>
-the high band is driven, filtered and recombined. <strong>Mix is not dry/wet.</strong></p>
-<h2 id="knobs-and-cv">Knobs and CV</h2>
+<a class="back-link" href="index.html">← All firmware &amp; colors</a><h1 id="tempest-100--pale-red">Tempest 1.0.0</h1><div class="version-labels" aria-label="Versions and selector colors"><span class="version-label"><span class="swatch" style="background:#ec9292" aria-hidden="true"></span>Tempest 1.0.0 · Pale red · development</span></div><p class="control-key">Shift + control: hold Shift. CCW / CW: counterclockwise / clockwise.</p><nav class="page-links" aria-label="On this page"><a href="#knobs-and-cv">Knobs and CV</a><a href="#buttons-and-gates">Buttons and gates</a></nav>
+<p>Stereo distortion with a clean low-frequency bypass. <strong>Mix is not dry/wet.</strong></p>
+<div class="control-layout"><figure class="panel-map">
+<img src="aurora-panel.svg" width="280" height="580" alt="Aurora panel: knobs 1 Warp, 2 Time, 3 Blur, 4 Reflect, 5 Mix, 6 Atmosphere; buttons 7 Reverse, 8 Freeze, 9 Shift.">
+<figcaption>Panel numbers match the tables.</figcaption></figure><div class="control-tables"><h2 id="knobs-and-cv">Knobs and CV</h2>
 <markdown-accessiblity-table><table role="table">
 <thead>
 <tr>
@@ -69,45 +67,67 @@ the high band is driven, filtered and recombined. <strong>Mix is not dry/wet.</s
 </tr>
 </thead>
 <tbody>
-<tr>
-<td>Warp</td>
+<tr><td><span class="control-number">1</span> Warp</td>
 <td>Drive, 1–100×</td>
 </tr>
-<tr>
-<td>Time</td>
+<tr><td><span class="control-number">2</span> Time</td>
 <td>Pre-distortion high-pass, 20 Hz–2 kHz</td>
 </tr>
-<tr>
-<td>Blur</td>
+<tr><td><span class="control-number">3</span> Blur</td>
 <td>Algorithm variation</td>
 </tr>
-<tr>
-<td>Reflect</td>
+<tr><td><span class="control-number">4</span> Reflect</td>
 <td>Bipolar bias; center deadzone; reduced range in Standard mode</td>
 </tr>
-<tr>
-<td>Mix</td>
+<tr><td><span class="control-number">5</span> Mix</td>
 <td>Crossover, 20–500 Hz</td>
 </tr>
-<tr>
-<td>Atmosphere</td>
+<tr><td><span class="control-number">6</span> Atmosphere</td>
 <td>Post-distortion low-pass, 20 Hz–20 kHz</td>
 </tr>
-<tr>
-<td>Shift + Mix</td>
+<tr><td><span class="control-number">9</span><span class="control-number">5</span> Shift + Mix</td>
 <td>Output trim, 0–2×</td>
 </tr>
 </tbody>
 </table></markdown-accessiblity-table>
 <h2 id="buttons-and-gates">Buttons and gates</h2>
-<p>Reverse advances algorithms; Freeze goes back. Shift + Reverse advances banks;<br>
-Shift + Freeze cycles Standard (green), tube (orange), odd/inharmonic (purple).<br>
-Hold Freeze <strong>5 seconds without Shift</strong> to toggle cabinet simulation; three<br>
-white blinks confirm. Freeze gate holds an input sample; Reverse gate adds<br>
-octave-up rectification. CVs add to knobs (±5 V).</p>
-<p>Reverse shows bank color; Freeze shows mode color. Arc LEDs show algorithm and<br>
-distortion level. Settings autosave after two seconds without changes.</p>
-<h2 id="algorithm-banks">Algorithm banks</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>Control</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr><td><span class="control-number">7</span> Reverse</td>
+<td>Next algorithm</td>
+</tr>
+<tr><td><span class="control-number">8</span> Freeze</td>
+<td>Previous algorithm</td>
+</tr>
+<tr><td><span class="control-number">9</span><span class="control-number">7</span> Shift + Reverse</td>
+<td>Next bank</td>
+</tr>
+<tr><td><span class="control-number">9</span><span class="control-number">8</span> Shift + Freeze</td>
+<td>Standard green → tube orange → odd/inharmonic purple</td>
+</tr>
+<tr><td><span class="control-number">8</span><span class="control-number">9</span> Freeze, hold 5 seconds without Shift</td>
+<td>Toggle cabinet simulation; three white blinks</td>
+</tr>
+<tr><td><span class="control-number">8</span> Freeze gate</td>
+<td>Hold an input sample</td>
+</tr>
+<tr><td><span class="control-number">7</span> Reverse gate</td>
+<td>Octave-up rectification</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<details class="reference-details" id="details-and-sources"><summary>Details &amp; sources</summary>
+<ul>
+<li>CVs add to knobs (±5 V).</li>
+<li>Reverse LED: bank; Freeze: mode; arc: algorithm/distortion level.</li>
+<li>Settings autosave after two seconds without changes.</li>
+</ul>
 <markdown-accessiblity-table><table role="table">
 <thead>
 <tr>
@@ -144,10 +164,9 @@ distortion level. Settings autosave after two seconds without changes.</p>
 </table></markdown-accessiblity-table>
 <p>Sources: <a href="https://github.com/jfriess/Aurora-Firmwares/blob/d5504d76370c370fdb40adcf755d8a4b9c07ee6b/Tempest/README.md">version-pinned controls</a><br>
 and <a href="https://github.com/jfriess/Aurora-Firmwares/blob/d5504d76370c370fdb40adcf755d8a4b9c07ee6b/Tempest/docs/algorithms.md">algorithm details</a>.</p>
-<p class="back-link"><a href="index.html">← Choose another firmware</a></p>
+</details></div></div><p class="back-link"><a href="index.html">← Choose another firmware</a></p>
 </main>
-<footer>Selector colors identify firmware before launch. Running LED colors may differ.
-<a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/firmware_reference.md">Markdown reference</a></footer>
+<footer><a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/firmware_reference.md">Markdown reference</a></footer>
 </div>
 </div>
 </body>

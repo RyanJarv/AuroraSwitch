@@ -101,7 +101,13 @@ def check(args, base):
         browser.click('.firmware-card[href="fdn-122.html"]')
         browser.wait("location.pathname.endsWith('/fdn-122.html') && document.activeElement.tagName === 'H1'")
         assert browser.execute("return window.referenceTestMarker && document.title.startsWith('FDN')")
-        assert SiteHandler.counts == before, "SPA navigation fetched another document or asset"
+        browser.wait("document.querySelector('.panel-map img')?.complete && document.querySelector('.panel-map img').naturalWidth > 0")
+        # The shared drawing may load on the first control view; no page/data reload.
+        assert set((SiteHandler.counts - before)) <= {"/aurora-panel.svg"}, "SPA navigation reloaded a document or data"
+        browser.click('.reference-details summary')
+        assert browser.execute("return document.querySelector('.reference-details').open")
+        browser.click('.reference-details summary')
+        assert browser.execute("return !document.querySelector('.reference-details').open")
         browser.request("POST", "/back", {})
         browser.wait("document.title.startsWith('Firmware reference') && scrollY === 150")
         browser.request("POST", "/forward", {})
@@ -120,7 +126,7 @@ def check(args, base):
             browser.click(f'.sidebar a[href="{filename}"]')
             browser.wait(f"document.title === {json.dumps(page['title'])}")
             assert browser.execute("return window.referenceTestMarker")
-        assert SiteHandler.counts == before, "A firmware view caused a document reload"
+        assert set((SiteHandler.counts - before)) <= {"/aurora-panel.svg"}, "A firmware view caused a document/data reload"
         # Direct URLs still render their own fallback, then enhance the deep link.
         browser.open(base + "tempest-100.html#buttons-and-gates")
         browser.wait("document.documentElement.dataset.navigation === 'spa'")
@@ -139,6 +145,7 @@ def check(args, base):
             browser.wait("document.querySelector('iframe')?.contentDocument?.documentElement?.dataset.navigation === 'spa'")
             assert browser.execute("""const frame = document.querySelector('iframe');
                 return frame.contentDocument.documentElement.scrollWidth <= frame.contentWindow.innerWidth;"""), width
+            browser.wait("document.querySelector('iframe')?.contentDocument?.querySelector('.panel-map img')?.naturalWidth > 0")
         browser.execute("""const frame = document.querySelector('iframe'); frame.style.width = '390px';
             frame.contentDocument.querySelector('.mobile-menu summary').click();""")
         browser.wait("document.querySelector('iframe').contentDocument.querySelector('.mobile-menu').open")
@@ -166,7 +173,7 @@ def check(args, base):
         print("PASS JavaScript-disabled navigation")
     finally:
         browser.close()
-    print("PASS SPA clicks (zero new requests), history, direct links, mobile menu and responsive layouts")
+    print("PASS SPA clicks (no document/data reload), panel image, details, history, direct links and mobile layouts")
 
 
 if __name__ == "__main__":

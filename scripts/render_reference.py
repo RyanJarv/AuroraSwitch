@@ -19,6 +19,22 @@ COLORS = {
     "White": "#fff", "Orange": "#ec8734", "Violet": "#a273e7",
     "Mint": "#79dcaa", "Pale red": "#ec9292", "Azure": "#3ea7dc",
 }
+PANEL_CONTROLS = ("Warp", "Time", "Blur", "Reflect", "Mix", "Atmosphere", "Reverse", "Freeze", "Shift")
+
+
+def label_controls(content: str) -> str:
+    """Number table control names against the drawing without duplicating functions."""
+    def label(match: re.Match) -> str:
+        cell = match[1]
+        text = html.unescape(re.sub(r"<[^>]+>", "", cell))
+        names = re.findall(r"\b(?:" + "|".join(PANEL_CONTROLS) + r")\b", text)
+        numbers = [str(PANEL_CONTROLS.index(name) + 1) for name in dict.fromkeys(names)]
+        if not numbers:
+            return match[0]
+        badges = "".join(f'<span class="control-number">{number}</span>' for number in numbers)
+        return f'<tr><td>{badges} {cell}</td>'
+
+    return re.sub(r"<tr>\s*<td>(.*?)</td>", label, content, flags=re.S)
 
 
 def slug(heading: str) -> str:
@@ -180,8 +196,7 @@ def document(title: str, body: str, menu: str, digest: str) -> str:
 <main id="main">
 {body}
 </main>
-<footer>Selector colors identify firmware before launch. Running LED colors may differ.
-<a href="{REPOSITORY}docs/firmware_reference.md">Markdown reference</a></footer>
+<footer><a href="{REPOSITORY}docs/firmware_reference.md">Markdown reference</a></footer>
 </div>
 </div>
 </body>
@@ -205,8 +220,8 @@ def render_pages() -> dict[str, str]:
 <p class="launch-line">Reverse selects → Freeze verifies → wait for <strong>Freeze green</strong> → Shift launches.</p>
 '''
     for availability, label, note in (
-        ("Release", "Release firmware", "Available in the published seven-entry selector."),
-        ("Development", "Development builds", "Not in the published selector. Older versions share their family’s control page."),
+        ("Release", "Release firmware", "Published selector."),
+        ("Development", "Development builds", "Not in the published selector."),
     ):
         anchor = "color-lookup" if availability == "Release" else "development-builds"
         home += f'<section aria-labelledby="{anchor}"><h2 id="{anchor}">{label}</h2><p>{note}</p><div class="cards">'
@@ -222,8 +237,6 @@ def render_pages() -> dict[str, str]:
                      '<span class="card-action">View controls →</span></a>\n')
         home += '</div></section>\n'
     home += '''<p class="other-firmware"><a href="outside-the-selector-catalog.html">Other firmware and current limitations →</a></p>
-<p class="reference-note">Control descriptions come from author notes, manuals or versioned source;
-they do not mean every function has been physically tested. Only exact supported files appear in the selector.</p>
 '''
     home += f'<details id="reference-maintenance"><summary>Reference sources and maintenance</summary>{bodies["reference-maintenance"]}</details>'
     pages = {"index.html": document("Firmware reference", home, navigation(sections, entries, "index.html"), digest)}
@@ -236,18 +249,30 @@ they do not mean every function has been physically tested. Only exact supported
         content = bodies[section.anchor]
         # Each page starts at h1; source h3 control groups become its h2 landmarks.
         content = re.sub(r'<(/?)h3\b', r'<\1h2', content)
+        # Keep lookup controls visible; secondary details stay one click away.
+        content = content.replace('<h2 id="details-and-sources">Details and sources</h2>',
+                                  '<details class="reference-details" id="details-and-sources"><summary>Details &amp; sources</summary>')
+        if 'class="reference-details"' in content:
+            content += '</details>'
+        content = label_controls(content)
         toc = "".join(f'<a href="#{anchor}">{label}</a>'
                       for anchor, label in re.findall(r'<h2 id="([^"]+)">(.*?)</h2>', content))
         body = f'<a class="back-link" href="index.html">← All firmware &amp; colors</a><h1 id="{section.anchor}">{html.escape(section.title)}</h1>'
         if badges:
             body += f'<div class="version-labels" aria-label="Versions and selector colors">{badges}</div>'
-            body += '''<details class="conventions"><summary>How to read the controls</summary>
-<p>Names refer to the original Aurora panel. <strong>Shift + control</strong> means hold Shift
-while using that control. CCW / CW mean counterclockwise / clockwise. Selector colors are
-not the firmware’s running LED colors.</p></details>'''
+            body += '<p class="control-key">Shift + control: hold Shift. CCW / CW: counterclockwise / clockwise.</p>'
         if toc:
             body += f'<nav class="page-links" aria-label="On this page">{toc}</nav>'
-        body += content
+        if badges:
+            # The original drawing maps physical positions; all functions remain in Markdown.
+            intro, separator, controls = content.partition('<h2 ')
+            body += intro
+            body += '''<div class="control-layout"><figure class="panel-map">
+<img src="aurora-panel.svg" width="280" height="580" alt="Aurora panel: knobs 1 Warp, 2 Time, 3 Blur, 4 Reflect, 5 Mix, 6 Atmosphere; buttons 7 Reverse, 8 Freeze, 9 Shift.">
+<figcaption>Panel numbers match the tables.</figcaption></figure><div class="control-tables">'''
+            body += separator + controls + '</div></div>'
+        else:
+            body += content
         body += '<p class="back-link"><a href="index.html">← Choose another firmware</a></p>'
         pages[section.filename] = document(section.title, body, navigation(sections, entries, section.filename), digest)
     return pages

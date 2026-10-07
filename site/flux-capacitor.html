@@ -4,12 +4,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="reference-sha256" content="c3b9da1d4832c8d19c8a3a225f14a803bbd876cef56a5c8b82698e24cfbe72e8">
-<meta name="renderer-sha256" content="19f3522673b0809e8280fbe99c1c566d42ad7ce8f89c5a93236799360f830d20">
+<meta name="reference-sha256" content="b1e6cf7183049a108df1080d83e3c2c549bc1b38131954401f9540d1ef311047">
+<meta name="renderer-sha256" content="6d827332e6d0ec85e1e6559735dde84ca40d9e9db9596096e5f734dead7b38e4">
 <meta name="description" content="AuroraSwitch firmware colors, knobs, buttons, gates and modes.">
 <title>Flux Capacitor · AuroraSwitch</title>
 <link rel="stylesheet" href="style.css">
-<script type="module" src="app.js?v=30c48a50c9d8163084c1cb584d39e8010fb652c33c126a0e7e657ab7acd070a0" data-reference="reference.json?v=c3b9da1d4832c8d19c8a3a225f14a803bbd876cef56a5c8b82698e24cfbe72e8-19f3522673b0809e8280fbe99c1c566d42ad7ce8f89c5a93236799360f830d20"></script>
+<script type="module" src="app.js?v=30c48a50c9d8163084c1cb584d39e8010fb652c33c126a0e7e657ab7acd070a0" data-reference="reference.json?v=b1e6cf7183049a108df1080d83e3c2c549bc1b38131954401f9540d1ef311047-6d827332e6d0ec85e1e6559735dde84ca40d9e9db9596096e5f734dead7b38e4"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to controls</a>
@@ -54,12 +54,11 @@
 </ul>
 <a class="index-link" href="outside-the-selector-catalog.html">Other firmware / limitations</a></nav></details>
 <main id="main">
-<a class="back-link" href="index.html">← All firmware &amp; colors</a><h1 id="flux-capacitor--yellow-orange-or-violet">Flux Capacitor</h1><div class="version-labels" aria-label="Versions and selector colors"><span class="version-label"><span class="swatch" style="background:#ead342" aria-hidden="true"></span>Flux Capacitor 0.3.0 · Yellow</span><span class="version-label"><span class="swatch" style="background:#ec8734" aria-hidden="true"></span>Flux Capacitor 0.1.0 · Orange · development</span><span class="version-label"><span class="swatch" style="background:#a273e7" aria-hidden="true"></span>Flux Capacitor 0.2.0 · Violet · development</span></div><details class="conventions"><summary>How to read the controls</summary>
-<p>Names refer to the original Aurora panel. <strong>Shift + control</strong> means hold Shift
-while using that control. CCW / CW mean counterclockwise / clockwise. Selector colors are
-not the firmware’s running LED colors.</p></details><nav class="page-links" aria-label="On this page"><a href="#knobs-and-cv">Knobs and CV</a><a href="#buttons-gates-and-lights">Buttons, gates and lights</a><a href="#version-differences">Version differences</a></nav>
-<p>Stereo tape-style processing. Common controls:</p>
-<h2 id="knobs-and-cv">Knobs and CV</h2>
+<a class="back-link" href="index.html">← All firmware &amp; colors</a><h1 id="flux-capacitor--yellow-orange-or-violet">Flux Capacitor</h1><div class="version-labels" aria-label="Versions and selector colors"><span class="version-label"><span class="swatch" style="background:#ead342" aria-hidden="true"></span>Flux Capacitor 0.3.0 · Yellow</span><span class="version-label"><span class="swatch" style="background:#ec8734" aria-hidden="true"></span>Flux Capacitor 0.1.0 · Orange · development</span><span class="version-label"><span class="swatch" style="background:#a273e7" aria-hidden="true"></span>Flux Capacitor 0.2.0 · Violet · development</span></div><p class="control-key">Shift + control: hold Shift. CCW / CW: counterclockwise / clockwise.</p><nav class="page-links" aria-label="On this page"><a href="#knobs-and-cv">Knobs and CV</a><a href="#buttons-and-gates">Buttons and gates</a><a href="#version-differences">Version differences</a></nav>
+<p>Stereo tape-style pitch, braking, delay and coloration.</p>
+<div class="control-layout"><figure class="panel-map">
+<img src="aurora-panel.svg" width="280" height="580" alt="Aurora panel: knobs 1 Warp, 2 Time, 3 Blur, 4 Reflect, 5 Mix, 6 Atmosphere; buttons 7 Reverse, 8 Freeze, 9 Shift.">
+<figcaption>Panel numbers match the tables.</figcaption></figure><div class="control-tables"><h2 id="knobs-and-cv">Knobs and CV</h2>
 <markdown-accessiblity-table><table role="table">
 <thead>
 <tr>
@@ -68,38 +67,47 @@ not the firmware’s running LED colors.</p></details><nav class="page-links" ar
 </tr>
 </thead>
 <tbody>
-<tr>
-<td>Warp</td>
+<tr><td><span class="control-number">1</span> Warp</td>
 <td>Smooth pitch ±12 semitones; CV 1 V/oct</td>
 </tr>
-<tr>
-<td>Time</td>
+<tr><td><span class="control-number">2</span> Time</td>
 <td>Delay 1 ms–2 s in 0.2/0.3; unused in 0.1</td>
 </tr>
-<tr>
-<td>Blur</td>
+<tr><td><span class="control-number">3</span> Blur</td>
 <td>Flutter depth</td>
 </tr>
-<tr>
-<td>Reflect</td>
+<tr><td><span class="control-number">4</span> Reflect</td>
 <td>Wow rate, 0.1–2 Hz</td>
 </tr>
-<tr>
-<td>Mix</td>
+<tr><td><span class="control-number">5</span> Mix</td>
 <td>Dry/wet</td>
 </tr>
-<tr>
-<td>Atmosphere</td>
+<tr><td><span class="control-number">6</span> Atmosphere</td>
 <td>Tone darkening, saturation and feedback in 0.3; unused in 0.1/0.2</td>
 </tr>
 </tbody>
 </table></markdown-accessiblity-table>
-<h2 id="buttons-gates-and-lights">Buttons, gates and lights</h2>
-<p>Freeze toggles a roughly 1.5-second tape stop/start; Freeze gate forces stop while<br>
-high. A stopped wet signal becomes silent. Fully dry Mix temporarily becomes wet<br>
-during stopping/starting. Reverse, its gate and Shift are unused. Active CVs add<br>
-to their knobs and clamp. Arc LEDs indicate pitch: amber up, cyan down; Freeze<br>
-red follows braking, with white flashes at the dry-Mix boundary.</p>
+<h2 id="buttons-and-gates">Buttons and gates</h2>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>Control</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr><td><span class="control-number">8</span> Freeze</td>
+<td>Tape stop/start over roughly 1.5 seconds</td>
+</tr>
+<tr><td><span class="control-number">8</span> Freeze gate</td>
+<td>Force stop while high</td>
+</tr>
+<tr><td><span class="control-number">7</span><span class="control-number">9</span> Reverse / Reverse gate / Shift</td>
+<td>Unused</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>A stopped wet signal is silent. Fully dry Mix temporarily becomes wet during braking/startup.</p>
 <h2 id="version-differences">Version differences</h2>
 <markdown-accessiblity-table><table role="table">
 <thead>
@@ -123,12 +131,16 @@ red follows braking, with white flashes at the dry-Mix boundary.</p>
 </tr>
 </tbody>
 </table></markdown-accessiblity-table>
+<details class="reference-details" id="details-and-sources"><summary>Details &amp; sources</summary>
+<ul>
+<li>Active CVs add to knobs and clamp.</li>
+<li>Arc LEDs: amber = pitch up, cyan = down. Freeze: red braking, white dry-Mix boundary flashes.</li>
+</ul>
 <p>Sources: <a href="https://github.com/DaveParr/aurora-flux-capacitor/blob/v0.3.0/README.md">0.3.0 guide</a><br>
 and versioned <code class="notranslate">main.cpp</code> / <code class="notranslate">tape_delay.h</code> at tags 0.1.0 and 0.2.0.</p>
-<p class="back-link"><a href="index.html">← Choose another firmware</a></p>
+</details></div></div><p class="back-link"><a href="index.html">← Choose another firmware</a></p>
 </main>
-<footer>Selector colors identify firmware before launch. Running LED colors may differ.
-<a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/firmware_reference.md">Markdown reference</a></footer>
+<footer><a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/firmware_reference.md">Markdown reference</a></footer>
 </div>
 </div>
 </body>

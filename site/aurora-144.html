@@ -4,12 +4,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="reference-sha256" content="c3b9da1d4832c8d19c8a3a225f14a803bbd876cef56a5c8b82698e24cfbe72e8">
-<meta name="renderer-sha256" content="19f3522673b0809e8280fbe99c1c566d42ad7ce8f89c5a93236799360f830d20">
+<meta name="reference-sha256" content="b1e6cf7183049a108df1080d83e3c2c549bc1b38131954401f9540d1ef311047">
+<meta name="renderer-sha256" content="6d827332e6d0ec85e1e6559735dde84ca40d9e9db9596096e5f734dead7b38e4">
 <meta name="description" content="AuroraSwitch firmware colors, knobs, buttons, gates and modes.">
 <title>Aurora 1.4.4 · AuroraSwitch</title>
 <link rel="stylesheet" href="style.css">
-<script type="module" src="app.js?v=30c48a50c9d8163084c1cb584d39e8010fb652c33c126a0e7e657ab7acd070a0" data-reference="reference.json?v=c3b9da1d4832c8d19c8a3a225f14a803bbd876cef56a5c8b82698e24cfbe72e8-19f3522673b0809e8280fbe99c1c566d42ad7ce8f89c5a93236799360f830d20"></script>
+<script type="module" src="app.js?v=30c48a50c9d8163084c1cb584d39e8010fb652c33c126a0e7e657ab7acd070a0" data-reference="reference.json?v=b1e6cf7183049a108df1080d83e3c2c549bc1b38131954401f9540d1ef311047-6d827332e6d0ec85e1e6559735dde84ca40d9e9db9596096e5f734dead7b38e4"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to controls</a>
@@ -54,12 +54,11 @@
 </ul>
 <a class="index-link" href="outside-the-selector-catalog.html">Other firmware / limitations</a></nav></details>
 <main id="main">
-<a class="back-link" href="index.html">← All firmware &amp; colors</a><h1 id="aurora-144--green">Aurora 1.4.4</h1><div class="version-labels" aria-label="Versions and selector colors"><span class="version-label"><span class="swatch" style="background:#35bf58" aria-hidden="true"></span>Aurora 1.4.4 · Green</span></div><details class="conventions"><summary>How to read the controls</summary>
-<p>Names refer to the original Aurora panel. <strong>Shift + control</strong> means hold Shift
-while using that control. CCW / CW mean counterclockwise / clockwise. Selector colors are
-not the firmware’s running LED colors.</p></details><nav class="page-links" aria-label="On this page"><a href="#knobs-and-cv">Knobs and CV</a><a href="#buttons-and-shifted-controls">Buttons and shifted controls</a><a href="#lights-and-settings">Lights and settings</a></nav>
+<a class="back-link" href="index.html">← All firmware &amp; colors</a><h1 id="aurora-144--green">Aurora 1.4.4</h1><div class="version-labels" aria-label="Versions and selector colors"><span class="version-label"><span class="swatch" style="background:#35bf58" aria-hidden="true"></span>Aurora 1.4.4 · Green</span></div><p class="control-key">Shift + control: hold Shift. CCW / CW: counterclockwise / clockwise.</p><nav class="page-links" aria-label="On this page"><a href="#knobs-and-cv">Knobs and CV</a><a href="#buttons-and-shifted-controls">Buttons and shifted controls</a></nav>
 <p>Stock spectral reverb: pitch manipulation, spectral smearing and stereo delays.</p>
-<h2 id="knobs-and-cv">Knobs and CV</h2>
+<div class="control-layout"><figure class="panel-map">
+<img src="aurora-panel.svg" width="280" height="580" alt="Aurora panel: knobs 1 Warp, 2 Time, 3 Blur, 4 Reflect, 5 Mix, 6 Atmosphere; buttons 7 Reverse, 8 Freeze, 9 Shift.">
+<figcaption>Panel numbers match the tables.</figcaption></figure><div class="control-tables"><h2 id="knobs-and-cv">Knobs and CV</h2>
 <markdown-accessiblity-table><table role="table">
 <thead>
 <tr>
@@ -68,28 +67,22 @@ not the firmware’s running LED colors.</p></details><nav class="page-links" ar
 </tr>
 </thead>
 <tbody>
-<tr>
-<td>Warp</td>
+<tr><td><span class="control-number">1</span> Warp</td>
 <td>Pitch shift ±3 octaves; noon is unshifted; CV tracks 1 V/oct</td>
 </tr>
-<tr>
-<td>Time</td>
+<tr><td><span class="control-number">2</span> Time</td>
 <td>Amplitude-domain smearing / spectral tail</td>
 </tr>
-<tr>
-<td>Blur</td>
+<tr><td><span class="control-number">3</span> Blur</td>
 <td>Frequency-domain smearing</td>
 </tr>
-<tr>
-<td>Reflect</td>
+<tr><td><span class="control-number">4</span> Reflect</td>
 <td>Increasing multi-delay time zones, from no extra delay CCW</td>
 </tr>
-<tr>
-<td>Mix</td>
+<tr><td><span class="control-number">5</span> Mix</td>
 <td>Dry ↔ wet</td>
 </tr>
-<tr>
-<td>Atmosphere</td>
+<tr><td><span class="control-number">6</span> Atmosphere</td>
 <td>Spectral/time filtering: underwater below noon, brighter then high-pass above noon</td>
 </tr>
 </tbody>
@@ -103,54 +96,83 @@ not the firmware’s running LED colors.</p></details><nav class="page-links" ar
 </tr>
 </thead>
 <tbody>
-<tr>
-<td>Reverse</td>
+<tr><td><span class="control-number">7</span> Reverse</td>
 <td>Reverse audio; active LED green; state retained</td>
 </tr>
-<tr>
-<td>Freeze</td>
+<tr><td><span class="control-number">8</span> Freeze</td>
 <td>Sustain the current spectrum; Warp/Time/Blur/Atmosphere/Mix still work</td>
 </tr>
-<tr>
-<td>Shift + Mix</td>
+<tr><td><span class="control-number">9</span><span class="control-number">5</span> Shift + Mix</td>
 <td>Input gain, 0.5–4×; blue indicates default 1×</td>
 </tr>
-<tr>
-<td>Shift + Reflect</td>
+<tr><td><span class="control-number">9</span><span class="control-number">4</span> Shift + Reflect</td>
 <td>Stereo enhancement, 0–100%; blue indicates default 75%</td>
 </tr>
-<tr>
-<td>Shift + Reverse</td>
+<tr><td><span class="control-number">9</span><span class="control-number">7</span> Shift + Reverse</td>
 <td>Cycle FFT size: 4096 blue → 2048 green → 1024 cyan → 512 purple</td>
 </tr>
-<tr>
-<td>Shift + Reverse, held 2 seconds</td>
+<tr><td><span class="control-number">9</span><span class="control-number">7</span> Shift + Reverse, held 2 seconds</td>
 <td>Factory reset UI/options defaults; white confirmation animation</td>
 </tr>
-<tr>
-<td>Shift + Freeze</td>
+<tr><td><span class="control-number">9</span><span class="control-number">8</span> Shift + Freeze</td>
 <td>Reload USB settings; successful reload flashes white</td>
 </tr>
 </tbody>
 </table></markdown-accessiblity-table>
-<h2 id="lights-and-settings">Lights and settings</h2>
-<p>Changing FFT size loses the frozen spectrum; freeze again afterward. Larger FFTs<br>
-give smoother pitch/tails with more latency. Warp octave positions show green/blue;<br>
-off-octave positions show green/purple. CV ranges are ±5 V; gates use 0.4 V threshold.</p>
-<p>USB <code class="notranslate">options.txt</code> controls DSP order, Freeze forcing full-wet, dry latency<br>
-compensation, always-on blur, Warp quantization and octave deadzones. Defaults:<br>
-<code class="notranslate">DSP_ORDER=1</code>, <code class="notranslate">FREEZE_WET=0</code>, <code class="notranslate">LATENCY_COMP=0</code>, <code class="notranslate">ALWAYS_BLUR=1</code>,<br>
-<code class="notranslate">QUANTIZE_WARP=1</code>, <code class="notranslate">WARP_DEADZONES=1</code>. Quantization also accepts <code class="notranslate">2</code> for knob + CV.<br>
-Keep existing settings files; firmware updates happen at boot, not on reload.</p>
-<p>Source: Qu-Bit's <strong>Aurora manual v1.7.4</strong>, which explicitly covers firmware 1.4.4<br>
-(supplied PDF filename <code class="notranslate">Aurora_v1.7-1.pdf</code>). See the<br>
-<a href="https://www.qubitelectronix.com/alternate-firmware/p/aurora-spectral-reverb" rel="nofollow">official Aurora page</a><br>
-for the full manual, options and calibration procedure. Calibration is maintenance,<br>
-not a normal performance control.</p>
-<p class="back-link"><a href="index.html">← Choose another firmware</a></p>
+<p>Changing FFT size clears the frozen spectrum. Larger FFTs give smoother tails but more latency.</p>
+<details class="reference-details" id="details-and-sources"><summary>Details &amp; sources</summary>
+<ul>
+<li>Warp LEDs: green/blue on octave; green/purple off octave.</li>
+<li>CV: ±5 V; gate threshold: 0.4 V.</li>
+<li>Keep settings files. Reloading settings does not update firmware.</li>
+</ul>
+<p>USB <code class="notranslate">options.txt</code> defaults:</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>Setting</th>
+<th>Default</th>
+<th>Controls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">DSP_ORDER</code></td>
+<td>1</td>
+<td>DSP order</td>
+</tr>
+<tr>
+<td><code class="notranslate">FREEZE_WET</code></td>
+<td>0</td>
+<td>Freeze forces full-wet</td>
+</tr>
+<tr>
+<td><code class="notranslate">LATENCY_COMP</code></td>
+<td>0</td>
+<td>Dry latency compensation</td>
+</tr>
+<tr>
+<td><code class="notranslate">ALWAYS_BLUR</code></td>
+<td>1</td>
+<td>Always-on blur</td>
+</tr>
+<tr>
+<td><code class="notranslate">QUANTIZE_WARP</code></td>
+<td>1</td>
+<td>Warp quantization; 2 = knob + CV</td>
+</tr>
+<tr>
+<td><code class="notranslate">WARP_DEADZONES</code></td>
+<td>1</td>
+<td>Octave deadzones</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>Source: <a href="https://www.qubitelectronix.com/alternate-firmware/p/aurora-spectral-reverb" rel="nofollow">Aurora manual v1.7.4</a>,<br>
+covering firmware 1.4.4. Calibration is maintenance, not a performance control.</p>
+</details></div></div><p class="back-link"><a href="index.html">← Choose another firmware</a></p>
 </main>
-<footer>Selector colors identify firmware before launch. Running LED colors may differ.
-<a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/firmware_reference.md">Markdown reference</a></footer>
+<footer><a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/firmware_reference.md">Markdown reference</a></footer>
 </div>
 </div>
 </body>

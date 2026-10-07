@@ -7,8 +7,9 @@ from pathlib import Path
 import re
 import unittest
 from urllib.parse import urlsplit
+import xml.etree.ElementTree as ET
 
-from scripts.render_reference import read_reference, slug
+from scripts.render_reference import PANEL_CONTROLS, label_controls, read_reference, slug
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "site"
@@ -28,6 +29,8 @@ class ReferenceParser(HTMLParser):
         self.h1_count = 0
         self.nav_labels = []
         self.scripts = []
+        self.images = []
+        self.details = []
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
@@ -45,6 +48,11 @@ class ReferenceParser(HTMLParser):
         if tag == "script":
             self.links.append(attrs["src"])
             self.scripts.append(attrs)
+        if tag == "img":
+            self.links.append(attrs["src"])
+            self.images.append(attrs)
+        if tag == "details":
+            self.details.append(attrs)
         if tag == "meta":
             self.metadata[attrs.get("name")] = attrs.get("content")
         if tag == "h1":
@@ -124,7 +132,8 @@ class ReferenceSiteTests(unittest.TestCase):
                 self.assertEqual(parser.swatches, len(entries))
                 for heading in re.findall(r"^### (.+)$", section.markdown, re.M):
                     self.assertIn(slug(heading), parser.ids)
-                    self.assertIn(f'#{slug(heading)}', parser.links)
+                    if heading != "Details and sources":
+                        self.assertIn(f'#{slug(heading)}', parser.links)
                 for entry in entries:
                     self.assertIn(f"{entry.name} · {entry.color}", page)
                     if entry.availability == "Development":
@@ -182,6 +191,50 @@ class ReferenceSiteTests(unittest.TestCase):
         self.assertIn("not been independently verified", (SITE / "the-oscillator-is-a-lie-002.html").read_text())
         self.assertIn("step boundary or reset", (SITE / "morse.html").read_text())
         self.assertIn("Without tables, a generated cube", (SITE / "fatamorgana-ram-experiment.html").read_text())
+
+    def test_control_views_show_panel_and_one_collapsed_details_section(self):
+        for section in self.sections:
+            if not any(entry.anchor == section.anchor for entry in self.entries):
+                continue
+            parser = self.pages[section.filename]
+            page = (SITE / section.filename).read_text()
+            with self.subTest(page=section.filename):
+                self.assertEqual(len(parser.images), 1)
+                self.assertEqual(parser.images[0]["src"], "aurora-panel.svg")
+                for number, name in enumerate(PANEL_CONTROLS, 1):
+                    self.assertIn(f"{number} {name}", parser.images[0]["alt"])
+                details = [item for item in parser.details if item.get("id") == "details-and-sources"]
+                self.assertEqual(len(details), 1)
+                self.assertNotIn("open", details[0])
+                self.assertIn('<summary>Details &amp; sources</summary>', page)
+                self.assertNotIn('class="conventions"', page)
+                self.assertIn('<span class="control-number">', page)
+
+    def test_control_numbers_only_label_table_controls(self):
+        self.assertEqual(label_controls('<tr><td>Time + CV</td><td>Delay</td></tr>'),
+                         '<tr><td><span class="control-number">2</span> Time + CV</td><td>Delay</td></tr>')
+        cell = label_controls('<tr><td>Shift + Freeze</td><td>Time</td></tr>')
+        self.assertIn('control-number">8</span>', cell)
+        self.assertIn('control-number">9</span>', cell)
+        self.assertNotIn('control-number">2</span>', cell)
+        unrelated = '<tr><td>Clock ratio</td><td>Reverse</td></tr>'
+        self.assertEqual(label_controls(unrelated), unrelated)
+
+    def test_panel_drawing_preserves_physical_control_order(self):
+        panel = ET.parse(SITE / "aurora-panel.svg").getroot()
+        ns = {"svg": "http://www.w3.org/2000/svg"}
+        knobs = [item for item in panel.findall('.//svg:use', ns) if item.get("href") == "#knob"]
+        self.assertEqual(len(knobs), 6)
+        self.assertEqual(len([item for item in panel.findall('.//svg:use', ns)
+                              if item.get("href") == "#button"]), 3)
+        # Warp/Blur/Mix alternate with the right-hand Time/Reflect/Atmosphere column.
+        self.assertEqual({item.get("x") for item in knobs[::2]}, {knobs[0].get("x")})
+        self.assertEqual({item.get("x") for item in knobs[1::2]}, {knobs[1].get("x")})
+        self.assertLess(float(knobs[0].get("x")), float(knobs[1].get("x")))
+        self.assertEqual([float(item.get("y")) for item in knobs],
+                         sorted(float(item.get("y")) for item in knobs))
+        for name in PANEL_CONTROLS:
+            self.assertIn(name, " ".join(panel.itertext()))
 
     def test_navigation_rejects_unknown_colors_or_availability(self):
         for old, new in (("| Blue |", "| Invisible |"), ("| Release |", "| Available maybe |")):
