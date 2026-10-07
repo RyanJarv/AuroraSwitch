@@ -87,3 +87,18 @@ candidate's launches with responsive panel/audio, reset/re-entry with ready
 selector media, Fata USB/wavetable import, and ordinary stock USB restoration.
 Missing/slow media and interrupted-write recovery remain open. Stop here until
 the user is available; do not treat virtual results as a recovery guarantee.
+
+### VM recovery-test gap (2026-10-07)
+
+Skipped these end-to-end cases because the current VM does not execute the
+installed updater's complete USB MSC/FatFs restore path:
+
+- Interrupted programming, reboot, then stock USB restore.
+- Damaged calibration/settings, then stock USB restore.
+- Damaged bootloader, then stock USB restore.
+
+Existing host fault tests check rejection, not reboot/recovery. Virtual NOR
+censuses check write boundaries, not updater transport. Replacing file/flash
+calls with successful host stubs would not close this gap, so no such results
+are claimed. Calibration repair is not established by replacing application
+bytes; normal USB recovery also depends on an intact, reachable updater.
