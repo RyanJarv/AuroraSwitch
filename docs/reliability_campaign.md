@@ -18,7 +18,10 @@ That five-image build was staged to USB, but remains historical and unqualified.
 The newest real-USB candidate is source `e983814`, manifest
 `5a5a5c96814d526d0d3c7c249a71ebfd72d2c4eb62dc33b76999e62adc9b7fcf`.
 Use the [public-release checkpoint](public_release_checkpoint.md) for its exact
-identities; it has not yet been staged to USB or installed on a module.
+identities. On 2026-10-06 it was staged to the test USB with all seven
+authenticated payloads, then read back and safely ejected. The previous drive
+contents were backed up; only the root selector, two new payloads and new build
+metadata changed. Module installation and physical results remain unconfirmed.
 
 ## Active checklist
 
