@@ -102,6 +102,15 @@ def check(args, base):
         browser.open(base + "index.html")
         browser.wait("document.documentElement.dataset.navigation === 'spa'")
         browser.request("POST", "/window/rect", {"width": 1280, "height": 600})
+        assert browser.execute("""const link = document.querySelector('.sidebar a[href="fdn-122.html"]');
+            const name = link.firstElementChild;
+            const color = link.querySelector('.color-label');
+            const dot = color.querySelector('.swatch');
+            const titleBounds = name.getBoundingClientRect(), colorBounds = color.getBoundingClientRect();
+            return name.textContent === 'FDN' && color.textContent === 'Blue'
+                && getComputedStyle(dot).backgroundColor === 'rgb(55, 135, 255)'
+                && colorBounds.left >= titleBounds.right
+                && Math.abs(colorBounds.top + colorBounds.height / 2 - titleBounds.top - titleBounds.height / 2) < 2;""")
         browser.execute("""window.referenceTestMarker = true;
             window.referenceLayout = document.querySelector('.layout');
             window.referenceMain = document.querySelector('main');

@@ -28,6 +28,8 @@ make test
 The color table drives navigation, so there is no second firmware catalog to edit.
 Versions on the same family page share one color, matching `menu_colors` in
 `firmware/images.hpp`; different families must use distinct colors.
+The directory shows family names with adjacent color dots and labels; version
+numbers stay on the control pages.
 The renderer uses GitHub Markdown and writes the HTML fallbacks and
 SPA data from identical content; shared styling is in `site/style.css`. Regenerate
 after changing the reference, renderer or `navigation.js` (its URL is content-versioned).

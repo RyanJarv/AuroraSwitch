@@ -184,9 +184,11 @@ def navigation(sections: list[Section], entries: list[Entry], current: str) -> s
             if not versions or ("Release" if any(entry.availability == "Release" for entry in versions) else "Development") != availability:
                 continue
             active = ' aria-current="page"' if current == section.filename else ""
-            colors = versions[0].color
-            parts.append(f'<li><a href="{section.filename}"{active}><span>{html.escape(section.title)}</span>'
-                         f'<small>{html.escape(colors)}</small></a></li>')
+            color = versions[0].color
+            # Versions stay on the control page; the directory identifies the family.
+            name = re.sub(r" \d+(?:\.\d+)+$", "", section.title)
+            parts.append(f'<li><a href="{section.filename}"{active}><span>{html.escape(name)}</span>'
+                         f'<small class="color-label">{swatch(color)}{html.escape(color)}</small></a></li>')
         parts.append('</ul>')
     active = ' aria-current="page"' if current == "outside-the-selector-catalog.html" else ""
     parts.append(f'<a class="index-link" href="outside-the-selector-catalog.html"{active}>Other firmware / limitations</a>')
