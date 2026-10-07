@@ -8,26 +8,24 @@ Beta software with limited testing. Keep the original Aurora firmware and a back
 
 ## Quick start
 
-Install Git, GitHub CLI (`gh`), GNU Make, Python 3, and C/C++ compilers.
+Back up a FAT USB drive. No repository checkout or build tools are needed.
 
-Back up your FAT USB drive. Change `USB_DIR` below to its mounted path:
+1. [Download AuroraSwitch.bin](https://github.com/RyanJarv/AuroraSwitch/releases/latest/download/AuroraSwitch.bin)
+   to the drive's root. Keep it as the only BIN there.
+2. Create an `aurora/` folder. Add [Aurora 1.4.4](https://www.qubitelectronix.com/s/Aurora_v1_4_4.zip)
+   (unzip first), [FDN 1.2.2](https://www.qubitelectronix.com/s/AR_FDN_v1_2_2.bin), or both.
+3. Safely eject, insert the drive into Aurora, and power cycle to install.
 
-```sh
-git clone https://github.com/RyanJarv/AuroraSwitch.git && cd AuroraSwitch
-make download-release USB_DIR="/Volumes/AURORA"
-```
+### Select firmware
 
-Eject, return USB, power on Aurora.
-
-* **Reverse** selects by color (blue for FDN, green for original Aurora);
-* **Freeze** loads and verifies it
-* **Shift** launches it once Freeze is green.
+1. **Reverse** selects by color.
+2. **Freeze** loads and verifies; wait for green.
+3. **Shift** launches.
 
 Power cycle to return to the selector.
 
-Firmware found on the QuBit Discord must be added manually. See the [user guide](docs/user_guide.md) for more info.
-
-This downloads the latest published selector release and four supported public firmwares. To build from source instead, install GNU Arm Embedded **10-2020-q4-major** on PATH and use `make -j2 usb USB_DIR="/Volumes/AURORA"`.
+Other supported firmware BINs go in the same `aurora/` folder. Files shared on
+Discord must be added manually. See the [user guide](docs/user_guide.md).
 
 ## Firmware
 

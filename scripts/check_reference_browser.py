@@ -37,7 +37,8 @@ class SiteHandler(SimpleHTTPRequestHandler):
                 self.send_error(503)
                 return
             data = json.loads((SITE / "reference.json").read_text())
-            data["renderer_sha256"] = "stale"
+            field = "quickstart_sha256" if self.fault == "stale-quickstart" else "renderer_sha256"
+            data[field] = "stale"
             body = json.dumps(data).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
@@ -100,19 +101,32 @@ def check(args, base):
     try:
         browser.open(base + "index.html")
         browser.wait("document.documentElement.dataset.navigation === 'spa'")
-        browser.execute("window.referenceTestMarker = true; window.scrollTo(0, 150)")
+        browser.request("POST", "/window/rect", {"width": 1280, "height": 600})
+        browser.execute("""window.referenceTestMarker = true;
+            window.referenceLayout = document.querySelector('.layout');
+            window.referenceMain = document.querySelector('main');
+            window.referenceSidebar = document.querySelector('.sidebar');
+            window.referenceMobileMenu = document.querySelector('.mobile-menu');
+            window.referenceFooter = document.querySelector('footer');
+            window.scrollTo(0, 150);""")
         browser.wait("scrollY === 150")
         before = SiteHandler.counts.copy()
-        browser.click('.firmware-entry[href="fdn-122.html"]')
+        browser.click('.sidebar a[href="fdn-122.html"]')
         browser.wait("location.pathname.endsWith('/fdn-122.html') && document.activeElement.tagName === 'H1'")
         assert browser.execute("return window.referenceTestMarker && document.title.startsWith('FDN')")
+        assert browser.execute("""return referenceLayout === document.querySelector('.layout')
+            && referenceMain === document.querySelector('main')
+            && referenceSidebar === document.querySelector('.sidebar')
+            && referenceMobileMenu === document.querySelector('.mobile-menu')
+            && referenceFooter === document.querySelector('footer')
+            && [...document.querySelectorAll('[aria-current="page"]')]
+                .every(link => link.getAttribute('href') === 'fdn-122.html')
+            && document.querySelectorAll('[aria-current="page"]').length === 2;""")
         browser.wait("document.querySelector('.panel-map img')?.complete && document.querySelector('.panel-map img').naturalWidth > 0")
         # The shared drawing may load on the first control view; no page/data reload.
         assert set((SiteHandler.counts - before)) <= {"/aurora-panel.svg"}, "SPA navigation reloaded a document or data"
-        browser.click('.reference-details summary')
-        assert browser.execute("return document.querySelector('.reference-details').open")
-        browser.click('.reference-details summary')
-        assert browser.execute("return !document.querySelector('.reference-details').open")
+        assert browser.execute("""const heading = document.querySelector('#details-and-sources');
+            return heading.tagName === 'H2' && heading.nextElementSibling.getClientRects().length > 0;""")
         browser.request("POST", "/back", {})
         browser.wait("document.title.startsWith('Firmware reference') && scrollY === 150")
         browser.request("POST", "/forward", {})
@@ -130,6 +144,8 @@ def check(args, base):
             browser.click(f'.sidebar a[href="{filename}"]')
             browser.wait(f"document.title === {json.dumps(page['title'])}")
             assert browser.execute("return window.referenceTestMarker")
+            assert browser.execute(f"""const selected = [...document.querySelectorAll('[aria-current="page"]')];
+                return selected.length === 2 && selected.every(link => link.getAttribute('href') === '{filename}');""")
         assert set((SiteHandler.counts - before)) <= {"/aurora-panel.svg"}, "A firmware view caused a document/data reload"
         # Direct URLs still render their own fallback, then enhance the deep link.
         browser.open(base + "tempest-100.html#buttons-and-gates")
@@ -161,12 +177,12 @@ def check(args, base):
         browser.execute("document.querySelector('iframe').contentDocument.querySelector('.mobile-menu a[href=\"morse.html\"]').click()")
         browser.wait("document.querySelector('iframe').contentDocument.title.startsWith('Morse')")
         assert browser.execute("return !document.querySelector('iframe').contentDocument.querySelector('.mobile-menu').open")
-        for fault in ("unavailable", "stale"):
+        for fault in ("unavailable", "stale", "stale-quickstart"):
             SiteHandler.fault = fault
             browser.open(base + "index.html")
             browser.wait("document.documentElement.dataset.navigation === 'static'")
             assert not browser.execute("return document.documentElement.dataset.navigation === 'spa'")
-            browser.click('.firmware-entry[href="fdn-122.html"]')
+            browser.click('.sidebar a[href="fdn-122.html"]')
             assert browser.execute("return document.querySelector('h1').textContent === 'FDN 1.2.2'")
             print(f"PASS {fault} SPA data falls back to ordinary pages")
     finally:
@@ -175,7 +191,7 @@ def check(args, base):
     browser = Browser(args.webdriver, args.firefox, javascript=False)
     try:
         browser.open(base + "index.html")
-        browser.click('.firmware-entry[href="fdn-122.html"]')
+        browser.click('.sidebar a[href="fdn-122.html"]')
         element = browser.request("POST", "/element", {"using": "css selector", "value": "h1"})
         heading = browser.request("GET", f'/element/{element["element-6066-11e4-a52e-4f735466cecf"]}/text')
         assert heading == "FDN 1.2.2"
@@ -188,13 +204,13 @@ def check(args, base):
         browser.wait("document.documentElement.dataset.navigation === 'spa'")
         assert browser.execute("return matchMedia('(prefers-color-scheme: dark)').matches")
         assert browser.execute("return getComputedStyle(document.body).backgroundColor === 'rgb(19, 24, 32)'")
-        browser.click('.firmware-entry[href="flux-capacitor.html"]')
+        browser.click('.sidebar a[href="flux-capacitor.html"]')
         browser.wait("document.title.startsWith('Flux Capacitor')")
         assert browser.execute("return document.querySelectorAll('.firmware-meta .swatch').length === 1")
         print("PASS dark-theme directory and controls")
     finally:
         browser.close()
-    print("PASS SPA clicks (no document/data reload), panel image, details, history, direct links and mobile layouts")
+    print("PASS SPA clicks (no document/data reload), panel image, visible details, history, direct links and mobile layouts")
 
 
 if __name__ == "__main__":

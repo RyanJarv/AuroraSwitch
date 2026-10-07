@@ -1,4 +1,4 @@
-"""Check SPA data, HTML fallbacks, pinned assets and links without a browser."""
+"""Check navigation data, static pages and links without a browser."""
 
 import hashlib
 from html.parser import HTMLParser
@@ -9,7 +9,7 @@ import unittest
 from urllib.parse import urlsplit
 import xml.etree.ElementTree as ET
 
-from scripts.render_reference import PANEL_CONTROLS, label_controls, read_reference, slug
+from scripts.render_reference import PANEL_CONTROLS, label_controls, read_quick_start, read_reference, slug
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "site"
@@ -24,7 +24,6 @@ class ReferenceParser(HTMLParser):
         self.links = []
         self.metadata = {}
         self.swatches = 0
-        self.families = []
         self.current = []
         self.h1_count = 0
         self.nav_labels = []
@@ -39,8 +38,6 @@ class ReferenceParser(HTMLParser):
             self.ids.append(attrs["id"])
         if tag == "a":
             self.links.append(attrs.get("href", ""))
-            if "firmware-entry" in classes:
-                self.families.append(attrs["href"])
             if attrs.get("aria-current") == "page":
                 self.current.append(attrs["href"])
         if tag == "link" and attrs.get("rel") == "stylesheet":
@@ -80,6 +77,7 @@ class ReferenceSiteTests(unittest.TestCase):
         fingerprints = {
             "reference-sha256": hashlib.sha256((ROOT / "docs/firmware_reference.md").read_bytes()).hexdigest(),
             "renderer-sha256": hashlib.sha256((ROOT / "scripts/render_reference.py").read_bytes()).hexdigest(),
+            "quickstart-sha256": hashlib.sha256(read_quick_start((ROOT / "README.md").read_text()).encode()).hexdigest(),
         }
         for filename, parser in self.pages.items():
             with self.subTest(page=filename):
@@ -102,25 +100,35 @@ class ReferenceSiteTests(unittest.TestCase):
                         self.assertIn(destination, self.pages, link)
                         self.assertIn(target.fragment, self.pages[destination].ids, link)
 
-    def test_index_covers_every_version_and_color(self):
+    def test_index_has_summary_and_install_directions_not_a_second_directory(self):
         parser = self.pages["index.html"]
-        by_anchor = {section.anchor: section for section in self.sections}
-        self.assertEqual(parser.families, list(dict.fromkeys(by_anchor[entry.anchor].filename for entry in self.entries)))
-        self.assertEqual(parser.swatches, 11)
+        self.assertEqual(parser.swatches, 0)
         self.assertEqual(len(self.entries), 14)
-        self.assertIn("development-builds", parser.ids)
         page = (SITE / "index.html").read_text()
+        body = re.search(r'<main id="main">\n(.*?)\n</main>', page, re.S)[1]
+        self.assertIn('id="quick-start"', body)
+        self.assertIn('id="select-firmware"', body)
+        for url in (
+            "https://github.com/RyanJarv/AuroraSwitch/releases/latest/download/AuroraSwitch.bin",
+            "https://www.qubitelectronix.com/s/Aurora_v1_4_4.zip",
+            "https://www.qubitelectronix.com/s/AR_FDN_v1_2_2.bin",
+        ):
+            self.assertIn(f'href="{url}"', body)
+        self.assertNotIn("git clone", body)
+        self.assertNotIn("make download-release", body)
+        self.assertIn("only BIN there", body)
+        self.assertIn("unzip first", body)
+        self.assertIn("wait for green", body)
+        self.assertNotIn('class="firmware-entry"', page)
+        self.assertNotIn('class="firmware-list"', page)
         self.assertNotIn("Reference sources and maintenance", page)
         self.assertNotIn('id="reference-maintenance"', page)
-        for entry in self.entries:
-            section = by_anchor[entry.anchor]
-            self.assertIn(section.title, page)
-            if entry.name != section.title:
-                version = entry.name.removeprefix(section.title).strip()
-                self.assertIn(version + (" (development)" if entry.availability == "Development" else ""), page)
-            self.assertIn(entry.color, page)
+        for section in self.sections:
+            if any(entry.anchor == section.anchor for entry in self.entries):
+                self.assertEqual(page.count(f'href="{section.filename}"'), 2)
+                self.assertNotIn(f'href="{section.filename}"', body)
 
-    def test_opt_in_images_are_development_only_and_ram_fata_is_unique(self):
+    def test_additional_images_are_development_only_and_ram_fata_is_unique(self):
         for name, color in (("Dirt Verb 1.1", "Red-pink"),
                             ("Aurora HP-filter variant", "Lime")):
             entry = next(entry for entry in self.entries if entry.name == name)
@@ -131,10 +139,6 @@ class ReferenceSiteTests(unittest.TestCase):
         self.assertIn("RAM", fata[0].name)
         dirt = (SITE / "dirt-verb-11.html").read_text()
         self.assertIn("Physical handoff and stock USB recovery remain unverified", dirt)
-
-    def test_legacy_firmware_fragments_still_find_the_index_entry(self):
-        for entry in self.entries:
-            self.assertIn(entry.anchor, self.pages["index.html"].ids)
 
     def test_firmware_pages_have_control_headings_and_version_labels(self):
         for section in self.sections:
@@ -164,18 +168,20 @@ class ReferenceSiteTests(unittest.TestCase):
             page = (SITE / filename).read_text()
             with self.subTest(page=filename):
                 self.assertEqual(parser.h1_count, 1)
+                self.assertEqual(parser.current, [filename, filename])
                 self.assertIn("main", parser.ids)
                 self.assertIn("Firmware directory", parser.nav_labels)
                 self.assertIn("Mobile firmware directory", parser.nav_labels)
                 self.assertEqual(len(parser.scripts), 1)
                 script = parser.scripts[0]
                 self.assertEqual(script["type"], "module")
-                self.assertEqual(urlsplit(script["src"]).path, "app.js")
+                self.assertEqual(urlsplit(script["src"]).path, "navigation.js")
                 self.assertEqual(urlsplit(script["data-reference"]).path, "reference.json")
                 reference = parser.metadata["reference-sha256"]
                 renderer = parser.metadata["renderer-sha256"]
-                self.assertEqual(urlsplit(script["data-reference"]).query, f"v={reference}-{renderer}")
-                digest = hashlib.sha256((SITE / "app.js").read_bytes()).hexdigest()
+                quickstart = parser.metadata["quickstart-sha256"]
+                self.assertEqual(urlsplit(script["data-reference"]).query, f"v={reference}-{renderer}-{quickstart}")
+                digest = hashlib.sha256((SITE / "navigation.js").read_bytes()).hexdigest()
                 self.assertEqual(urlsplit(script["src"]).query, f"v={digest}")
                 self.assertIn('name="viewport"', page)
                 self.assertIn('lang="en"', page)
@@ -188,22 +194,12 @@ class ReferenceSiteTests(unittest.TestCase):
         for filename, parser in self.pages.items():
             page = (SITE / filename).read_text()
             with self.subTest(page=filename):
-                for field in ("reference", "renderer"):
+                for field in ("reference", "renderer", "quickstart"):
                     self.assertEqual(data[f"{field}_sha256"], parser.metadata[f"{field}-sha256"])
                 body = re.search(r'<main id="main">\n(.*?)\n</main>', page, re.S)[1]
                 self.assertEqual(data["pages"][filename]["body"], body)
                 self.assertIn("AuroraSwitch", data["pages"][filename]["title"])
-        menu = ReferenceParser()
-        menu.feed(data["menu"])
-        self.assertEqual(set(menu.links), set(data["pages"]))
-
-    def test_preact_files_match_pinned_upstream_bytes(self):
-        for file, digest in {
-            "preact.module.js": "a1cefabf06ec626adcb92731537e1e04fd09a7908e22551bab50540106dc950d",
-            "LICENSE": "1fe6958409c8c257a70c587a18b6f7f412b179b456630790d30b2ec9a8e4b7d4",
-        }.items():
-            with self.subTest(file=file):
-                self.assertEqual(hashlib.sha256((SITE / "vendor" / file).read_bytes()).hexdigest(), digest)
+        self.assertNotIn("menu", data, "Use the existing static navigation")
 
     def test_control_descriptions_and_caveats_are_preserved(self):
         self.assertIn("Mix is not dry/wet.", (SITE / "tempest-100.html").read_text())
@@ -212,7 +208,7 @@ class ReferenceSiteTests(unittest.TestCase):
         self.assertIn("step boundary or reset", (SITE / "morse.html").read_text())
         self.assertIn("Without tables, a generated cube", (SITE / "fatamorgana-ram-experiment.html").read_text())
 
-    def test_control_views_show_panel_and_one_collapsed_details_section(self):
+    def test_control_views_show_panel_and_visible_details_section(self):
         for section in self.sections:
             if not any(entry.anchor == section.anchor for entry in self.entries):
                 continue
@@ -224,9 +220,9 @@ class ReferenceSiteTests(unittest.TestCase):
                 for number, name in enumerate(PANEL_CONTROLS, 1):
                     self.assertIn(f"{number} {name}", parser.images[0]["alt"])
                 details = [item for item in parser.details if item.get("id") == "details-and-sources"]
-                self.assertEqual(len(details), 1)
-                self.assertNotIn("open", details[0])
-                self.assertIn('<summary>Details &amp; sources</summary>', page)
+                self.assertEqual(details, [])
+                self.assertIn('<h2 id="details-and-sources">Details &amp; sources</h2>', page)
+                self.assertNotIn('class="reference-details"', page)
                 self.assertNotIn('class="conventions"', page)
                 self.assertNotIn('class="control-key"', page)
                 self.assertNotIn('How to read the controls', page)
@@ -263,6 +259,13 @@ class ReferenceSiteTests(unittest.TestCase):
         for old, new in (("| Blue |", "| Invisible |"), ("| Release |", "| Available maybe |")):
             with self.subTest(replacement=new), self.assertRaises(ValueError):
                 read_reference(self.source.replace(old, new, 1))
+
+    def test_quick_start_extraction_is_exact_and_fail_closed(self):
+        source = "# Project\n\n## Quick start\n\nInstall.\n\n### Select\nUse.\n\n## Other\nIgnore.\n"
+        self.assertEqual(read_quick_start(source), "## Quick start\nInstall.\n\n### Select\nUse.\n")
+        for invalid in ("# No quick start\n", "## Quick start\n\n", source + "\n## Quick start\nDuplicate.\n"):
+            with self.assertRaisesRegex(ValueError, "one README Quick start"):
+                read_quick_start(invalid)
 
     def test_navigation_rejects_missing_link_targets(self):
         with self.assertRaisesRegex(ValueError, "Missing firmware section"):
