@@ -1,19 +1,19 @@
 # How it works
 
 AuroraSwitch is a `BOOT_SRAM` application, not a bootloader replacement.
-Aurora's existing updater installs and starts it; the selector then loads an
-exact supported image into separate SRAM and transfers execution to it.
+Aurora's existing updater installs and starts it. The selector loads and
+authenticates a catalog image in separate SRAM, then launches it.
+Default builds use RAM; this branch's opt-in Dirt Verb path programs QSPI.
 
 ## Why this approach?
 
-Works without the source code of other firmware and is stateless between power off/on.
-
-Although a cleaner way to support this would probably be to add functionality for moving files around to each firmware version. Without access to the source and modifying the firmware or doing something super clever the options are a bit limited, so this is what I went with.
-
-Supported payloads are linked to execute at `0x24000000`, the same address as
+RAM payloads are linked to execute at `0x24000000`, the same address as
 the selector. Staging them elsewhere and copying at handoff avoids relocating
 their code or writing a new application to flash on each selection. The existing
 updater remains unchanged.
+
+This works without modifying payload source. Selection is not persisted;
+payloads may retain their own settings.
 
 The tradeoff is inherited state: a branch to a reset handler is not a hardware
 reset. Cleanup must remove selector-owned activity while retaining the clocks,
@@ -26,9 +26,10 @@ MPU policy, and external-memory mappings expected by `BOOT_SRAM` startup.
 | AXI SRAM, `0x24000000` | Selector code; overwritten by the payload |
 | DTCM, `0x20000000` | Globals and stack; not accessible to USB DMA |
 | D2, `[0x30000000, 0x30008000)` | 32-KiB SDK DMA arena; cleared during terminal handoff |
-| D2, `[0x30008000, 0x30034680)` | Current 181888-byte staging buffer |
+| D2, `[0x30008000, 0x30034680)` | Default 181888-byte staging buffer; opt-in ends at `0x300347e0` (182240 bytes) |
 | SRAM4, `[0x38000000, 0x38000400)` | Reserved space for the copy/jump trampoline |
-| SDRAM / QSPI | Inherited mappings; not globally cleared or reconfigured |
+| SDRAM | Inherited mapping; not globally cleared |
+| QSPI, `0x90040000` | Installed application; opt-in Dirt launch replaces it and executes here |
 
 Staging capacity is the largest catalog image rounded to 32 bytes. Linker
 assertions keep it outside the DMA arena and below `0x30040000`, and pin the
@@ -55,7 +56,8 @@ invalidate approval. Upstream USB/FatFs calls have no overall load deadline.
 
 [PrepareAndJump](../firmware/handoff_sequence.hpp) defines the ordering:
 
-1. Revalidate staging and unmount FatFs. Failure here refuses launch.
+1. Revalidate staging and unmount FatFs. Failure refuses launch unless QSPI
+   programming already replaced the application; then it halts.
 2. Stop USB and mask interrupts.
 3. Force-reset DMA1/2, MDMA, BDMA, USB1 OTG HS, I2C1, and SAI1/2.
 4. Deinitialize the Seed runtime, clean/disable caches, disable SysTick, and
@@ -77,11 +79,27 @@ controller state; the target must initialize state it uses. DMA clearing occurs
 only in the terminal routine because earlier clearing could destroy live
 selector buffers.
 
+## Opt-in QSPI launch
+
+`QSPI_HANDOFF=1` admits only exact Dirt Verb 1.1 for QSPI execution. Before
+shared cleanup, it authenticates staging, initializes the pinned flash driver,
+and erases offsets `[0x40000, 0x58000)` in 4-KiB sectors. Each page write is
+checked, then the entire payload is compared with mapped flash.
+
+Cleanup preserves QSPI mapping. A separate SRAM4 trampoline clears the DMA
+arena and enters the QSPI vectors without copying into AXI SRAM. Any failure
+after an erase attempt halts: the installed selector may no longer be intact.
+
+On reset, the normal updater can reinstall the selector from its root USB BIN.
+Missing or slow media can instead boot the installed payload. Physical re-entry,
+interrupted-programming recovery, and stock restore remain unverified.
+
 ## Boundaries
 
-Selector loading and handoff do not program flash. Initial installation does;
-launched firmware is not sandboxed and may write persistent settings. Exact
-hashes establish expected bytes, not firmware safety. Virtual switching checks
+Default RAM loading and handoff do not program flash. Initial installation
+and opt-in Dirt launch do. Launched firmware is not sandboxed and may write
+persistent settings. Exact hashes establish expected bytes, not firmware safety.
+Virtual switching checks
 do not establish physical handoff reliability or ordinary stock recovery;
 those remain hardware test requirements.
 

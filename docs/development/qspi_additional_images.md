@@ -2,7 +2,7 @@
 
 Work stays on `codex/qspi-dirt-verb`; `main` remains RAM-only.
 
-## Active checklist
+## Current scope
 
 The checkpoint below is historical. FataMorgana QSPI was retired from the
 catalog on 2026-10-07 in favor of the RAM build from the same pinned source.
@@ -11,21 +11,16 @@ claimed. RAM avoids application-flash programming during launch. Preserve
 the earlier QSPI evidence, but do not use it to qualify the changed selector.
 The QSPI build helper remains available only to reproduce that experiment.
 
-Current catalog: 12 RAM entries plus opt-in Dirt Verb and HP-filter Aurora
-(14 total). Dirt remains the only QSPI payload. This catalog change requires
-a new authenticated selector candidate and subsequent physical testing.
+Current catalog: 12 RAM entries plus opt-in Dirt Verb (red-pink) and HP-filter
+Aurora (lime). Dirt is the only QSPI payload. Fata stays at index 11; HP-filter
+moves from 14 to 13. Historical traces retain their original indices.
 
-`make check` passes all 56 host tests and Python compilation after retirement.
-The opt-in catalog test checks that the retired QSPI entry is rejected, RAM
-Fata stays at index 11, and opt-in colors/paths are unique. HP-filter
-moves from index 14 to 13; historical traces keep their original indices.
-No live emulator campaign has been run against the changed selector yet.
+The merge from `main` also adopts fixed family colors: yellow for all Flux
+versions, white for all Morse versions. Host checks pass, but no live campaign
+covers this changed selector yet. Seal a new candidate before physical testing;
+earlier packages remain historical.
 
-The subsequent merge from `main` retains its fixed per-family colors (older
-Flux/Morse versions now share their family color) and compact Pages directory.
-Dirt Verb (red-pink) and HP-filter (lime) have development-only control pages;
-Fata has only its RAM page. `make check` passes 63 tests after the merge.
-Earlier frozen selector packages do not cover the merged firmware.
+## Historical onboarding checklist
 
 - [x] Fresh-build FataMorgana's pinned upstream `BOOT_QSPI` configuration.
 - [x] Review HP-filter Aurora vectors, size, and staging-region capacity.
@@ -38,7 +33,7 @@ Earlier frozen selector packages do not cover the merged firmware.
 These entries pass bounded virtual screening, not physical compatibility or recovery. No new
 firmware is distributed, copied to USB, or installed by this work.
 
-## Exact payloads
+## Historical payloads
 
 | Image | Bytes | SHA-256 | Execution |
 | --- | ---: | --- | --- |
@@ -76,7 +71,7 @@ host tests require copied exact entries to pass and altered entries to fail.
 This supersedes provisional selector source `50e54f8`; its bundle must not
 be presented as a working launch candidate.
 
-## Verified candidate
+## Frozen candidate (history)
 
 Frozen firmware source: `633ccd9fca00d8aafeac6b07c5362a8c8f1e4d79`.
 Later preparation/Makefile/docs changes do not change its firmware bytes.
@@ -105,11 +100,12 @@ addresses, counters, and bounded results only.
 
 ## Next: physical testing
 
-No drive or module was accessed. Keep ST-Link disconnected. Test the exact
-candidate's launches with responsive panel/audio, reset/re-entry with ready
-selector media, Fata USB/wavetable import, and ordinary stock USB restoration.
-Missing/slow media and interrupted-write recovery remain open. Stop here until
-the user is available; do not treat virtual results as a recovery guarantee.
+Keep ST-Link disconnected. First seal the current build and rerun affected
+virtual checks. Then test official launch cycles, Dirt/HP-filter controls/audio,
+reset/re-entry with ready selector media, and ordinary stock USB restoration.
+Missing/slow media and interrupted-write recovery remain open. Fata's RAM
+USB/wavetable test is separate; the QSPI version is no longer offered.
+Stop for user participation before physical tests.
 
 ### VM recovery-test gap (2026-10-07)
 

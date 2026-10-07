@@ -37,13 +37,14 @@ Do not create a new emulator for a difficult image; defer it.
 - [Firmware onboarding record](firmware_onboarding.md): older versions, Tempest,
   and the FataMorgana RAM experiment. Intake is not supported-image evidence.
 - [Architecture](architecture.md): source map, memory, and handoff.
+- [QSPI branch review](branch_review_20261007.md): tooling fixes and remaining test boundaries.
 - [Builds and releases](releases.md): tag workflow and build-only CI.
 - [Verification status](verification.md) and [active checklist](reliability_campaign.md#active-checklist).
 - [Recovery checks](recovery_release_gate.md) and [optional timing diagnostics](load_timing.md).
 - [QSPI feasibility](qspi_feasibility.md): updater boundaries and Dirt Verb implementation.
 - [Additional-image checkpoint](qspi_additional_images.md): current opt-in
-  FataMorgana QSPI and HP-filter software checks; physical testing remains open.
-- [Current checkpoint](checkpoints/public_releases_20261006.md) and [machine-readable evidence](evidence/public_releases_20261006.json).
+  Dirt/HP-filter scope and historical QSPI Fata evidence.
+- [Seven-image checkpoint](checkpoints/public_releases_20261006.md) and [machine-readable evidence](evidence/public_releases_20261006.json) (history).
 
 Historical records stay in `history/`. Do not transfer their results to changed
 binaries. Documentation-only edits need link checks, not new emulator campaigns.

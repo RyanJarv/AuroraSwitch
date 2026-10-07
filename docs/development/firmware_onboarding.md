@@ -1,4 +1,4 @@
-# Next firmware batch
+# Firmware onboarding record
 
 Requested scope: older supported-family releases, Tempest, then FataMorgana.
 Dirt Verb's later opt-in experiment is tracked in [QSPI status](qspi_feasibility.md).
@@ -24,11 +24,14 @@ Keep third-party binaries outside Git and release assets.
 - [ ] FataMorgana: real USB/wavetable validation; no broad USB emulator work.
 - [ ] Physical campaign: new selector, launch/control/audio, reset and stock restore.
 
-Next manageable chunk: physical testing of the twelve-entry candidate. Keep
-ST-Link disconnected. It supersedes the older/Tempest-only candidate;
-FataMorgana needs a tested RAM/USB configuration before
-support can be claimed. The separate Dirt experiment does not admit Fata's
-upstream QSPI image or change the default RAM-only release.
+Before physical testing, seal current source and rerun affected virtual checks:
+the family-color change supersedes the frozen candidates below. Keep ST-Link
+disconnected. FataMorgana still needs real USB/wavetable validation. Default
+builds remain RAM-only; the duplicate QSPI Fata entry is retired.
+
+The sections below preserve the onboarding chronology and exact-build results.
+Their intermediate limitations and “next” steps describe those checkpoints,
+not additional active campaigns.
 
 ## Older public releases
 

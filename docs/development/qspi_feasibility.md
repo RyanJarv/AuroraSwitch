@@ -11,8 +11,8 @@ The initial investigation below is static evidence; the implementation's
 virtual results are recorded separately at the end.
 
 The later [additional-image checkpoint](qspi_additional_images.md) supersedes
-the candidate below and adds exact QSPI FataMorgana and RAM HP-filter entries.
-Its physical tests remain open.
+the candidate below. Current opt-in entries are Dirt Verb and RAM HP-filter;
+the duplicate QSPI FataMorgana entry was retired. Physical tests remain open.
 
 ## What the installed updater does
 

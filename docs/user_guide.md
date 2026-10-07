@@ -79,15 +79,10 @@ Morse needs an external Freeze-gate clock and Mix above zero.
 Colors are fixed per firmware family across versions and installs. Keep one
 version per family on the drive: multiple versions have the same menu color.
 
-## Not supported yet
+## Source-build additions
 
-- **Dirt Verb and HP-filter Aurora:** available only in the opt-in
-  development build below; not in the published release.
-- **Dirt Verb:** excluded from default builds and releases. See the
-  [development-only QSPI experiment](development/qspi_feasibility.md).
-- **Other versions or renamed files:** need separate review and catalog entries.
-
-## Development branch additions
+<!-- Keep the old guide link usable. -->
+<a id="development-branch-additions"></a>
 
 The current source includes these exact images. Prior virtual
 launch/control/audio checks pass; physical testing remains open. Build from
@@ -106,7 +101,7 @@ flashing; do not assume its settings are isolated from other alternative apps.
 
 ### FataMorgana
 
-The development branch admits one exact RAM build from source commit `d5504d7`,
+Current source admits one exact RAM build from source commit `d5504d7`,
 not the upstream QSPI configuration. Virtual handoff/control/audio checks pass;
 USB wavetable loading and physical compatibility remain unverified.
 RAM is our preferred build: it avoids programming application flash on launch.
@@ -133,9 +128,10 @@ can change retained settings.
 | Dirt Verb 1.1 | `DirtVerb 1.1.bin` | Red-pink |
 | HP-filter Aurora | `Aurora_v1-4-6_hpfilt.bin` | Lime |
 
-Virtual handoff/control/audio screening passes; physical tests remain open.
-QSPI launching replaces the installed application. Returning to the selector
-depends on ready USB media containing its root BIN. Do not treat reset alone
+Earlier exact-build virtual screening passes; physical tests remain open.
+Only Dirt uses QSPI; HP-filter still launches from RAM. QSPI launching replaces
+the installed application. Returning to the selector depends on ready USB media
+containing its root BIN. Do not treat reset alone
 as guaranteed menu re-entry or recovery.
 
 With the pinned GNU Arm 10 toolchain on PATH:
@@ -144,8 +140,9 @@ With the pinned GNU Arm 10 toolchain on PATH:
 make package QSPI_HANDOFF=1
 ```
 
-The command prints a sealed selector bundle path. User-supplied Dirt/HP binaries
-can be authenticated and named without accessing a drive:
+Use `AuroraSwitch.bin` from the printed sealed bundle, not the default RAM
+build directory. `make usb` is RAM-only and rejects this opt-in.
+Authenticate and name user-supplied Dirt/HP binaries without accessing a drive:
 
 ```sh
 python3 scripts/prepare_payloads.py --qspi --output prepared-qspi /path/to/DirtVerb.bin /path/to/Aurora_v1-4-6_hpfilt.bin
@@ -154,3 +151,9 @@ python3 scripts/prepare_payloads.py --qspi --output prepared-qspi /path/to/DirtV
 Use the emitted filenames under `prepared-qspi/aurora/` and keep the selector
 as the only root BIN. No alternative firmware is included in our releases.
 Hardware testing and ordinary stock recovery are still required before release.
+
+## Unsupported firmware
+
+Only catalog versions with matching bytes and filenames are accepted. Other
+images need memory-layout review and a new catalog entry; renaming is not enough.
+The duplicate QSPI FataMorgana option is retired in favor of RAM.
