@@ -20,7 +20,7 @@ Morse 0.2.0. Other versions are not automatically supported.
 ## Quick start
 
 Install Git, GNU Make, Python 3, a C/C++ compiler, and GNU Arm Embedded
-**10-2020-q4-major**. Put the Arm toolchain's `bin` directory on PATH, then run:
+**10-2020-q4-major**. Then run:
 
 ```sh
 #!/bin/sh
