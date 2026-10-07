@@ -60,16 +60,16 @@ class UsbTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "root-level updater"):
             prepare_usb.check_destination(self.usb)
 
-    def test_usb_target_refuses_qspi_before_build_or_copy(self):
-        """The RAM-only copier must not silently stage an older RAM build."""
+    def test_build_and_usb_share_one_output_directory(self):
+        """Dry-run the command wiring without dependencies or drive writes."""
         root = Path(__file__).resolve().parents[1]
         result = prepare_usb.subprocess.run(
-            ["make", "-n", "usb", "QSPI_HANDOFF=1", f"USB_DIR={self.usb}"],
+            ["make", "-n", "build", "usb", "MAKE=echo", f"USB_DIR={self.usb}"],
             cwd=root, capture_output=True, text=True)
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("make usb is RAM-only", result.stderr)
-        self.assertNotIn("scripts/prepare_usb.py", result.stdout)
-        self.assertNotIn("scripts/setup_dependencies.py", result.stdout)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("-C firmware BUILD_DIR=build-experimental-dma", result.stdout)
+        self.assertIn('scripts/prepare_usb.py --usb "', result.stdout)
+        self.assertNotIn("-qspi", result.stdout)
 
     def test_release_setup_fetches_only_pinned_verifier_dependency(self):
         revision = setup_dependencies.PINS["mbedtls"][1]

@@ -9,16 +9,18 @@ catalog on 2026-10-07 in favor of the RAM build from the same pinned source.
 No musical-feature difference was identified; physical equivalence is not
 claimed. RAM avoids application-flash programming during launch. Preserve
 the earlier QSPI evidence, but do not use it to qualify the changed selector.
-The QSPI build helper remains available only to reproduce that experiment.
+The retired QSPI build helper is available in Git history, not current targets.
 
-Current catalog: 12 RAM entries plus opt-in Dirt Verb (red-pink) and HP-filter
-Aurora (lime). Dirt is the only QSPI payload. Fata stays at index 11; HP-filter
+Current catalog: 13 RAM entries and Dirt Verb (red-pink) in every build.
+HP-filter Aurora is lime. Dirt is the only QSPI payload. Fata stays at index 11; HP-filter
 moves from 14 to 13. Historical traces retain their original indices.
 
 The merge from `main` also adopts fixed family colors: yellow for all Flux
 versions, white for all Morse versions. Host checks pass, but no live campaign
 covers this changed selector yet. Seal a new candidate before physical testing;
-earlier packages remain historical.
+earlier packages remain historical. The selector, host verifier, payload
+preparer and USB target now share one catalog and build path; there is no
+QSPI opt-in flag. The older opt-in commands below describe historical builds.
 
 ## Historical onboarding checklist
 

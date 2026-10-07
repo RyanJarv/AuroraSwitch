@@ -1,15 +1,13 @@
-// Hardware adapter for RAM handoff and the opt-in exact-image QSPI path.
+// Hardware adapter for exact-image RAM and QSPI handoff.
 #include "handoff.hpp"
 #include "handoff_sequence.hpp"
 #include "fatfs.h"
 #include "mbedtls/sha256.h"
 #include <cstring>
-#ifdef SELECTOR_QSPI_HANDOFF
 #include "../support/qspi_image_programming.hpp"
 extern "C" {
 volatile aurora_selector::QspiDiagnostic selector_qspi_diagnostic{};
 }
-#endif
 #ifdef SELECTOR_VIRTUAL_TRANSPORT
 #include "../support/backed_image_reader.hpp"
 #endif
@@ -20,17 +18,14 @@ extern "C"
     extern const std::uint8_t selector_copy_jump_end[];
     extern std::uint8_t selector_trampoline_ram[];
     extern std::uint8_t selector_trampoline_limit[];
-#ifdef SELECTOR_QSPI_HANDOFF
     extern const std::uint8_t selector_qspi_jump_blob_start[];
     extern const std::uint8_t selector_qspi_jump_end[];
-#endif
 }
 
 namespace aurora_selector
 {
     namespace
     {
-#ifdef SELECTOR_QSPI_HANDOFF
         // Same pin/device configuration as pinned DaisySeed, without audio Init.
         struct QspiDriver
         {
@@ -66,7 +61,6 @@ namespace aurora_selector
                 return static_cast<const std::uint8_t*>(qspi.GetData(QspiApplicationOffset));
             }
         };
-#endif
         // Release the selector's real filesystem and USB host before replacement.
         struct UsbTransport
         {
@@ -97,7 +91,6 @@ namespace aurora_selector
             Transport& transport;
             const Image& image;
             const std::uint8_t* staged;
-#ifdef SELECTOR_QSPI_HANDOFF
             bool qspi_prepared = false;
 
             bool PrepareTarget()
@@ -124,7 +117,6 @@ namespace aurora_selector
                 qspi_prepared = true;
                 return true;
             }
-#endif
 
             // Rehash the same fixed staging buffer before and after cleanup.
             bool Validate()
@@ -134,14 +126,12 @@ namespace aurora_selector
                        && image.size <= StagingCapacity()
                        && mbedtls_sha256_ret(staged, image.size, digest, 0) == 0
                        && VerifyImage(staged, image.size, image, digest);
-#ifdef SELECTOR_QSPI_HANDOFF
                 if(staged_valid && qspi_prepared)
                 {
                     QspiDriver driver{seed.qspi};
                     const auto* mapped = driver.MappedData();
                     return mapped != nullptr && std::memcmp(mapped, staged, image.size) == 0;
                 }
-#endif
                 return staged_valid;
             }
             bool Unmount() { return transport.Unmount(); }
@@ -197,13 +187,11 @@ namespace aurora_selector
             {
                 const std::uint8_t* blob = selector_copy_jump_blob_start;
                 const std::uint8_t* blob_end = selector_copy_jump_end;
-#ifdef SELECTOR_QSPI_HANDOFF
                 if(image.execution == Execution::Qspi)
                 {
                     blob = selector_qspi_jump_blob_start;
                     blob_end = selector_qspi_jump_end;
                 }
-#endif
                 const auto begin = reinterpret_cast<std::uintptr_t>(blob);
                 const auto end = reinterpret_cast<std::uintptr_t>(blob_end);
                 const auto ram = reinterpret_cast<std::uintptr_t>(selector_trampoline_ram);
@@ -229,13 +217,11 @@ namespace aurora_selector
                 using Entry = void (*)(const std::uint8_t*, std::uint8_t*, std::size_t);
                 auto entry = reinterpret_cast<Entry>(
                     reinterpret_cast<std::uintptr_t>(selector_trampoline_ram) | 1U);
-#ifdef SELECTOR_QSPI_HANDOFF
                 if(image.execution == Execution::Qspi)
                 {
                     entry(reinterpret_cast<const std::uint8_t*>(0x90040000U), nullptr, 0);
                     Fatal();
                 }
-#endif
                 entry(staged, reinterpret_cast<std::uint8_t*>(0x24000000U), image.size);
                 Fatal();
             }
@@ -248,13 +234,9 @@ namespace aurora_selector
     {
         UsbTransport transport{usb, media_path};
         Platform<UsbTransport> platform{seed, transport, image, staged};
-#ifdef SELECTOR_QSPI_HANDOFF
         if(!platform.PrepareTarget())
             return false;
         return PrepareAndJump(platform, platform.qspi_prepared);
-#else
-        return PrepareAndJump(platform);
-#endif
     }
 #ifdef SELECTOR_VIRTUAL_TRANSPORT
     bool VirtualLaunch(daisy::DaisySeed& seed,
@@ -263,13 +245,9 @@ namespace aurora_selector
     {
         BackedTransport transport{descriptor};
         Platform<BackedTransport> platform{seed, transport, image, staged};
-#ifdef SELECTOR_QSPI_HANDOFF
         if(!platform.PrepareTarget())
             return false;
         return PrepareAndJump(platform, platform.qspi_prepared);
-#else
-        return PrepareAndJump(platform);
-#endif
     }
 #endif
 }

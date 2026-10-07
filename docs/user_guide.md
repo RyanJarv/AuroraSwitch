@@ -121,7 +121,7 @@ can change retained settings.
 
 ### QSPI development branch
 
-`codex/qspi-dirt-verb`, built with `QSPI_HANDOFF=1`, adds these exact files:
+Every build of `codex/qspi-dirt-verb` also supports these exact files:
 
 | Firmware | Filename | Reverse color |
 | --- | --- | --- |
@@ -137,18 +137,18 @@ as guaranteed menu re-entry or recovery.
 With the pinned GNU Arm 10 toolchain on PATH:
 
 ```sh
-make package QSPI_HANDOFF=1
+make package
 ```
 
-Use `AuroraSwitch.bin` from the printed sealed bundle, not the default RAM
-build directory. `make usb` is RAM-only and rejects this opt-in.
+Use `AuroraSwitch.bin` from the printed sealed bundle. For incremental build
+and USB copy, use `make usb USB_DIR="/path/to/drive"`.
 Authenticate and name user-supplied Dirt/HP binaries without accessing a drive:
 
 ```sh
-python3 scripts/prepare_payloads.py --qspi --output prepared-qspi /path/to/DirtVerb.bin /path/to/Aurora_v1-4-6_hpfilt.bin
+python3 scripts/prepare_payloads.py --output prepared-payloads /path/to/DirtVerb.bin /path/to/Aurora_v1-4-6_hpfilt.bin
 ```
 
-Use the emitted filenames under `prepared-qspi/aurora/` and keep the selector
+Use the emitted filenames under `prepared-payloads/aurora/` and keep the selector
 as the only root BIN. No alternative firmware is included in our releases.
 Hardware testing and ordinary stock recovery are still required before release.
 

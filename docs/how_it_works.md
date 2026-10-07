@@ -3,7 +3,7 @@
 AuroraSwitch is a `BOOT_SRAM` application, not a bootloader replacement.
 Aurora's existing updater installs and starts it. The selector loads and
 authenticates a catalog image in separate SRAM, then launches it.
-Default builds use RAM; this branch's opt-in Dirt Verb path programs QSPI.
+This branch supports both RAM and QSPI images in one build.
 
 ## Why this approach?
 
@@ -26,10 +26,10 @@ MPU policy, and external-memory mappings expected by `BOOT_SRAM` startup.
 | AXI SRAM, `0x24000000` | Selector code; overwritten by the payload |
 | DTCM, `0x20000000` | Globals and stack; not accessible to USB DMA |
 | D2, `[0x30000000, 0x30008000)` | 32-KiB SDK DMA arena; cleared during terminal handoff |
-| D2, `[0x30008000, 0x30034680)` | Default 181888-byte staging buffer; opt-in ends at `0x300347e0` (182240 bytes) |
+| D2, `[0x30008000, 0x300347e0)` | 182240-byte staging buffer |
 | SRAM4, `[0x38000000, 0x38000400)` | Reserved space for the copy/jump trampoline |
 | SDRAM | Inherited mapping; not globally cleared |
-| QSPI, `0x90040000` | Installed application; opt-in Dirt launch replaces it and executes here |
+| QSPI, `0x90040000` | Installed application; Dirt launch replaces it and executes here |
 
 Staging capacity is the largest catalog image rounded to 32 bytes. Linker
 assertions keep it outside the DMA arena and below `0x30040000`, and pin the
@@ -79,9 +79,9 @@ controller state; the target must initialize state it uses. DMA clearing occurs
 only in the terminal routine because earlier clearing could destroy live
 selector buffers.
 
-## Opt-in QSPI launch
+## QSPI launch
 
-`QSPI_HANDOFF=1` admits only exact Dirt Verb 1.1 for QSPI execution. Before
+The catalog admits only exact Dirt Verb 1.1 for QSPI execution. Before
 shared cleanup, it authenticates staging, initializes the pinned flash driver,
 and erases offsets `[0x40000, 0x58000)` in 4-KiB sectors. Each page write is
 checked, then the entire payload is compared with mapped flash.
@@ -96,8 +96,8 @@ interrupted-programming recovery, and stock restore remain unverified.
 
 ## Boundaries
 
-Default RAM loading and handoff do not program flash. Initial installation
-and opt-in Dirt launch do. Launched firmware is not sandboxed and may write
+RAM loading and handoff do not program flash. Initial installation
+and Dirt launch do. Launched firmware is not sandboxed and may write
 persistent settings. Exact hashes establish expected bytes, not firmware safety.
 Virtual switching checks
 do not establish physical handoff reliability or ordinary stock recovery;

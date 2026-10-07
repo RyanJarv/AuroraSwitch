@@ -28,24 +28,13 @@ class FataBuildTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, "changed source cache"):
                     builder.check_cache(Path("/unused"), builder.SOURCE_COMMIT)
 
-    def test_qspi_vector_mode_is_explicit(self):
-        data = struct.pack("<II", 0x20020000, 0x90040009) + bytes(248)
-        builder.check_vectors(data, qspi=True)
-        for mode in (False, 1, "yes"):
-            with self.assertRaises(ValueError):
-                builder.check_vectors(data, qspi=mode)
-
     def test_vectors_require_the_selector_minimum_image_extent(self):
         """The build probe must reject vector-only images just as the selector does."""
-        for qspi, base in ((False, 0x24000000), (True, 0x90040000)):
-            with self.subTest(qspi=qspi):
-                builder.check_vectors(struct.pack("<II", 0x20020000, base + 15)
-                                      + bytes(8), qspi=qspi)
-                for size in range(8, 16):
-                    data = struct.pack("<II", 0x20020000, base + 1)
-                    data += bytes(size - 8)
-                    with self.assertRaises(ValueError):
-                        builder.check_vectors(data, qspi=qspi)
+        builder.check_vectors(struct.pack("<II", 0x20020000, 0x2400000f) + bytes(8))
+        for size in range(8, 16):
+            data = struct.pack("<II", 0x20020000, 0x24000001) + bytes(size - 8)
+            with self.assertRaises(ValueError):
+                builder.check_vectors(data)
 
     def test_fresh_build_and_sealed_bundle_guards(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -62,9 +51,8 @@ class FataBuildTests(unittest.TestCase):
                 elif command[0] == "make" and any(c.startswith("APP_TYPE=") for c in command):
                     build = Path(command[command.index("-C") + 1]) / "build"
                     build.mkdir(parents=True)
-                    payload = (struct.pack("<II", 0x20020000, 0x90040009) + data[8:]
-                               if "APP_TYPE=BOOT_QSPI" in command else data)
-                    for suffix, contents in (("bin", payload), ("elf", b"synthetic-elf"), ("map", b"synthetic-map")):
+                    self.assertIn("APP_TYPE=BOOT_SRAM", command)
+                    for suffix, contents in (("bin", data), ("elf", b"synthetic-elf"), ("map", b"synthetic-map")):
                         (build / ("FataMorgana." + suffix)).write_bytes(contents)
                 elif command[0].endswith("objcopy"):
                     Path(command[-1]).write_bytes((Path(command[-2]).parent / "FataMorgana.bin").read_bytes())
@@ -85,10 +73,7 @@ class FataBuildTests(unittest.TestCase):
                     self.assertNotIn("MAKEFLAGS", kwargs["env"])
                     self.assertNotIn(str(root / ".deps/Aurora-SDK"), cmd)
                 self.assertEqual(builder.build(), destination)
-                qspi = builder.build(qspi=True)
-                self.assertNotEqual(qspi, destination)
-                self.assertEqual(json.loads((qspi / "manifest.json").read_text())["configuration"],
-                                 {"APP_TYPE": "BOOT_QSPI"})
+                self.assertEqual(manifest["configuration"], {"APP_TYPE": "BOOT_SRAM"})
                 (destination / "FataMorgana.bin").write_bytes(b"changed")
                 with self.assertRaisesRegex(RuntimeError, "bundle changed"):
                     builder.build()

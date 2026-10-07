@@ -31,11 +31,9 @@ class PrepareTests(unittest.TestCase):
             self.files.append(path)
         self.output = self.root / "prepared"
         self.calls = []
-        self.modes = []
 
         @contextmanager
-        def authenticator(*, qspi=False):
-            self.modes.append(qspi)
+        def authenticator():
             yield Path("synthetic-authenticator")
 
         for patcher in (mock.patch.object(payloads, "authenticator", authenticator),
@@ -64,18 +62,6 @@ class PrepareTests(unittest.TestCase):
     def test_subset_is_allowed(self):
         receipt = payloads.prepare(self.files[1:], self.output)
         self.assertEqual(receipt["images"], self.images[1:])
-
-    def test_qspi_catalog_is_explicit_and_receipted(self):
-        receipt = payloads.prepare(self.files, self.output, qspi=True)
-        self.assertEqual(self.modes, [True])
-        self.assertIs(receipt["development_qspi_catalog"], True)
-
-    def test_non_boolean_catalog_mode_rejected(self):
-        for mode in (1, "yes", None):
-            with self.assertRaises(ValueError):
-                payloads.prepare(self.files, self.output, qspi=mode)
-        self.assertEqual(self.modes, [])
-        self.assertFalse(self.output.exists())
 
     def test_missing_input_leaves_no_output(self):
         with self.assertRaises(FileNotFoundError):

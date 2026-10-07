@@ -9,17 +9,15 @@ import tempfile
 from verify_images import authenticator, catalog
 
 
-def prepare(files: list[Path], output: Path, *, qspi: bool = False) -> dict:
+def prepare(files: list[Path], output: Path) -> dict:
     """Authenticate private copies, then publish a non-overwriting folder."""
-    if type(qspi) is not bool:
-        raise ValueError("qspi must be a boolean")
     if not files:
         raise ValueError("supply at least one supported firmware file")
     # New output only: never overwrite a drive, earlier bundle or recovery file.
     # A partial directory after an I/O failure must be inspected, not reused.
     if output.exists() or output.is_symlink():
         raise ValueError("output already exists; choose a new empty destination")
-    with authenticator(qspi=qspi) as executable, tempfile.TemporaryDirectory(
+    with authenticator() as executable, tempfile.TemporaryDirectory(
             prefix="aurora-payloads-") as temporary:
         images = catalog(executable)
         staged = []
@@ -44,8 +42,6 @@ def prepare(files: list[Path], output: Path, *, qspi: bool = False) -> dict:
         receipt = {"schema": "aurora-switch-payloads-v1",
                    "images": [image for image, _ in staged],
                    "qualification": "byte-authentication-only"}
-        if qspi:
-            receipt["development_qspi_catalog"] = True
         # All inputs pass before creating any public output. Exclusive creation
         # also refuses a destination created concurrently after the first check.
         output.mkdir(parents=True, exist_ok=False)
@@ -65,10 +61,9 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True,
                         help="new local folder; never an existing drive root")
     parser.add_argument("files", type=Path, nargs="+")
-    parser.add_argument("--qspi", action="store_true", help="use the opt-in development catalog")
     args = parser.parse_args()
     try:
-        receipt = prepare(args.files, args.output, qspi=args.qspi)
+        receipt = prepare(args.files, args.output)
     except (OSError, ValueError, subprocess.CalledProcessError) as error:
         parser.exit(2, f"Payload preparation failed: {error}\n")
     print(f"Prepared {len(receipt['images'])} authenticated image(s) in {args.output}/aurora")

@@ -33,7 +33,7 @@ class PackageTests(unittest.TestCase):
             self.addCleanup(patcher.stop)
 
     @contextmanager
-    def fresh(self, commit, *, virtual=False, qspi=False):
+    def fresh(self, commit, *, virtual=False):
         """Stand in for compilation while exercising real bundle sealing."""
         yield self.build, {"gcc": {"version": "synthetic", "sha256": "b" * 64}}, Path("/synthetic-tools")
 
@@ -56,20 +56,6 @@ class PackageTests(unittest.TestCase):
     def test_virtual_configuration_rejects_non_boolean(self):
         with self.assertRaises(ValueError):
             bundle.package(virtual=1)
-
-    def test_qspi_configuration_rejects_non_boolean(self):
-        with self.assertRaises(ValueError):
-            bundle.package(qspi=1)
-
-    def test_qspi_opt_in_has_distinct_identity_and_default_is_unchanged(self):
-        default = bundle.package()
-        experimental = bundle.package(qspi=True)
-        self.assertNotEqual(default, experimental)
-        normal = json.loads((default / "manifest.json").read_text())
-        opted_in = json.loads((experimental / "manifest.json").read_text())
-        self.assertNotIn("QSPI_HANDOFF", normal["build_provenance"]["configuration"])
-        self.assertEqual(opted_in["build_provenance"]["configuration"]["QSPI_HANDOFF"], 1)
-        self.assertFalse(opted_in["physical_qualified"])
 
     def test_exact_reuse(self):
         first = bundle.package()

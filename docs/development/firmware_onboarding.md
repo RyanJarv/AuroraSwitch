@@ -1,7 +1,7 @@
 # Firmware onboarding record
 
 Requested scope: older supported-family releases, Tempest, then FataMorgana.
-Dirt Verb's later opt-in experiment is tracked in [QSPI status](qspi_feasibility.md).
+Dirt Verb's QSPI path is tracked in [QSPI status](qspi_feasibility.md).
 Older releases and Tempest are staged and virtually
 tested on the development branch; they are not published or physically tested.
 FataMorgana has a provisional exact RAM entry; real USB and physical tests remain open.
@@ -26,8 +26,9 @@ Keep third-party binaries outside Git and release assets.
 
 Before physical testing, seal current source and rerun affected virtual checks:
 the family-color change supersedes the frozen candidates below. Keep ST-Link
-disconnected. FataMorgana still needs real USB/wavetable validation. Default
-builds remain RAM-only; the duplicate QSPI Fata entry is retired.
+disconnected. FataMorgana still needs real USB/wavetable validation. `main`
+remains RAM-only; this branch always includes Dirt Verb and HP-filter.
+The duplicate QSPI Fata entry is retired.
 
 The sections below preserve the onboarding chronology and exact-build results.
 Their intermediate limitations and “next” steps describe those checkpoints,

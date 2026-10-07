@@ -22,7 +22,7 @@
 Reverse selects → Freeze verifies → **wait for Freeze green** → Shift launches.
 Power cycle to return. [Setup guide](user_guide.md).
 
-Dirt Verb and HP-filter require the opt-in `codex/qspi-dirt-verb` build, not
+Dirt Verb and HP-filter are included in every `codex/qspi-dirt-verb` build, not
 the published release. Virtual screening is not physical compatibility or
 recovery testing. FataMorgana uses our RAM build; its duplicate QSPI option is retired.
 
@@ -396,7 +396,7 @@ No selector color; these cannot launch with the published RAM selector.
 ## Dirt Verb 1.1 — Red-pink
 
 Driven reverb with optional chorus and pitch shifting. Only the exact
-`DirtVerb 1.1.bin` is admitted by the opt-in QSPI selector.
+`DirtVerb 1.1.bin` is admitted by this branch's selector.
 
 ### Knobs
 
@@ -429,7 +429,7 @@ Driven reverb with optional chorus and pitch shifting. Only the exact
 ## Aurora HP-filter variant — Lime
 
 Stock Aurora controls with two shifted changes. Place the exact supplied
-`Aurora_v1-4-6_hpfilt.bin` in `aurora/`; only the opt-in development selector
+`Aurora_v1-4-6_hpfilt.bin` in `aurora/`; only this development branch's selector
 has enough reviewed staging capacity for this image.
 
 ### Shifted controls

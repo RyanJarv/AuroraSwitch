@@ -2,8 +2,8 @@
 
 ## Current scope
 
-Default source admits 12 RAM images; this branch's opt-in adds Dirt Verb (QSPI)
-and HP-filter (RAM). QSPI Fata is retired. Physical reliability and ordinary
+This branch admits 13 RAM images and Dirt Verb (QSPI) in every build.
+QSPI Fata is retired. Physical reliability and ordinary
 stock USB recovery remain open.
 
 Frozen virtual records cover earlier exact builds, not the selector after

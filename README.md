@@ -1,8 +1,8 @@
 # AuroraSwitch
 
-Choose a supported Aurora firmware from a USB drive. Reverse selects, Freeze verifies, and Shift starts it. Default builds launch from RAM; power cycling returns to the selector through Aurora's existing bootloader.
+Choose a supported Aurora firmware from a USB drive. Reverse selects, Freeze verifies, and Shift starts it. RAM images launch without flashing; Dirt Verb runs from QSPI.
 
-This branch also has an opt-in QSPI launch for Dirt Verb. It replaces the installed application, so menu re-entry needs ready USB media containing the selector. It is not in published releases.
+Dirt Verb launch replaces the installed application, so menu re-entry needs ready USB media containing the selector. This branch includes that support in every build; it is not in the published release yet.
 
 Beta software with limited testing. Keep the original Aurora firmware and a backup of your USB drive. More hardware testing is needed.
 
@@ -46,8 +46,8 @@ The published release supports these exact versions:
 ### Source-build additions
 
 Current source adds Flux 0.1.0/0.2.0, Morse 0.1.0, Tempest 1.0.0, and one
-FataMorgana RAM build. `QSPI_HANDOFF=1` on this branch also adds Dirt Verb 1.1
-(QSPI) and HP-filter Aurora (RAM). See the
+FataMorgana RAM build. This branch also includes Dirt Verb 1.1 (QSPI) and
+HP-filter Aurora (RAM), with no extra build options. See the
 [user guide](docs/user_guide.md#source-build-additions) for files and commands.
 
 Earlier exact-build virtual screens pass; physical reliability and stock USB

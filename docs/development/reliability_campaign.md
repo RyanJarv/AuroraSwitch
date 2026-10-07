@@ -87,7 +87,7 @@ Module installation and physical results remain unconfirmed.
 
 The [next firmware batch](firmware_onboarding.md) tracks older versions and
 Tempest's bounded persistence/control/audio review and Fata's experimental RAM
-build. The opt-in QSPI branch also admits Dirt Verb and HP-filter; Fata remains
+build. The QSPI branch also admits Dirt Verb and HP-filter; Fata remains
 RAM-only. See the [additional-image checkpoint](qspi_additional_images.md).
 Their virtual checks do not extend the physical results above, and they remain
 excluded from default releases. Onboarding must not delay official recovery testing.

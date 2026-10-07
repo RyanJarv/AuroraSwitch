@@ -6,12 +6,13 @@ the bootloader. This initial review established feasibility, not qualification.
 RAM switching stays unchanged.
 
 Follow-up: an opt-in `QSPI_HANDOFF=1` implementation has been built from source
-`254f7ff239b9e613fe293dcbe4bae5a88b84c76e`. Default builds remain RAM-only.
+`254f7ff239b9e613fe293dcbe4bae5a88b84c76e`. That checkpoint used an opt-in;
+current branch builds always include QSPI support. `main` remains RAM-only.
 The initial investigation below is static evidence; the implementation's
 virtual results are recorded separately at the end.
 
 The later [additional-image checkpoint](qspi_additional_images.md) supersedes
-the candidate below. Current opt-in entries are Dirt Verb and RAM HP-filter;
+the candidate below. Current additional entries are Dirt Verb and RAM HP-filter;
 the duplicate QSPI FataMorgana entry was retired. Physical tests remain open.
 
 ## What the installed updater does

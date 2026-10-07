@@ -24,7 +24,6 @@ copy_byte:
     strb r3, [r1], #1
     subs r2, r2, #1
     bne copy_byte
-#ifdef SELECTOR_DMA_ARENA_CLEANUP
     // Pinned Daisy SRAM linker: RAM_D2_DMA = [0x30000000, 0x30008000).
     // Staging begins at 0x30008000, outside this arena. Teardown has already
     // reset bus masters and cleaned/disabled caches. Do not erase live
@@ -36,7 +35,6 @@ clear_dma_word:
     str r3, [r0], #4
     cmp r0, r1
     bne clear_dma_word
-#endif
     dsb sy
     isb sy
     ldr r3, =0xe000ed08
@@ -62,7 +60,6 @@ invalid_length:
     b invalid_length
     .ltorg
 selector_copy_jump_end:
-#ifdef SELECTOR_QSPI_HANDOFF
 
 // Separate terminal blob: R0 is the verified, memory-mapped QSPI vector base.
 // No relocation/copy. Selector SRAM remains intact; runtime cleanup is shared.
@@ -75,7 +72,6 @@ selector_qspi_jump_blob_start:
 selector_qspi_jump_start:
     cpsid i
     mov r4, r0
-#ifdef SELECTOR_DMA_ARENA_CLEANUP
     ldr r0, =0x30000000
     ldr r1, =0x30008000
     movs r3, #0
@@ -83,7 +79,6 @@ qspi_clear_dma_word:
     str r3, [r0], #4
     cmp r0, r1
     bne qspi_clear_dma_word
-#endif
     dsb sy
     isb sy
     ldr r3, =0xe000ed08
@@ -107,4 +102,3 @@ qspi_terminal:
     b qspi_terminal
     .ltorg
 selector_qspi_jump_end:
-#endif

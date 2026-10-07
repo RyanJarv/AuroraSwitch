@@ -19,7 +19,7 @@ def digest(data: bytes) -> str:
 
 
 @contextmanager
-def fresh_build(commit: str, *, virtual: bool = False, qspi: bool = False):
+def fresh_build(commit: str, *, virtual: bool = False):
     """Build tracked source and dependency checkouts, never ambient objects."""
     tool_directory, tools = toolchain_identity()
     scratch = ROOT / ".deps"
@@ -44,12 +44,8 @@ def fresh_build(commit: str, *, virtual: bool = False, qspi: bool = False):
         subprocess.run(["make", "-j2", "-C", str(library), f"GCC_PATH={tool_directory}"],
                        check=True, env=build_environment)
         build_directory = "build-virtual-experimental-dma" if virtual else "build-experimental-dma"
-        if qspi:
-            build_directory += "-qspi"
         subprocess.run(["make", "-j2", "-C", str(checkout / "firmware"),
-            f"GCC_PATH={tool_directory}", "EXPERIMENTAL_HANDOFF=1",
-            "DMA_ARENA_CLEANUP=1", f"VIRTUAL_TRANSPORT={int(virtual)}",
-            f"QSPI_HANDOFF={int(qspi)}",
+            f"GCC_PATH={tool_directory}", f"VIRTUAL_TRANSPORT={int(virtual)}",
             f"BUILD_DIR={build_directory}"], check=True, env=build_environment)
         yield checkout / "firmware" / build_directory, tools, tool_directory
 
@@ -70,22 +66,19 @@ def toolchain_identity() -> tuple[Path, dict]:
     return tool_directory, tools
 
 
-def package(*, virtual: bool = False, qspi: bool = False) -> Path:
+def package(*, virtual: bool = False) -> Path:
     """Build and seal the current clean commit using authenticated dependencies."""
-    if type(virtual) is not bool or type(qspi) is not bool:
-        raise ValueError("virtual and qspi must be booleans")
+    if type(virtual) is not bool:
+        raise ValueError("virtual must be a boolean")
     setup()
     if subprocess.check_output(["git", "-C", str(ROOT), "status", "--porcelain"], text=True).strip():
         raise RuntimeError("development packaging requires a clean committed source tree")
     commit = subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip()
-    # Preserve the historical default lane and its manifest contract.
-    options = {"virtual": virtual, **({"qspi": True} if qspi else {})}
-    with fresh_build(commit, **options) as (build, tools, tool_directory):
-        return seal(build, commit, tools, tool_directory, **options)
+    with fresh_build(commit, virtual=virtual) as (build, tools, tool_directory):
+        return seal(build, commit, tools, tool_directory, virtual=virtual)
 
 
-def seal(build: Path, commit: str, tools: dict, tool_directory: Path, *, virtual: bool = False,
-         qspi: bool = False) -> Path:
+def seal(build: Path, commit: str, tools: dict, tool_directory: Path, *, virtual: bool = False) -> Path:
     """Check ELF/BIN agreement and publish or reuse an exact content-addressed bundle."""
     target = "AuroraSwitchVirtual" if virtual else "AuroraSwitch"
     payload = {f"{target}.{suffix}": (build / f"{target}.{suffix}").read_bytes()
@@ -96,6 +89,7 @@ def seal(build: Path, commit: str, tools: dict, tool_directory: Path, *, virtual
             str(build / f"{target}.elf"), str(converted)], check=True)
         if converted.read_bytes() != payload[f"{target}.bin"]:
             raise RuntimeError("ELF/BIN identity mismatch")
+    # Historical manifest keys describe fixed handoff invariants, not build options.
     manifest = {"schema": "aurora-switch-development-bundle-v1", "development_only": True,
         "physical_qualified": False, "source_commit": commit,
         "build_provenance": {"method": "fresh-isolated-tracked-checkouts",
@@ -106,8 +100,6 @@ def seal(build: Path, commit: str, tools: dict, tool_directory: Path, *, virtual
         # Record the same pins used to authenticate and clone build inputs.
         "dependency_revisions": {**{name: revision for name, (_, revision) in PINS.items()},
             "libDaisy": DAISY}}
-    if qspi:
-        manifest["build_provenance"]["configuration"]["QSPI_HANDOFF"] = 1
     manifest_bytes = (json.dumps(manifest, sort_keys=True, indent=2) + "\n").encode()
     if subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip() != commit:
         raise RuntimeError("source HEAD changed during packaging")
@@ -142,7 +134,5 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--virtual", action="store_true",
                         help="seal a synthetic-media test build, never install this on hardware")
-    parser.add_argument("--qspi", action="store_true",
-                        help="opt in to experimental flash-writing handoff; not hardware qualified")
     args = parser.parse_args()
-    package(virtual=args.virtual, qspi=args.qspi)
+    package(virtual=args.virtual)

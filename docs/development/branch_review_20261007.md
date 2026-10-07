@@ -4,6 +4,14 @@ Reviewed baseline: `c8b4477`, branch `codex/qspi-dirt-verb`.
 Scope: selector, handoff, writer bounds, build/package/payload tools, tests,
 reference site, and active docs. No hardware or sibling-project changes.
 
+Follow-up: the temporary USB rejection below is superseded. This branch now
+has one 14-image build/catalog, including QSPI support, and `make usb` uses it.
+No feature opt-in or separate QSPI build directory remains.
+Obsolete no-handoff preview, DMA-cleanup-off, and retired Fata QSPI build targets
+are also removed. Only real USB and synthetic-media test builds remain.
+Authentication, flash bounds, staged-byte revalidation, DMA cleanup, and the
+recovery gate are retained. They enforce the loader's launch contract.
+
 ## Fixed
 
 - `make usb QSPI_HANDOFF=1` built in the QSPI directory but copied the default

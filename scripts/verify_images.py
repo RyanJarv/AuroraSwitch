@@ -10,10 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 @contextmanager
-def authenticator(*, qspi: bool = False):
+def authenticator():
     """Compile the firmware's exact predicate once for a host operation."""
-    if type(qspi) is not bool:
-        raise ValueError("qspi must be a boolean")
     tls = ROOT / ".deps/mbedtls"
     url, revision = PINS["mbedtls"]
     if (git(tls, "remote", "get-url", "origin") != url
@@ -31,7 +29,6 @@ def authenticator(*, qspi: bool = False):
             objects.append(str(obj))
         executable = destination / "authenticate-image"
         subprocess.run(["c++", "-std=c++17", "-Wall", "-Wextra", "-Werror",
-            *(["-DSELECTOR_QSPI_HANDOFF"] if qspi else []),
             '-DMBEDTLS_CONFIG_FILE="sha256_config.h"', "-I" + str(tls / "include"),
             "-I" + str(ROOT / "firmware"), str(ROOT / "firmware/authenticate_image.cpp"),
             *objects, "-o", str(executable)], check=True)
@@ -58,9 +55,9 @@ def catalog(executable: Path) -> list[dict]:
     return images
 
 
-def verify(directory: Path, *, qspi: bool = False) -> None:
+def verify(directory: Path) -> None:
     """Require every catalog file to pass the compiled firmware authenticator."""
-    with authenticator(qspi=qspi) as executable:
+    with authenticator() as executable:
         for image in catalog(executable):
             name = image["filename"]
             subprocess.run([str(executable), name, str(directory / name)], check=True)
@@ -69,6 +66,5 @@ def verify(directory: Path, *, qspi: bool = False) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("directory", type=Path)
-    parser.add_argument("--qspi", action="store_true", help="include experimental QSPI catalog")
     args = parser.parse_args()
-    verify(args.directory.resolve(), qspi=args.qspi)
+    verify(args.directory.resolve())

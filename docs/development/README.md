@@ -42,7 +42,7 @@ Do not create a new emulator for a difficult image; defer it.
 - [Verification status](verification.md) and [active checklist](reliability_campaign.md#active-checklist).
 - [Recovery checks](recovery_release_gate.md) and [optional timing diagnostics](load_timing.md).
 - [QSPI feasibility](qspi_feasibility.md): updater boundaries and Dirt Verb implementation.
-- [Additional-image checkpoint](qspi_additional_images.md): current opt-in
+- [Additional-image checkpoint](qspi_additional_images.md): current
   Dirt/HP-filter scope and historical QSPI Fata evidence.
 - [Seven-image checkpoint](checkpoints/public_releases_20261006.md) and [machine-readable evidence](evidence/public_releases_20261006.json) (history).
 

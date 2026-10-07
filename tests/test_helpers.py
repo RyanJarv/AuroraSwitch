@@ -8,12 +8,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class HelperTests(unittest.TestCase):
-    def compile_and_run(self, source: str, defines: tuple[str, ...] = ()) -> None:
+    def compile_and_run(self, source: str) -> None:
         """Use the same warnings and isolated output for every native probe."""
         with tempfile.TemporaryDirectory(prefix="aurora-host-tests-") as directory:
             executable = Path(directory) / source
             subprocess.run(["c++", "-std=c++17", "-Wall", "-Wextra", "-Werror",
-                *defines, str(ROOT / "firmware" / (source + ".cpp")), "-o",
+                str(ROOT / "firmware" / (source + ".cpp")), "-o",
                 str(executable)], check=True)
             subprocess.run([str(executable)], check=True)
 
@@ -34,8 +34,8 @@ class HelperTests(unittest.TestCase):
     def test_catalog_colors_and_capacity(self):
         self.compile_and_run("catalog_test")
 
-    def test_opt_in_qspi_catalog(self):
-        self.compile_and_run("qspi_catalog_test", ("-DSELECTOR_QSPI_HANDOFF",))
+    def test_qspi_catalog(self):
+        self.compile_and_run("qspi_catalog_test")
 
     def test_qspi_bounded_writer_and_faults(self):
         self.compile_and_run("qspi_programming_test")
@@ -46,6 +46,13 @@ class HelperTests(unittest.TestCase):
                 capture_output=True, text=True)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("physical deployment is not authorized", result.stderr)
+
+    def test_synthetic_objects_cannot_share_installable_directory(self):
+        result = subprocess.run(["make", "-n", "-C", str(ROOT / "firmware"),
+            "VIRTUAL_TRANSPORT=1", "BUILD_DIR=build-experimental-dma"],
+            capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Use BUILD_DIR=build-virtual-experimental-dma", result.stderr)
 
 
 if __name__ == "__main__":

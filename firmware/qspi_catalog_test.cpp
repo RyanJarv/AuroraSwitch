@@ -1,4 +1,4 @@
-// Opt-in admission must add only the reviewed QSPI image, never reinterpret SRAM.
+// QSPI admission accepts only the reviewed image, never reinterprets SRAM.
 #include "images.hpp"
 #include <cassert>
 #include <cstring>

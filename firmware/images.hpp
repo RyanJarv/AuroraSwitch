@@ -82,8 +82,7 @@ namespace aurora_selector
         {"0:/aurora/FataMorgana.bin",
          "35bc0bebafa7736ccc61ca788e5f3c3aa2fe4168534761722768eb907743d005",
          151420U, {0x20020000U, 0x24000a49U}, menu_colors::FataMorgana},
-#ifdef SELECTOR_QSPI_HANDOFF
-        // Experimental exact-image flash path; absent from default RAM builds.
+        // Exact-image flash path; only this payload runs from QSPI.
         {"0:/aurora/DirtVerb 1.1.bin",
          "e1775fb6c46dd83e33abaf599eb6d6089b7ff56692b42ac48748d2d1555d2784",
          95196U, {0x20020000U, 0x90040959U}, menu_colors::DirtVerb, Execution::Qspi},
@@ -91,7 +90,6 @@ namespace aurora_selector
         {"0:/aurora/Aurora_v1-4-6_hpfilt.bin",
          "94f4200efdf47cfb0c055fa51896da4d8c8d0f8b6a6d0a9bc9ec31553d85ebc7",
          182212U, {0x20020000U, 0x2400070dU}, menu_colors::HpFilter},
-#endif
     };
 
     // Size the shared buffer for the largest entry, rounded for DMA/cache alignment.
@@ -108,7 +106,6 @@ namespace aurora_selector
     static_assert(StagingCapacity() <= StagingLimit - StagingAddress,
                   "Reviewed image set exceeds internal staging SRAM");
 
-#ifdef SELECTOR_QSPI_HANDOFF
     // Header-local catalogs have different addresses in each translation unit.
     // Match the reviewed value, never a caller's pointer identity.
     inline bool IsReviewedQspiImage(const Image& image)
@@ -123,7 +120,6 @@ namespace aurora_selector
                 return true;
         return false;
     }
-#endif
 
     // Match staged bytes and their caller-computed digest to one reviewed entry.
     inline bool VerifyImage(const std::uint8_t* bytes, std::size_t size,
