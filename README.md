@@ -9,13 +9,19 @@ backup of your USB drive. More hardware testing is needed.
 
 ## Get started
 
-Follow the [user guide](docs/user_guide.md) to build the selector, prepare a drive,
-install it, and switch firmware. Third-party firmware is not included; obtain
-supported files from their authors.
+Follow the [user guide](docs/user_guide.md) which covers the basics.
 
-The catalog accepts seven exact images: Aurora 1.4.4, FDN 1.2.2, EchoGarden
-0.3.1, CloudscapeX, The Oscillator Is a Lie 0.0.2, Flux Capacitor 0.3.0, and
-Morse 0.2.0. Other versions are not automatically supported.
+This repo doesn't include the Third-party firmware, you'll need to grab that yourself. Exact supported versions are necessary, currently this project supports:
+
+* [Aurora 1.4.4](https://www.qubitelectronix.com/alternate-firmware/p/aurora-spectral-reverb)
+* [FDN 1.2.2](https://www.qubitelectronix.com/alternate-firmware/p/fdn-verb)
+* [EchoGarden 0.3.1](https://discord.com/channels/1171549067122311298/1257378715944484864)
+* [CloudscapeX](https://discord.com/channels/1171549067122311298/1257378715944484864)
+* [The Oscillator Is a Lie 0.0.2](https://discord.com/channels/1171549067122311298/1257378715944484864)
+* [Flux Capacitor 0.3.0](https://discord.com/channels/1171549067122311298/1257378715944484864)
+* [Morse 0.2.0](https://discord.com/channels/1171549067122311298/1257378715944484864)
+
+Other versions and firmware won't work right now.
 
 ## Quick start
 
@@ -23,12 +29,8 @@ Install Git, GNU Make, Python 3, a C/C++ compiler, and GNU Arm Embedded
 **10-2020-q4-major**. Then run:
 
 ```sh
-#!/bin/sh
-set -eu
-git clone https://github.com/RyanJarv/AuroraSwitch.git
-cd AuroraSwitch
-make -j2 build
-make check
+git clone https://github.com/RyanJarv/AuroraSwitch.git && cd AuroraSwitch
+make -j2 build && make check
 ```
 
 Output: `firmware/build-experimental-dma/AuroraSwitch.bin`.
