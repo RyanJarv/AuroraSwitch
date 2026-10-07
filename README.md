@@ -25,16 +25,14 @@ Other versions and firmware won't work right now.
 
 ## Quick start
 
-No release download is available yet. The commands below build and prepare the USB.
-
-Install Git, GNU Make, Python 3, a C/C++ compiler, and GNU Arm Embedded
-**10-2020-q4-major**, with its `bin` directory on PATH. Back up your FAT USB drive
+Install Git, GitHub CLI (`gh`), GNU Make, Python 3, and a C++ compiler.
+Back up your FAT USB drive
 and move any root-level BINs off it first. Change `USB_DIR` below to its mounted
 path (Linux example: `/media/your-user/AURORA`):
 
 ```sh
 git clone https://github.com/RyanJarv/AuroraSwitch.git && cd AuroraSwitch
-make -j2 usb USB_DIR="/Volumes/AURORA"
+make usb-release USB_DIR="/Volumes/AURORA"
 ```
 
 Eject, return USB, power on.
@@ -47,6 +45,10 @@ green for original Aurora);
 Power cycle to return to the selector.
 
 Firmware found on the QuBit Discord must be added manually. See the [user guide](docs/user_guide.md) for more info.
+
+This downloads the latest published selector release and four supported public firmwares.
+To build from source instead, install GNU Arm Embedded **10-2020-q4-major**
+on PATH and use `make -j2 usb USB_DIR="/Volumes/AURORA"`.
 
 ## Read more
 

@@ -1,5 +1,7 @@
 """Synthetic USB staging tests; no device or firmware-execution claims."""
 import io
+import hashlib
+import json
 from pathlib import Path
 import sys
 import tempfile
@@ -72,3 +74,38 @@ class UsbTests(unittest.TestCase):
         with mock.patch.object(prepare_usb.urllib.request, "urlopen", return_value=io.BytesIO(b"x" * (2 * 1024 * 1024 + 1))):
             with self.assertRaisesRegex(ValueError, "too large"):
                 prepare_usb.download("https://example.test/image.bin", "image.bin")
+
+    def test_release_identity_and_configuration_checks(self):
+        """Synthetic release data tests admission only, not firmware behavior."""
+        folder = self.root / "release"
+        folder.mkdir()
+        files = {}
+        for name in ("AuroraSwitch.bin", "AuroraSwitch.elf", "AuroraSwitch.map"):
+            data = b"synthetic release " + name.encode()
+            (folder / name).write_bytes(data)
+            files[name] = {"bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
+        manifest = {
+            "schema": "aurora-switch-development-bundle-v1", "source_commit": "a" * 40,
+            "files": files, "build_provenance": {"configuration": {
+                "EXPERIMENTAL_HANDOFF": 1, "DMA_ARENA_CLEANUP": 1, "VIRTUAL_TRANSPORT": 0}}}
+        def verify(tag="v-test"):
+            (folder / "manifest.json").write_text(json.dumps(manifest))
+            responses = ["v-test", "a" * 40] if tag == "latest" else ["a" * 40]
+            with mock.patch.object(prepare_usb.subprocess, "run") as download, \
+                    mock.patch.object(prepare_usb.subprocess, "check_output", side_effect=responses):
+                result = prepare_usb.release_selector(tag, folder)
+                self.assertEqual(download.call_args.args[0][3], "v-test")
+                return result
+        self.assertEqual(verify(), folder / "AuroraSwitch.bin")
+        self.assertEqual(verify("latest"), folder / "AuroraSwitch.bin")
+        manifest["source_commit"] = "b" * 40
+        with self.assertRaisesRegex(ValueError, "source identity"):
+            verify()
+        manifest["source_commit"] = "a" * 40
+        manifest["build_provenance"]["configuration"]["VIRTUAL_TRANSPORT"] = 1
+        with self.assertRaisesRegex(ValueError, "configuration"):
+            verify()
+        manifest["build_provenance"]["configuration"]["VIRTUAL_TRANSPORT"] = 0
+        (folder / "AuroraSwitch.bin").write_bytes(b"corrupted")
+        with self.assertRaisesRegex(ValueError, "byte mismatch"):
+            verify()
