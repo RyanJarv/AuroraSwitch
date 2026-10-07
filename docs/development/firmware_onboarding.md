@@ -13,7 +13,8 @@ Keep third-party binaries outside Git and release assets.
   entries; never reuse another version's linked execution addresses.
 - [x] Run older-image virtual launch/control/audio checks and affected selector
   regressions. Tempest and FataMorgana are not covered by this pass.
-- [ ] Review Tempest's linked settings erase/write path before admission.
+- [x] Review Tempest's linked settings erase/write path and complete its
+  bounded selector handoff/control/audio checks. Physical recovery stays open.
 - [ ] Resolve FataMorgana's QSPI execution blocker without expanding the loader.
 - [ ] Package an authenticated changed selector and stop for physical testing.
 
@@ -82,12 +83,17 @@ using pale red. Existing indices, staging capacity and loader code are unchanged
 This is preparation for linked tests, not release admission or a compatibility
 claim; it must not be shipped on the strength of the flash inventory alone.
 
-The clean virtual companion from `d9b84b5` now passes two linked Tempest
+The clean virtual companion from `d9b84b5` passes two linked Tempest
 handoffs through discovery, selection, verification and DMA-cleared copy to
 reset entry. Manifest `4637757f…57a7`, BIN `90d6329d…52bf` (65620 bytes).
-The older ten-entry companion/evidence is preserved. Tempest callback/control/
-audio continuation is still rejected pending its own exact binding; no startup,
-physical launch or recovery pass is claimed.
+The older ten-entry companion/evidence is preserved. Three subsequent linked
+audio/control runs pass: one baseline and two changed Mix/crossover controls,
+85 finite callbacks and 8192 PCM frames each. Both changed-control results
+match and differ from baseline. The registration uses Tempest's R6-based store,
+not copied R5 instructions. All partial startup ADC vectors remain checked.
+No physical launch, real USB, full persistence lifecycle or recovery pass is
+claimed. The remaining software question is FataMorgana's QSPI/USB requirement;
+do not expand the RAM loader or add flash-writing support to force admission.
 
 Cross-image concern: FataMorgana also uses offset `8192`, but its
 `PistonSettings` layout differs from Tempest's `DistortionSettings`. The pinned
