@@ -8,7 +8,7 @@ must match. Other versions need separate review and catalog entries.
 
 No third-party BINs or manuals are distributed in this repository or selector
 packages. Obtain the exact supported versions from their authors, then use the
-[user guide](user_guide.md#prepare-the-firmware-files) to validate and prepare them.
+[user guide](user_guide.md#supported-firmware) to validate and prepare them.
 Discord-only files remain user-supplied.
 
 Public assets can be downloaded with GitHub CLI:

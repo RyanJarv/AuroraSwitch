@@ -12,7 +12,7 @@
 - [Source map](architecture.md): where each part lives.
 - [Verification status](verification.md): current software results and limitations.
 - [Reliability checklist](reliability_campaign.md#active-checklist): the active plan.
-- [Recovery release gate](recovery_release_gate.md): evidence required before release.
+- [Recovery checklist](recovery_release_gate.md): developer/agent release checks.
 - [Load timing](load_timing.md): optional diagnostics; no timeout is implemented.
 
 ## Evidence and history

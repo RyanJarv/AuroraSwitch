@@ -47,7 +47,7 @@ make verify-images FIRMWARE_DIR=/path/to/your/files
 ```
 
 The final command needs every catalog file. To validate a subset, use the
-[user guide's preparation command](user_guide.md#prepare-the-firmware-files).
+[user guide's preparation command](user_guide.md#supported-firmware).
 Host tests use synthetic inputs; image authentication checks bytes, not DSP.
 The external virtual campaign is recorded evidence, not part of `make test`;
 a portable standalone replay recipe remains a follow-up.

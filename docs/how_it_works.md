@@ -73,7 +73,6 @@ It has no overall load deadline; upstream storage calls can stall.
 Audio transients, hardware variants, long-run stability, and physical recovery
 remain unverified. QSPI-linked and oversized payloads are unsupported.
 
-Ordinary stock USB restoration is a
-[release requirement](recovery_release_gate.md), not a proven guarantee.
+Physical reliability and stock USB restoration still need testing.
 See [verification status](verification.md), the [source map](architecture.md),
 and the [development guide](development.md).

@@ -1,45 +1,29 @@
 # User guide
 
-AuroraSwitch is for early testers with a Qu-Bit Aurora on Daisy Seed.
-It launches supported firmware from RAM; switching is a restart, not a seamless
-effect change. Physical reliability and ordinary stock recovery remain open.
-Keep a known-good original Aurora BIN and a backup of your USB drive.
+Beta software: keep the original Aurora firmware and a backup of your USB drive.
 
-## Build the selector
+## Build
 
-Use Git, GNU Make, Python 3, a host C/C++ compiler, and GNU Arm Embedded
-**10-2020-q4-major**. Add that toolchain's `bin` directory to PATH.
+Requires Git, GNU Make, Python 3, a C/C++ compiler, and GNU Arm Embedded
+**10-2020-q4-major** on PATH.
 
 ```sh
 git clone https://github.com/RyanJarv/AuroraSwitch.git
 cd AuroraSwitch
-make dependencies -j2
-make -j2
-make test
+make check
 make package
 ```
 
-Dependency setup fetches pinned source, not firmware or system packages.
-Packaging requires a clean committed checkout, rebuilds the application and
-libDaisy in isolation, and prints a bundle path under `dist/<manifest-sha256>/`.
-Use its `AuroraSwitch.bin`; retain the manifest, ELF, and MAP for test reports.
-Do not install an `AuroraSwitchVirtual.bin` or a package made with `--virtual`.
+Use `AuroraSwitch.bin` from the printed `dist/<manifest-sha256>/` folder.
+Packaging fetches dependencies and requires a clean committed checkout.
+For a faster incremental build, use `make -j2 build`; its BIN is at
+`firmware/build-experimental-dma/AuroraSwitch.bin`. Never install a virtual build.
 
-## Prepare the firmware files
+## Supported firmware
 
-Obtain the exact supported files yourself. The table below lists accepted names;
-[firmware support](alternative_firmware.md) has public download commands.
-Keep your copies in ignored `local-firmware/`.
-
-```sh
-python3 scripts/prepare_payloads.py --output prepared-payloads \
-  local-firmware/AR_FDN_v1_2_2.bin local-firmware/Aurora_v1_4_4.bin
-```
-
-Add any supported files to that command, or use just one. The helper checks the
-selector's catalog, copies verified bytes into `prepared-payloads/aurora/`, and
-writes `payloads.json`. It refuses changed/unknown images and existing output
-directories. Choose a new output directory for another run.
+Obtain these files from their authors; they are not included here.
+Only the exact supported versions work. Public download commands are in
+[firmware support](alternative_firmware.md#obtain-files).
 
 | Firmware | Filename | Reverse color |
 | --- | --- | --- |
@@ -51,14 +35,15 @@ directories. Choose a new output directory for another run.
 | Flux Capacitor 0.3.0 | `flux-capacitor-0.3.0.bin` | Yellow |
 | Morse 0.2.0 | `aurora-morse-0.2.0.bin` | White |
 
-## Install on Aurora
+Check and prepare whichever supported files you have:
 
-Use Aurora's compatible FAT USB drive. Back it up; preserve settings and recovery
-files. Put the packaged `AuroraSwitch.bin` at the root as the **only root BIN**.
-Move any previous root updater BIN to your computer. Copy the prepared `aurora/`
-folder alongside it; selected firmware files must stay in that subdirectory.
+```sh
+python3 scripts/prepare_payloads.py --output prepared-payloads \
+  local-firmware/AR_FDN_v1_2_2.bin local-firmware/Aurora_v1_4_4.bin
+```
 
-Example with two payloads:
+Use a new output folder each time. Copy its `aurora/` folder to a compatible FAT
+USB drive, alongside the selector BIN:
 
 ```text
 USB root/
@@ -68,52 +53,26 @@ USB root/
     Aurora_v1_4_4.bin
 ```
 
-Safely eject the drive, insert it into Aurora, and power cycle. Qu-Bit's
-[normal USB update procedure](https://www.qubitelectronix.com/faq) describes
-automatic installation at power-up, indicated by white LEDs. Do not interrupt
-the update. This project's exact-build physical campaign is still pending;
-the procedure is not a claimed recovery pass for AuroraSwitch.
+Keep `AuroraSwitch.bin` as the only BIN at the root; preserve existing settings.
+Safely eject, insert into Aurora, and power cycle to install using
+[Qu-Bit's normal updater](https://www.qubitelectronix.com/faq).
+Do not interrupt the update. To restore stock, replace the root BIN with the
+original Aurora BIN and repeat; this still needs testing with AuroraSwitch.
 
-## Choose and launch
+## Select firmware
 
-1. Wait for scanning to finish. Only exact supported files enter the menu.
-2. Press/release **Reverse** to select a firmware by color.
-3. Press/release **Freeze** to load and verify it. Wait for Freeze to turn green.
-4. Press/release **Shift** to launch. The selected firmware now owns all controls.
+1. Wait for scanning to finish.
+2. Press **Reverse** to choose by color.
+3. Press **Freeze** to load it; wait for green.
+4. Press **Shift** to start it.
 
-To choose another firmware, power cycle with the selector drive inserted and
-repeat. There is no universal return-to-menu button combination in the payloads.
-Changing selection or disconnecting the drive revokes approval; verify again.
-After editing files on your computer, safely eject and reconnect to rescan.
+Power cycle to return to the menu. After changing files, reconnect the drive
+to rescan. Changing selection or disconnecting requires verification again.
 Morse needs an external Freeze-gate clock and Mix above zero.
 
-## Status and troubleshooting
+## Not supported yet
 
-| Freeze color | Meaning / action |
-| --- | --- |
-| Dim blue | No ready media; check the drive |
-| White | Selection available; press Freeze to verify |
-| Amber | Scanning/loading; wait |
-| Green | Verified; press Shift to launch |
-| Red | No supported image, failed verification, or initialization error |
-
-If a file is missing from the menu, check its version and filename with the
-preparation helper. Renaming unsupported bytes does not make them compatible.
-Initialization errors stay red until reset. A bad drive can stall upstream
-USB/FatFs calls; there is no overall load timeout.
-
-Test controls as well as audio. Sound with frozen controls is not success.
-Start monitoring quietly; handoff transients are not characterized. Keep
-ST-Link disconnected during current testing because attachment has caused resets.
-
-## Restore original firmware
-
-Back up the drive. Replace the root selector BIN with your known-good original
-Aurora BIN, leaving only that updater BIN at the root. Payloads may remain in
-`aurora/`. Safely eject, insert into Aurora, and power cycle using the normal
-update procedure linked above. Check controls and audio afterward.
-
-Ordinary USB restoration is a [release requirement](recovery_release_gate.md),
-not an established always-recoverable guarantee. If the updater cannot restore
-normal operation, stop and report the exact build and symptoms. Do not guess
-at bootloader, calibration, or debug-programming fixes.
+- **Tempest:** QSPI settings writes need a persistence/recovery review.
+- **Dirt Verb:** runs from QSPI, outside this RAM loader's design.
+- **HP-filter Aurora:** too large for the current staging buffer.
+- **Other versions or renamed files:** need separate review and catalog entries.
