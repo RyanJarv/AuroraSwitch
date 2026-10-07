@@ -10,6 +10,10 @@ Follow-up: an opt-in `QSPI_HANDOFF=1` implementation has been built from source
 The initial investigation below is static evidence; the implementation's
 virtual results are recorded separately at the end.
 
+The later [additional-image checkpoint](qspi_additional_images.md) supersedes
+the candidate below and adds exact QSPI FataMorgana and RAM HP-filter entries.
+Its physical tests remain open.
+
 ## What the installed updater does
 
 The previously captured loader matches the pinned Daisy v5.4 binary:

@@ -43,9 +43,8 @@ Only these exact versions are supported:
 
 ### Not supported yet
 
-- **FataMorgana:** upstream QSPI build is unsupported; a RAM experiment is on the development branch.
+- **FataMorgana QSPI and HP-filter Aurora:** opt-in development entries pass virtual checks; physical testing remains open. See [additional images](docs/development/qspi_additional_images.md).
 - **Dirt Verb:** opt-in QSPI experiment passes virtual checks; hardware testing remains open. Excluded from default builds.
-- **HP-filter Aurora:** too large for the current staging buffer.
 - **Other versions or renamed files:** need separate review and catalog entries.
 
 ### Development branch additions

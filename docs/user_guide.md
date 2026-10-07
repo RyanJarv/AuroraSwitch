@@ -78,15 +78,15 @@ Morse needs an external Freeze-gate clock and Mix above zero.
 
 ## Not supported yet
 
-- **FataMorgana's upstream QSPI build:** unsupported. See the RAM experiment below.
+- **FataMorgana QSPI and HP-filter Aurora:** available only in the opt-in
+  development build below; not in the published release.
 - **Dirt Verb:** excluded from default builds and releases. See the
   [development-only QSPI experiment](development/qspi_feasibility.md).
-- **HP-filter Aurora:** too large for the current staging buffer.
 - **Other versions or renamed files:** need separate review and catalog entries.
 
 ## Development branch additions
 
-The `codex/older-firmware-onboarding` branch adds these exact images. Virtual
+Current `main` adds these exact RAM images. Virtual
 launch/control/audio checks pass; physical testing remains open. Build this
 branch from source; the published release does not include these entries yet.
 Download the named BIN from each linked release and place it in `aurora/`.
@@ -118,3 +118,37 @@ on the test drive; the selector menu color is azure. Use only the development
 selector, not the published release. Do not rename another build to this filename.
 Tempest and Fata share a settings sector with different formats, so switching
 can change retained settings.
+
+### QSPI development branch
+
+`codex/qspi-dirt-verb`, built with `QSPI_HANDOFF=1`, adds these exact files:
+
+| Firmware | Filename | Reverse color |
+| --- | --- | --- |
+| Dirt Verb 1.1 | `DirtVerb 1.1.bin` | Red-pink |
+| Pinned FataMorgana QSPI build | `FataMorgana-QSPI.bin` | Sea green |
+| HP-filter Aurora | `Aurora_v1-4-6_hpfilt.bin` | Lime |
+
+Virtual handoff/control/audio screening passes; physical tests remain open.
+QSPI launching replaces the installed application. Returning to the selector
+depends on ready USB media containing its root BIN. Do not treat reset alone
+as guaranteed menu re-entry or recovery.
+
+With the pinned GNU Arm 10 toolchain on PATH:
+
+```sh
+make fata-qspi-probe
+make package QSPI_HANDOFF=1
+```
+
+The first command prints a payload bundle path; the second prints a sealed
+selector bundle path. User-supplied Dirt/HP binaries and the generated Fata
+payload can be authenticated and named without accessing a drive:
+
+```sh
+python3 scripts/prepare_payloads.py --qspi --output prepared-qspi /path/to/DirtVerb.bin /path/to/FataMorgana.bin /path/to/Aurora_v1-4-6_hpfilt.bin
+```
+
+Use the emitted filenames under `prepared-qspi/aurora/` and keep the selector
+as the only root BIN. No alternative firmware is included in our releases.
+Hardware testing and ordinary stock recovery are still required before release.

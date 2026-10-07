@@ -1,5 +1,5 @@
 # Build/test and USB preparation; module installation remains a manual step.
-.PHONY: all build usb download-release build-virtual setup dependencies test check verify-images package package-virtual fata-ram-probe help reference-html
+.PHONY: all build usb download-release build-virtual setup dependencies test check verify-images package package-virtual fata-ram-probe fata-qspi-probe help reference-html
 RELEASE_TAG ?= latest
 # Explicit development opt-in; releases and USB preparation remain RAM-only.
 QSPI_HANDOFF ?= 0
@@ -37,7 +37,9 @@ package:
 package-virtual:
 	python3 scripts/package.py --virtual $(QSPI_PACKAGE_OPTION)
 fata-ram-probe:
-	python3 scripts/build_fatamorgana.py $(QSPI_PACKAGE_OPTION)
+	python3 scripts/build_fatamorgana.py
+fata-qspi-probe:
+	python3 scripts/build_fatamorgana.py --qspi
 help:
 	@printf '%s\n' \
 	  'make build          Fetch dependencies and build USB firmware (default)' \
