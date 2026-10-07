@@ -1,0 +1,99 @@
+name: Firmware release
+
+on:
+  push:
+    tags: ['**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: firmware-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Test
+        run: make test
+
+      - name: Install pinned Arm toolchain
+        env:
+          TOOLCHAIN_URL: https://developer.arm.com/-/media/Files/downloads/gnu-rm/10-2020q4/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
+          TOOLCHAIN_SHA256: 21134caa478bbf5352e239fbc6e2da3038f8d2207e089efc96c3b55f1edcd618
+        run: |
+          curl --fail --location --retry 3 --connect-timeout 15 --max-time 300 \
+            "$TOOLCHAIN_URL" --output "$RUNNER_TEMP/toolchain.tar.bz2"
+          printf '%s  %s\n' "$TOOLCHAIN_SHA256" "$RUNNER_TEMP/toolchain.tar.bz2" | sha256sum --check
+          tar -xjf "$RUNNER_TEMP/toolchain.tar.bz2" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/gcc-arm-none-eabi-10-2020-q4-major/bin" >> "$GITHUB_PATH"
+
+      - name: Build isolated USB package
+        run: make package
+
+      - name: Prepare exact release assets
+        id: bundle
+        run: |
+          set -- dist/*
+          test "$#" -eq 1 && test -d "$1"
+          test "$(sha256sum "$1/manifest.json" | cut -d ' ' -f 1)" = "${1##*/}"
+          echo "path=$PWD/$1" >> "$GITHUB_OUTPUT"
+          cd "$1"
+          sha256sum AuroraSwitch.bin AuroraSwitch.elf AuroraSwitch.map manifest.json > SHA256SUMS
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: firmware-${{ github.sha }}
+          path: ${{ steps.bundle.outputs.path }}/
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: firmware-${{ github.sha }}
+          path: release
+
+      - name: Verify and create draft release
+        working-directory: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          sha256sum --check SHA256SUMS
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          manifest = json.loads(Path('manifest.json').read_bytes())
+          assert manifest['source_commit'] == os.environ['GITHUB_SHA']
+          assert manifest['development_only'] is True and manifest['physical_qualified'] is False
+          assert manifest['build_provenance']['configuration'] == {
+              'EXPERIMENTAL_HANDOFF': 1, 'DMA_ARENA_CLEANUP': 1, 'VIRTUAL_TRANSPORT': 0}
+          assert set(manifest['files']) == {'AuroraSwitch.bin', 'AuroraSwitch.elf', 'AuroraSwitch.map'}
+          assert {p.name for p in Path('.').iterdir()} == {*manifest['files'], 'manifest.json', 'SHA256SUMS'}
+          for name, identity in manifest['files'].items():
+              data = Path(name).read_bytes()
+              assert len(data) == identity['bytes'] and hashlib.sha256(data).hexdigest() == identity['sha256']
+          PY
+          encoded_tag="$(python3 -c 'import os, urllib.parse; print(urllib.parse.quote(os.environ["TAG"], safe=""))')"
+          test "$(gh api "repos/$GH_REPO/commits/$encoded_tag" --jq '.sha')" = "$GITHUB_SHA"
+          # Physical recovery is still an open release gate: stage assets, do not publish.
+          gh release create "$TAG" AuroraSwitch.bin AuroraSwitch.elf AuroraSwitch.map manifest.json SHA256SUMS \
+            --verify-tag --draft --prerelease --latest=false --title "AuroraSwitch $TAG" \
+            --notes "Development build from $GITHUB_SHA. Physical reliability and stock USB recovery remain unqualified. Third-party firmware is not included. See docs/user_guide.md for setup."

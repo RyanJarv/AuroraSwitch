@@ -42,3 +42,29 @@ official-image reliability testing.
 Documentation-only changes need link/diff checks, not new emulator campaigns.
 Never transfer old evidence to a changed BIN. Use the
 [reliability checklist](reliability_campaign.md#active-checklist) as the active plan.
+
+## Tag builds and releases
+
+Pushing a tag runs host tests and an isolated real-USB build with the pinned,
+SHA-256-checked Arm toolchain. The workflow creates a **draft prerelease** with
+`AuroraSwitch.bin`, ELF, MAP, `manifest.json`, and `SHA256SUMS`. Third-party
+payloads are excluded. Existing releases are not overwritten.
+
+```sh
+git tag -a v0.1.0-beta.1 -m "AuroraSwitch beta test build"
+git push origin v0.1.0-beta.1
+```
+
+Drafts stay unpublished while the [recovery release gate](recovery_release_gate.md)
+is open; a tag/build does not qualify firmware. Tag names never change the
+manifest's development-only status. Do not move an existing release tag.
+
+To test the workflow without a tag or release:
+
+```sh
+gh workflow run firmware-release.yml --ref main
+```
+
+Download that run's firmware artifact from GitHub Actions. Extract it and run
+`sha256sum --check SHA256SUMS` in the bundle directory. Only the BIN is installed
+on Aurora; keep the other files for verification and reports.
