@@ -208,6 +208,9 @@ class ReferenceSiteTests(unittest.TestCase):
                 self.assertNotIn("open", details[0])
                 self.assertIn('<summary>Details &amp; sources</summary>', page)
                 self.assertNotIn('class="conventions"', page)
+                self.assertNotIn('class="control-key"', page)
+                self.assertNotIn('How to read the controls', page)
+                self.assertNotIn('Names refer to the original Aurora panel', page)
                 self.assertIn('<span class="control-number">', page)
 
     def test_control_numbers_only_label_table_controls(self):

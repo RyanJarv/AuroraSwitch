@@ -81,7 +81,6 @@ p { margin: .7rem 0 1rem; }
 .version-label { font-size: .85rem; padding: .3rem .65rem; background: var(--surface); border: 1px solid var(--line); border-radius: .4rem; }
 .version-label .swatch { margin-right: .4rem; }
 .back-link { font-size: .9rem; }
-.control-key { color: var(--muted); font-size: .85rem; margin: .75rem 0; }
 .control-layout { display: grid; grid-template-columns: 205px minmax(0, 1fr); gap: 1.5rem; align-items: start; }
 .panel-map { position: sticky; top: 6rem; margin: 1rem 0; }
 .panel-map img { display: block; width: 100%; height: auto; }

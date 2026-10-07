@@ -1,8 +1,5 @@
 # Firmware control reference
 
-Choose by name or the selector's **Reverse LED color**. Running colors may differ.
-**Shift + control:** hold Shift. **CCW / CW:** counterclockwise / clockwise.
-
 ## Color lookup
 
 | Selector color | Firmware | What it does | Availability |

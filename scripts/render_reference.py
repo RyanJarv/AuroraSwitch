@@ -260,7 +260,6 @@ def render_pages() -> dict[str, str]:
         body = f'<a class="back-link" href="index.html">← All firmware &amp; colors</a><h1 id="{section.anchor}">{html.escape(section.title)}</h1>'
         if badges:
             body += f'<div class="version-labels" aria-label="Versions and selector colors">{badges}</div>'
-            body += '<p class="control-key">Shift + control: hold Shift. CCW / CW: counterclockwise / clockwise.</p>'
         if toc:
             body += f'<nav class="page-links" aria-label="On this page">{toc}</nav>'
         if badges:
