@@ -4,6 +4,10 @@ Tag pushes run checks and an isolated USB build with the pinned Arm toolchain.
 The workflow creates a **draft prerelease** containing the BIN, ELF, MAP,
 manifest, and checksums. It does not include payload firmware or overwrite releases.
 
+The build and artifact upload passed in [CI](https://github.com/RyanJarv/AuroraSwitch/actions/runs/37555710183).
+The tag-triggered release job has not run yet. Once a release is published,
+switch the README quickstart to downloading its BIN instead of requiring the Arm toolchain.
+
 ```sh
 git tag -a v0.1.0-beta.1 -m "AuroraSwitch beta test build"
 git push origin v0.1.0-beta.1

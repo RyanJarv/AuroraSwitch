@@ -25,6 +25,8 @@ Other versions and firmware won't work right now.
 
 ## Quick start
 
+No release download is available yet. The commands below build and prepare the USB.
+
 Install Git, GNU Make, Python 3, a C/C++ compiler, and GNU Arm Embedded
 **10-2020-q4-major**, with its `bin` directory on PATH. Back up your FAT USB drive
 and move any root-level BINs off it first. Change `USB_DIR` below to its mounted
