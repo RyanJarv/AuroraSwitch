@@ -85,7 +85,6 @@ p { margin: .7rem 0 1rem; }
 .control-layout { display: grid; grid-template-columns: 205px minmax(0, 1fr); gap: 1.5rem; align-items: start; }
 .panel-map { position: sticky; top: 6rem; margin: 1rem 0; }
 .panel-map img { display: block; width: 100%; height: auto; }
-.panel-map figcaption { color: var(--muted); text-align: center; font-size: .75rem; margin-top: .6rem; }
 .control-tables { min-width: 0; }
 .control-tables > h2:first-child { margin-top: 0; }
 .control-number { display: inline-flex; justify-content: center; align-items: center; min-width: 1.4rem; height: 1.4rem; border-radius: 50%; background: #263e52; color: #fff; font-size: .75rem; font-weight: 650; margin: 0 .1rem .2rem 0; }

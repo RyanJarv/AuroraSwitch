@@ -269,7 +269,7 @@ def render_pages() -> dict[str, str]:
             body += intro
             body += '''<div class="control-layout"><figure class="panel-map">
 <img src="aurora-panel.svg" width="280" height="580" alt="Aurora panel: knobs 1 Warp, 2 Time, 3 Blur, 4 Reflect, 5 Mix, 6 Atmosphere; buttons 7 Reverse, 8 Freeze, 9 Shift.">
-<figcaption>Panel numbers match the tables.</figcaption></figure><div class="control-tables">'''
+</figure><div class="control-tables">'''
             body += separator + controls + '</div></div>'
         else:
             body += content
