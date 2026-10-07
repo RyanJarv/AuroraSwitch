@@ -1,7 +1,9 @@
 # Next firmware batch
 
 Requested scope: older supported-family releases, Tempest, then FataMorgana.
-Dirt Verb stays deferred. No new image is admitted by this intake review.
+Dirt Verb stays deferred. Older releases and Tempest are staged and virtually
+tested on the development branch; they are not published or physically tested.
+FataMorgana remains outside the catalog.
 Keep third-party binaries outside Git and release assets.
 
 ## Checklist
@@ -9,14 +11,20 @@ Keep third-party binaries outside Git and release assets.
 - [x] Inventory public older releases and download their exact assets locally.
 - [x] Review older source build modes and explicit memory/persistence use.
 - [x] Stage older exact-image entries on the development branch and extend
-  catalog invariants. Linked compatibility remains unproven. Keep existing
+  catalog invariants. Keep existing
   entries; never reuse another version's linked execution addresses.
 - [x] Run older-image virtual launch/control/audio checks and affected selector
   regressions. Tempest and FataMorgana are not covered by this pass.
 - [x] Review Tempest's linked settings erase/write path and complete its
   bounded selector handoff/control/audio checks. Physical recovery stays open.
-- [ ] Resolve FataMorgana's QSPI execution blocker without expanding the loader.
-- [ ] Package an authenticated changed selector and stop for physical testing.
+- [x] Package the authenticated eleven-image selector (not deployed).
+- [x] Build FataMorgana in RAM from fresh pinned source and inventory startup.
+- [ ] FataMorgana: pause before USB/wavetable validation or catalog admission.
+- [ ] Physical campaign: new selector, launch/control/audio, reset and stock restore.
+
+Next manageable chunk: physical testing of the older/Tempest candidate. Keep
+ST-Link disconnected. FataMorgana needs a tested RAM/USB configuration before
+support can be claimed; do not expand the loader to write QSPI.
 
 ## Older public releases
 
@@ -37,8 +45,8 @@ URLs as permanent download sources.
 
 Development catalog entries use orange (Flux 0.1.0), violet (Flux 0.2.0), and
 mint (Morse 0.1.0). Existing indices, colors, and staging capacity stay unchanged.
-Do not present these as compatibility-tested or merge this branch until linked
-virtual checks pass. Public release downloads still select the existing four
+The linked virtual checks below now pass; physical compatibility remains open.
+Public release downloads still select the existing four
 current payloads; older files are prepared explicitly with `prepare_payloads.py`.
 
 Source tags resolve to Flux 0.1.0 `e0ab35abe419b87aab453ec63c542ef84e36fcd7`,
@@ -127,9 +135,27 @@ The bundle is under ignored `.deps/fatamorgana-builds/`; neither the script nor
 receipt admits it to the selector or verifies USB behavior. The only override
 is `APP_TYPE=BOOT_SRAM`; upstream sources and loader code remain unchanged.
 38 host tests pass, including source drift, vector/size bounds, isolated builds,
-immutable bundle reuse and corrupted-bundle rejection. Next: authenticate this
-receipt before/after a bounded startup inventory using existing models. Stop
-if execution needs substantial new USB infrastructure.
+immutable bundle reuse and corrupted-bundle rejection.
+
+Two existing-model startup inventories authenticate the manifest and all three
+artifacts before/after execution. The 0.5-second capture stops in default cube
+generation; the 2-second capture reaches SAI startup and ends in `HAL_Delay`.
+Both have clear fault registers. Full NOR captures change only calibration and
+settings sectors (two erases, 56 programmed bytes). These are observations, not
+linked control/audio or USB passes. No catalog entry is added.
+
+USB OTG is unmodeled, so enumeration, MSC and wavetable-file loading remain
+unverified. Pause this image rather than adding a USB stack. A tested author
+RAM build or separately scoped physical experiment is the next option; its own
+callback/control/audio binding is also still needed. Source inspection shows
+the shared settings record can alter behavior, not isolated per-image settings.
+The raw tone-mode byte selects clean/degraded processing rather than indexing
+an array; that observation is not a general firmware safety guarantee.
+The startup archive has SHA-256
+`833ff9e66d22c2809d7942c600b97048f5f49ce7b0f59caf96cf345c0f04c4d4`;
+replay checks authenticate complete logs and compare all 8 MiB of modeled NOR.
+Focused virtual checks: 38 pass. Broad virtual checks: 97 pass. Host checks:
+38 pass. No new hardware action is performed.
 
 Reviewed source: `jfriess/Aurora-Firmwares` commit
 `d5504d76370c370fdb40adcf755d8a4b9c07ee6b`.
@@ -145,10 +171,10 @@ USB/DMA/memory review and testing. A flash-writing loader would change this
 project's scope. Pause this image for a compatible author build or a separately
 approved bounded port; it must not block the smaller older-release batch.
 
-## Evidence boundary
+## Historical intake boundary
 
-No firmware, loader, supported catalog, or frozen candidate changed during
-intake. No hardware was accessed. Physical handoff and ordinary stock USB
+The following describes the original read-only intake, before catalog changes
+and virtual tests recorded below. No hardware was accessed. Physical handoff and ordinary stock USB
 recovery remain release requirements. This checklist supplements, rather than
 replaces, the [reliability checklist](reliability_campaign.md).
 
