@@ -118,6 +118,19 @@ isolated source/dependency rebuild before any virtual execution. The author's
 USB concern and cross-image settings interaction remain unresolved; a successful
 compile does not resolve either. Do not add a flash-writing loader.
 
+A subsequent fresh isolated rebuild authenticates all application and library
+objects; no ambient archives are copied. Run `make fata-ram-probe` with GNU
+Arm 10 on PATH. The [build receipt](checkpoints/fatamorgana_ram_build_20261006.json)
+records source/dependency/compiler identities and exact ELF/BIN/MAP. Manifest
+`dcaecaf4…150f7`; BIN is byte-identical to the earlier probe (`35bc0beb…3d005`).
+The bundle is under ignored `.deps/fatamorgana-builds/`; neither the script nor
+receipt admits it to the selector or verifies USB behavior. The only override
+is `APP_TYPE=BOOT_SRAM`; upstream sources and loader code remain unchanged.
+38 host tests pass, including source drift, vector/size bounds, isolated builds,
+immutable bundle reuse and corrupted-bundle rejection. Next: authenticate this
+receipt before/after a bounded startup inventory using existing models. Stop
+if execution needs substantial new USB infrastructure.
+
 Reviewed source: `jfriess/Aurora-Firmwares` commit
 `d5504d76370c370fdb40adcf755d8a4b9c07ee6b`.
 `FataMorgana/Makefile:12` selects `BOOT_QSPI`; its preceding comment says

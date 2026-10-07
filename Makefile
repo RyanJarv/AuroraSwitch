@@ -1,5 +1,5 @@
 # Build/test and USB preparation; module installation remains a manual step.
-.PHONY: all build usb download-release build-virtual setup dependencies test check verify-images package package-virtual help
+.PHONY: all build usb download-release build-virtual setup dependencies test check verify-images package package-virtual fata-ram-probe help
 RELEASE_TAG ?= latest
 all: build
 build: dependencies
@@ -28,6 +28,8 @@ package:
 	python3 scripts/package.py
 package-virtual:
 	python3 scripts/package.py --virtual
+fata-ram-probe:
+	python3 scripts/build_fatamorgana.py
 help:
 	@printf '%s\n' \
 	  'make build          Fetch dependencies and build USB firmware (default)' \

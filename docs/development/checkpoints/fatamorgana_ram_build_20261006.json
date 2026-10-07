@@ -1,0 +1,57 @@
+{
+  "configuration": {
+    "APP_TYPE": "BOOT_SRAM"
+  },
+  "dependencies": {
+    "sdk": "69b74a88b25e2fb4d722fc269bfd9395dd28edb5",
+    "sdk/libs/DaisySP": "4263388e7fa8dfd34fa85c6a1c697362dc6981c7",
+    "sdk/libs/libDaisy": "63fcabd38a20e14bc744499f0460e47925ea753e"
+  },
+  "development_only": true,
+  "files": {
+    "FataMorgana.bin": {
+      "bytes": 151420,
+      "sha256": "35bc0bebafa7736ccc61ca788e5f3c3aa2fe4168534761722768eb907743d005"
+    },
+    "FataMorgana.elf": {
+      "bytes": 2422476,
+      "sha256": "da342670661dfa761e77b72968e0af34dc6f9ecb42b8111106e5306a365812ac"
+    },
+    "FataMorgana.map": {
+      "bytes": 1095039,
+      "sha256": "534fa53fc46052a34f6725988af55a4c5ed508e86c75be8605d768c52d0216a8"
+    }
+  },
+  "method": "fresh-isolated-tracked-checkouts",
+  "schema": "aurora-switch-source-payload-v1",
+  "selector_admitted": false,
+  "source_commit": "d5504d76370c370fdb40adcf755d8a4b9c07ee6b",
+  "source_url": "https://github.com/jfriess/Aurora-Firmwares.git",
+  "toolchain": {
+    "ar": {
+      "sha256": "c3589c574f2f445c559e8b5bca4a60720e3b0ad5bbb61f43748f45c8834c886b",
+      "version": "GNU ar (GNU Arm Embedded Toolchain 10-2020-q4-major) 2.35.1.20201028"
+    },
+    "as": {
+      "sha256": "0837b0540b896d51eae6b8b56037e002fb4871d9db731fe9718af1a3b49c8f38",
+      "version": "GNU assembler (GNU Arm Embedded Toolchain 10-2020-q4-major) 2.35.1.20201028"
+    },
+    "g++": {
+      "sha256": "cc7e69e575b9fcc1cf6848cc049656dfb44ea3e6b709273a34d3c1073dcae68e",
+      "version": "arm-none-eabi-g++ (GNU Arm Embedded Toolchain 10-2020-q4-major) 10.2.1 20201103 (release)"
+    },
+    "gcc": {
+      "sha256": "245274e4617d1933b102723513747fc1e25357b314925f9f7d16f3878e701bf1",
+      "version": "arm-none-eabi-gcc (GNU Arm Embedded Toolchain 10-2020-q4-major) 10.2.1 20201103 (release)"
+    },
+    "ld": {
+      "sha256": "f04328e96b7bf8a4e07736fe1988ee5bf99ade251a2a903b4868669d5a3435b2",
+      "version": "GNU ld (GNU Arm Embedded Toolchain 10-2020-q4-major) 2.35.1.20201028"
+    },
+    "objcopy": {
+      "sha256": "ca6ce717ba397b56406e3abf3175d88cea51f022e98b676884ff1a4870b82098",
+      "version": "GNU objcopy (GNU Arm Embedded Toolchain 10-2020-q4-major) 2.35.1.20201028"
+    }
+  },
+  "usb_behavior_verified": false
+}
