@@ -33,7 +33,7 @@ C_DEFS += -DMBEDTLS_CONFIG_FILE='"sha256_config.h"'
 GCC_PATH ?= $(shell dirname "$$(command -v arm-none-eabi-gcc)")
 
 .DEFAULT_GOAL := all
-ifneq ($(filter program program-dfu program-boot,$(MAKECMDGOALS)),)
+ifneq ($(filter program program-dfu program-boot debug openocd debug_client,$(MAKECMDGOALS)),)
 $(error Selector physical deployment is not authorized or qualified)
 endif
 .PHONY: check-pins
@@ -47,5 +47,8 @@ check-pins:
 
 include $(SYSTEM_FILES_DIR)/Makefile
 LDFLAGS += -Tstaging_reserve.ld -Ttrampoline_reserve.ld
-$(BUILD_DIR)/$(TARGET).elf: staging_reserve.ld trampoline_reserve.ld
+# The upstream rules omit library/linker inputs and the included build rules.
+# Recompile for SDK flag changes; relink for rebuilt archives or memory layouts.
+$(OBJECTS): $(SYSTEM_FILES_DIR)/Makefile
+$(BUILD_DIR)/$(TARGET).elf: $(LIBDAISY_DIR)/build/libdaisy.a $(LDSCRIPT) staging_reserve.ld trampoline_reserve.ld
 all: check-pins
