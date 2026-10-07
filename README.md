@@ -25,32 +25,25 @@ Other versions and firmware won't work right now.
 
 ## Quick start
 
-Install Git, GNU Make, Python 3, a C/C++ compiler, curl, unzip, and GNU Arm Embedded
+Install Git, GNU Make, Python 3, a C/C++ compiler, and GNU Arm Embedded
 **10-2020-q4-major**, with its `bin` directory on PATH. Back up your FAT USB drive
 and move any root-level BINs off it first. Change `USB_DIR` below to its mounted
-path (Linux example: `/media/your-user/AURORA`). Run from a fresh checkout:
+path (Linux example: `/media/your-user/AURORA`):
 
 ```sh
 git clone https://github.com/RyanJarv/AuroraSwitch.git && cd AuroraSwitch
-make -j2 build && make check
-mkdir -p local-firmware
-curl -fL -o local-firmware/Aurora_v1_4_4.zip https://www.qubitelectronix.com/s/Aurora_v1_4_4.zip && unzip local-firmware/Aurora_v1_4_4.zip Aurora_v1_4_4.bin -d local-firmware
-curl -fL -o local-firmware/AR_FDN_v1_2_2.bin https://www.qubitelectronix.com/s/AR_FDN_v1_2_2.bin
-python3 scripts/prepare_payloads.py --output prepared-payloads local-firmware/Aurora_v1_4_4.bin local-firmware/AR_FDN_v1_2_2.bin
-USB_DIR="/Volumes/AURORA"
-cp -R prepared-payloads/aurora "$USB_DIR/" && cp firmware/build-experimental-dma/AuroraSwitch.bin "$USB_DIR/" && sync
+make -j2 usb USB_DIR="/Volumes/AURORA"
 ```
 
 Safely eject the drive, insert it into Aurora, and power cycle to install the
-selector. Do not interrupt the update. **Reverse** selects blue (FDN) or green
-(original Aurora); **Freeze** loads and verifies it, then **Shift** launches it
+selector. Do not interrupt the update. **Reverse** selects by color (blue for FDN,
+green for original Aurora); **Freeze** loads and verifies it, then **Shift** launches it
 once Freeze is green. Power cycle to return to the selector.
 
-The payload check must pass before copying. Settings are left in place;
-same-name firmware files are replaced. The downloads come
-from [Qu-Bit's official firmware page](https://www.qubitelectronix.com/alternate-firmware/aurora),
-not this repository. See the [user guide](docs/user_guide.md) for other supported
-images and stock restoration.
+This builds and tests the selector, downloads and verifies Aurora, FDN, Flux
+Capacitor, and Morse, then copies them to the drive. Settings are left in place;
+same-name firmware files are replaced. Discord-only images must be added manually.
+See the [user guide](docs/user_guide.md) for selection colors and stock restoration.
 
 Use `make package` for a fresh build with a manifest, ELF, and MAP under
 `dist/<manifest-sha256>/`. It requires a clean committed checkout.

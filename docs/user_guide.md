@@ -2,7 +2,7 @@
 
 Beta software: keep the original Aurora firmware and a backup of your USB drive.
 
-For the complete build → official downloads → USB copy commands, use the
+For the single-command build, public downloads, and USB copy, use the
 [README quick start](../README.md#quick-start).
 
 ## Build
