@@ -41,6 +41,17 @@ namespace aurora_selector
         {"0:/aurora/aurora-morse-0.2.0.bin",
          "001ac1ffd668fc29f5a936b502f5235e196671caf4f21924f04aa71d99d4d9d1",
          88264U, {0x20020000U, 0x24000f4dU}, {0.4f, 0.4f, 0.4f}},
+        // Version-specific entries keep existing payload identities and indices.
+        // Development branch: linked virtual compatibility checks remain open.
+        {"0:/aurora/flux-capacitor-0.1.0.bin",
+         "23435b32ffe5f8d715fc459da9590b3b71bf44fbf28266aeddebb555b23b9a97",
+         91200U, {0x20020000U, 0x24001675U}, {0.4f, 0.1f, 0.f}},
+        {"0:/aurora/flux-capacitor-0.2.0.bin",
+         "4ea0ab917fad8bfa225e6c95551f51f6c0817c31f7b3c82e65443e0c5e189239",
+         92208U, {0x20020000U, 0x24001675U}, {0.2f, 0.f, 0.4f}},
+        {"0:/aurora/aurora-morse-0.1.0.bin",
+         "f514628388a9859334b4d9348d4e55964d46c19472152770c6afdc04bbf7269b",
+         86952U, {0x20020000U, 0x24000f4dU}, {0.1f, 0.4f, 0.2f}},
     };
 
     // Size the shared buffer for the largest entry, rounded for DMA/cache alignment.

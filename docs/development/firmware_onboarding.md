@@ -7,8 +7,9 @@ Keep third-party binaries outside Git and release assets.
 ## Checklist
 
 - [x] Inventory public older releases and download their exact assets locally.
-- [ ] Review each older image's startup, memory use, and persistent writes.
-- [ ] Add compatible exact images and extend authentication tests. Keep existing
+- [x] Review older source build modes and explicit memory/persistence use.
+- [x] Stage older exact-image entries on the development branch and extend
+  catalog invariants. Linked compatibility remains unproven. Keep existing
   entries; never reuse another version's linked execution addresses.
 - [ ] Run existing virtual launch/control/audio checks on each new image and
   affected selector regressions. Record exact identities and limitations.
@@ -32,6 +33,21 @@ All fit existing staging. Matching reset vectors do not establish matching code
 or runtime behavior. Older Discord-only images and older official releases
 require an obtainable exact artifact; do not invent identities or use expiring
 URLs as permanent download sources.
+
+Development catalog entries use orange (Flux 0.1.0), violet (Flux 0.2.0), and
+mint (Morse 0.1.0). Existing indices, colors, and staging capacity stay unchanged.
+Do not present these as compatibility-tested or merge this branch until linked
+virtual checks pass. Public release downloads still select the existing four
+current payloads; older files are prepared explicitly with `prepare_payloads.py`.
+
+Source tags resolve to Flux 0.1.0 `e0ab35abe419b87aab453ec63c542ef84e36fcd7`,
+Flux 0.2.0 `e8d100f7b87768b65c1957ac1ddaab6d7845c625`, and Morse 0.1.0
+`1892bafec7521b0b6dca6d8ffd209c7c3ee8808a`. All select `BOOT_SRAM` and pin
+Aurora SDK `69b74a88b25e2fb4d722fc269bfd9395dd28edb5`. Their application
+sources register their own audio callbacks; Flux 0.2.0 uses SDRAM delay buffers.
+No explicit QSPI persistence or USB-media path appears in those application
+sources. SDK initialization still loads calibration; this source review is not
+a source-to-release-BIN reproducibility claim or a flash-write census.
 
 ## Tempest
 
