@@ -35,19 +35,16 @@ git clone https://github.com/RyanJarv/AuroraSwitch.git && cd AuroraSwitch
 make -j2 usb USB_DIR="/Volumes/AURORA"
 ```
 
-Safely eject the drive, insert it into Aurora, and power cycle to install the
-selector. Do not interrupt the update. **Reverse** selects by color (blue for FDN,
-green for original Aurora); **Freeze** loads and verifies it, then **Shift** launches it
-once Freeze is green. Power cycle to return to the selector.
+Eject, return USB, power on.
 
-This builds and tests the selector, downloads and verifies Aurora, FDN, Flux
-Capacitor, and Morse, then copies them to the drive. Settings are left in place;
-same-name firmware files are replaced. Discord-only images must be added manually.
-See the [user guide](docs/user_guide.md) for selection colors and stock restoration.
+**Reverse** selects by color (blue for FDN,
+green for original Aurora);
+**Freeze** loads and verifies it
+**Shift** launches it once Freeze is green.
 
-Use `make package` for a fresh build with a manifest, ELF, and MAP under
-`dist/<manifest-sha256>/`. It requires a clean committed checkout.
-Run `make help` for other targets.
+Power cycle to return to the selector.
+
+Firmware found on the QuBit Discord must be added manually. See the [user guide](docs/user_guide.md) for more info.
 
 ## Read more
 
