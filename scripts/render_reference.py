@@ -17,6 +17,7 @@ COLORS = {
     "Blue": "#3787ff", "Green": "#35bf58", "Cyan": "#32c9ce",
     "Magenta": "#d855d5", "Amber": "#dc9a25", "Yellow": "#ead342",
     "White": "#fff", "Pale red": "#ec9292", "Azure": "#3ea7dc",
+    "Red-pink": "#e84b78", "Lime": "#81d43b",
 }
 PANEL_CONTROLS = ("Warp", "Time", "Blur", "Reflect", "Mix", "Atmosphere", "Reverse", "Freeze", "Shift")
 

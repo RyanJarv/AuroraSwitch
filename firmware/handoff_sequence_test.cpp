@@ -33,6 +33,16 @@ int main()
     media.unmount = false;
     assert(!aurora_selector::PrepareAndJump(media));
     assert((media.steps == std::vector<int>{0, 1}));
+    // Once flash has been replaced, neither stale bytes nor an unmount failure
+    // may restore the menu. RAM-only pre-teardown rejection remains unchanged.
+    Platform flashed_stale;
+    flashed_stale.initial_valid = false;
+    assert(!aurora_selector::PrepareAndJump(flashed_stale, true));
+    assert((flashed_stale.steps == std::vector<int>{0, 7}));
+    Platform flashed_media;
+    flashed_media.unmount = false;
+    assert(!aurora_selector::PrepareAndJump(flashed_media, true));
+    assert((flashed_media.steps == std::vector<int>{0, 1, 7}));
     Platform mutated;
     mutated.final_valid = false;
     assert(!aurora_selector::PrepareAndJump(mutated));

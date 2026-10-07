@@ -60,6 +60,17 @@ class UsbTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "root-level updater"):
             prepare_usb.check_destination(self.usb)
 
+    def test_build_and_usb_share_one_output_directory(self):
+        """Dry-run the command wiring without dependencies or drive writes."""
+        root = Path(__file__).resolve().parents[1]
+        result = prepare_usb.subprocess.run(
+            ["make", "-n", "build", "usb", "MAKE=echo", f"USB_DIR={self.usb}"],
+            cwd=root, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("-C firmware BUILD_DIR=build-experimental-dma", result.stdout)
+        self.assertIn('scripts/prepare_usb.py --usb "', result.stdout)
+        self.assertNotIn("-qspi", result.stdout)
+
     def test_release_setup_fetches_only_pinned_verifier_dependency(self):
         revision = setup_dependencies.PINS["mbedtls"][1]
         origin = setup_dependencies.PINS["mbedtls"][0]

@@ -5,7 +5,7 @@ all: build
 reference-html:
 	python3 scripts/render_reference.py
 build: dependencies
-	$(MAKE) -C firmware
+	$(MAKE) -C firmware BUILD_DIR=build-experimental-dma
 usb:
 	@test -n "$(USB_DIR)" -a -d "$(USB_DIR)" || { echo 'Use make usb USB_DIR=/path/to/mounted/drive'; exit 1; }
 	$(MAKE) build check
@@ -15,7 +15,7 @@ download-release:
 	python3 scripts/setup_dependencies.py --verification-only
 	python3 scripts/prepare_usb.py --usb "$(USB_DIR)" --release-tag "$(RELEASE_TAG)"
 build-virtual: dependencies
-	$(MAKE) -C firmware VIRTUAL_TRANSPORT=1 EXPERIMENTAL_HANDOFF=1 DMA_ARENA_CLEANUP=1 BUILD_DIR=build-virtual-experimental-dma
+	$(MAKE) -C firmware VIRTUAL_TRANSPORT=1 BUILD_DIR=build-virtual-experimental-dma
 setup:
 	python3 scripts/setup_dependencies.py
 dependencies: setup

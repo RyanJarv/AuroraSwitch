@@ -104,7 +104,7 @@ class ReferenceSiteTests(unittest.TestCase):
     def test_index_has_summary_and_install_directions_not_a_second_directory(self):
         parser = self.pages["index.html"]
         self.assertEqual(parser.swatches, self.navigation_swatches)
-        self.assertEqual(len(self.entries), 12)
+        self.assertEqual(len(self.entries), 14)
         page = (SITE / "index.html").read_text()
         body = re.search(r'<main id="main">\n(.*?)\n</main>', page, re.S)[1]
         self.assertIn('id="quick-start"', body)
@@ -128,6 +128,18 @@ class ReferenceSiteTests(unittest.TestCase):
             if any(entry.anchor == section.anchor for entry in self.entries):
                 self.assertEqual(page.count(f'href="{section.filename}"'), 2)
                 self.assertNotIn(f'href="{section.filename}"', body)
+
+    def test_additional_images_are_development_only_and_ram_fata_is_unique(self):
+        for name, color in (("Dirt Verb 1.1", "Red-pink"),
+                            ("Aurora HP-filter variant", "Lime")):
+            entry = next(entry for entry in self.entries if entry.name == name)
+            self.assertEqual(entry.color, color)
+            self.assertEqual(entry.availability, "Development")
+        fata = [entry for entry in self.entries if "FataMorgana" in entry.name]
+        self.assertEqual(len(fata), 1)
+        self.assertIn("RAM", fata[0].name)
+        dirt = (SITE / "dirt-verb-11.html").read_text()
+        self.assertIn("Physical handoff and stock USB recovery remain unverified", dirt)
 
     def test_firmware_pages_have_control_headings_and_version_labels(self):
         for section in self.sections:

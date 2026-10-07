@@ -16,9 +16,15 @@
 | White | [Morse 0.1.0](#morse--white) | Three-pattern rhythmic VCA | Development |
 | Pale red | [Tempest 1.0.0](#tempest-100--pale-red) | Multi-bank distortion | Development |
 | Azure | [FataMorgana RAM experiment](#fatamorgana-ram-experiment--azure) | Dual wavetable synthesizer | Development |
+| Red-pink | [Dirt Verb 1.1](#dirt-verb-11--red-pink) | Driven reverb with chorus and pitch shifting | Development |
+| Lime | [Aurora HP-filter variant](#aurora-hp-filter-variant--lime) | Spectral reverb with dry-input high-pass | Development |
 
 Reverse selects → Freeze verifies → **wait for Freeze green** → Shift launches.
 Power cycle to return. [Setup guide](user_guide.md).
+
+Dirt Verb and HP-filter are included in every `codex/qspi-dirt-verb` build, not
+the published release. Virtual screening is not physical compatibility or
+recovery testing. FataMorgana uses our RAM build; its duplicate QSPI option is retired.
 
 ## FDN 1.2.2 — Blue
 
@@ -384,13 +390,59 @@ and `src/FataMorgana.cpp` at the same commit.
 
 No selector color; these cannot launch with the published RAM selector.
 
-- **Dirt Verb 1.1:** Warp decay/feedback, Time overdrive, Blur damping, Reflect
-  chorus rate, Mix dry/wet, Atmosphere pitch-shifter mix. Reverse toggles chorus;
-  Freeze toggles pitch shifting. Author notes describe gold at infinite feedback,
-  white when overdrive bypasses and red as drive increases. Shift/CV/gate behavior
-  is not documented in the supplied notes. Its QSPI execution requires separate
-  support; do not rename it to a supported file.
-- **Aurora HP-filter variant:** stock behavior plus Shift + Atmosphere dry-input
-  high-pass and Shift + Blur wet level. Its supplied BIN exceeds staging capacity.
 - **HSO, tape-delay WIP and Phazr:** mentioned in community notes, but not onboarded;
   controls and compatibility are not covered here.
+
+## Dirt Verb 1.1 — Red-pink
+
+Driven reverb with optional chorus and pitch shifting. Only the exact
+`DirtVerb 1.1.bin` is admitted by this branch's selector.
+
+### Knobs
+
+| Panel knob | Function |
+| --- | --- |
+| Warp | Decay / feedback |
+| Time | Overdrive |
+| Blur | Damping |
+| Reflect | Chorus rate |
+| Mix | Dry/wet balance |
+| Atmosphere | Pitch-shifter mix |
+
+### Buttons
+
+| Button | Function |
+| --- | --- |
+| Reverse | Toggle chorus |
+| Freeze | Toggle pitch shifting |
+
+### Details and sources
+
+- Running LEDs: gold at infinite feedback; white when overdrive is bypassed;
+  red increases with drive. These are not selector menu colors.
+- Shift, CV and gate behavior is not documented in the supplied author notes.
+- Launch programs application QSPI. Menu re-entry requires ready USB media
+  containing AuroraSwitch as the only root BIN; reset alone is not a recovery guarantee.
+- Controls come from community-supplied author notes, not a reviewed source build.
+  Physical handoff and stock USB recovery remain unverified.
+
+## Aurora HP-filter variant — Lime
+
+Stock Aurora controls with two shifted changes. Place the exact supplied
+`Aurora_v1-4-6_hpfilt.bin` in `aurora/`; only this development branch's selector
+has enough reviewed staging capacity for this image.
+
+### Shifted controls
+
+| Control | Function |
+| --- | --- |
+| Shift + Atmosphere | Dry-input high-pass |
+| Shift + Blur | Wet level |
+
+Other controls follow the [stock Aurora reference](#aurora-144--green).
+
+### Details and sources
+
+- RAM launch; no selector QSPI programming for this payload.
+- Changes are described in the supplied community notes. Physical behavior
+  remains unverified; this is not an official Aurora release.

@@ -2,7 +2,7 @@
 from pathlib import Path
 from contextlib import contextmanager
 import subprocess
-import sys
+import argparse
 import tempfile
 from setup_dependencies import PINS, git
 
@@ -64,6 +64,7 @@ def verify(directory: Path) -> None:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2 or not sys.argv[1]:
-        raise SystemExit("usage: make verify-images FIRMWARE_DIR=/path/to/user-supplied/files")
-    verify(Path(sys.argv[1]).resolve())
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("directory", type=Path)
+    args = parser.parse_args()
+    verify(args.directory.resolve())

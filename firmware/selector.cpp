@@ -14,17 +14,13 @@ volatile daisy_development::BackedImageDescriptor selector_virtual_media{};
 }
 #endif
 #include "mbedtls/sha256.h"
-#ifdef SELECTOR_EXPERIMENTAL_HANDOFF
 #include "handoff.hpp"
-#endif
 
 namespace
 {
     daisy::DaisySeed seed;
     daisy::Switch next_button, load_button;
-#ifdef SELECTOR_EXPERIMENTAL_HANDOFF
     daisy::Switch launch_button;
-#endif
     daisy::LedDriverPca9685<2, true> leds;
     // BOOT_SRAM puts ordinary globals/stack in DTCM, inaccessible to USB DMA.
     // FatFs reads sectors into both FATFS::win and FIL::buf, not just staging.
@@ -182,9 +178,7 @@ int main()
     __HAL_RCC_D2SRAM2_CLK_ENABLE();
     next_button.Init(seed.GetPin(10), 1000.f); // Reverse
     load_button.Init(seed.GetPin(1), 1000.f);  // Freeze
-#ifdef SELECTOR_EXPERIMENTAL_HANDOFF
     launch_button.Init(seed.GetPin(13), 1000.f); // Shift confirms launch
-#endif
 
     daisy::I2CHandle i2c;
     daisy::I2CHandle::Config led_config;
@@ -229,9 +223,7 @@ int main()
         last_control = now;
         next_button.Debounce();
         load_button.Debounce();
-#ifdef SELECTOR_EXPERIMENTAL_HANDOFF
         launch_button.Debounce();
-#endif
         const bool media_ready = MediaReady();
         if(!media_ready)
         {
@@ -267,7 +259,6 @@ int main()
             SetStatus(0.4f, 0.2f, 0.f);
             state = AuthenticateFile(selected) ? State::Verified : State::Error;
         }
-#ifdef SELECTOR_EXPERIMENTAL_HANDOFF
         if(launch_button.FallingEdge() && state == State::Verified
            && MediaReady() && menu.HasSelection()
            && !load_button.FallingEdge() && !next_button.FallingEdge())
@@ -282,7 +273,6 @@ int main()
 #endif
                 state = State::Error;
         }
-#endif
         if(now % 20U == 0U)
         {
             switch(state)

@@ -1,4 +1,4 @@
-"""Fresh-build a pinned RAM experiment; this does not admit or qualify FataMorgana."""
+"""Fresh-build the pinned Fata RAM payload; building does not qualify it."""
 from pathlib import Path
 import json
 import os
@@ -22,12 +22,13 @@ def check_cache(path: Path, revision: str) -> None:
 
 
 def check_vectors(data: bytes) -> None:
-    """Require the existing staging/RAM contract, without claiming startup safety."""
-    if not 8 <= len(data) <= 181888:
-        raise ValueError("RAM probe exceeds current staging or has no vectors")
+    """Match the selector's minimum image extent and the pinned staging contract."""
+    if not 16 <= len(data) <= 181888:
+        raise ValueError("payload probe exceeds staging bounds or is too short")
+    base = 0x24000000
     stack, reset = struct.unpack_from("<II", data)
-    if stack != 0x20020000 or not reset & 1 or not 0x24000000 <= reset < 0x24000000 + len(data):
-        raise ValueError("RAM probe vector contract mismatch")
+    if stack != 0x20020000 or not reset & 1 or not base <= reset < base + len(data):
+        raise ValueError("payload probe vector contract mismatch")
 
 
 def build() -> Path:

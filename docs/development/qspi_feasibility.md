@@ -2,7 +2,18 @@
 
 2026-10-06. Offline review only; no firmware changes or hardware access.
 **Conclusion:** a narrow exact-image QSPI mode is plausible without replacing
-the bootloader. It is not implemented or qualified. RAM switching stays unchanged.
+the bootloader. This initial review established feasibility, not qualification.
+RAM switching stays unchanged.
+
+Follow-up: an opt-in `QSPI_HANDOFF=1` implementation has been built from source
+`254f7ff239b9e613fe293dcbe4bae5a88b84c76e`. That checkpoint used an opt-in;
+current branch builds always include QSPI support. `main` remains RAM-only.
+The initial investigation below is static evidence; the implementation's
+virtual results are recorded separately at the end.
+
+The later [additional-image checkpoint](qspi_additional_images.md) supersedes
+the candidate below. Current additional entries are Dirt Verb and RAM HP-filter;
+the duplicate QSPI FataMorgana entry was retired. Physical tests remain open.
 
 ## What the installed updater does
 
@@ -92,7 +103,7 @@ they require private object state and use `0x24000000` as their file buffer,
 overwriting the selector's executing memory. Installing at another QSPI offset
 does not relocate Dirt Verb's embedded addresses. No binary relocation proposed.
 
-## Smallest next experiment, if approved
+## Approved development experiment
 
 - Add an exact-image, application-bounded writer using the existing SDK.
   Check errors and complete readback; the current SDK bulk `Write` ignores
@@ -121,3 +132,62 @@ writes other persistent state. Reliability and recovery remain release gates.
 - `make check`: 38 host tests and Python compilation passed; `git diff --check`
   passed. No emulator or physical campaign was run: this is static feasibility
   evidence, not new firmware execution evidence.
+
+## Implementation checkpoint
+
+The opt-in writer uses pinned libDaisy and checks each erase/page operation,
+complete mapped readback, and launch-time staged bytes. Its fixed erase extent
+is `[0x90040000, 0x90058000)`. After any erase attempt, failure stops rather than
+returning to a menu whose installed application may have changed. A separate
+88-byte terminal trampoline preserves QSPI mapping, clears the DMA arena, and
+branches to Dirt's reset vector. The existing RAM trampoline is unchanged.
+
+Fresh isolated build identities:
+
+| Build | Manifest SHA-256 | BIN SHA-256 |
+| --- | --- | --- |
+| Synthetic-media companion | `2b00a6e3b32221a3109bacc1d4a81aa056622f5f41d7c79240c8c56631484d07` | `efa6aecfa4f2df23e851522376f1ee25a2708f7825314d4a5495dff0e1c29ca1` |
+| Real-USB candidate, not installed | `ab5b8d4935b6f58eff3418c70a9b730970e42a031e79d401bb5483d80b47df82` | `ab0ad26dbf00b90fe747a69e8c1775b2e2c433d1eb352cce5758d9853867046a` |
+
+`make check` passes 43 host tests and Python compilation. Hosted host-test CI
+passes for source `254f7ff`. Default builds still exclude Dirt; no payload
+binaries are distributed by this project.
+
+### Virtual results
+
+The existing development NOR/handoff lane executes the linked writer, then
+stops at Dirt's genuine reset entry. An independent full 8-MiB comparison checks
+the programmed payload, erased sector tail, and every byte outside the erase
+extent. The linked mapping request, terminal branch, vectors, and all 32 KiB of
+cleared DMA memory pass. Continuing that same processor reaches 85 finite audio
+callbacks and captures 8,192 frames. A linked ADC control change changes PCM;
+two changed-control runs produce identical PCM.
+This short impulse capture has only two nonzero PCM words: it is a bounded
+control/output check, not proof of Dirt's complete reverb tail or button modes.
+
+The older synthetic I2C cadence stalls Dirt's first callback. Direct Dirt
+startup stalls there too, so this is not evidence of a selector-only failure.
+The opt-in virtual lane now uses an 11-us byte cadence only for the two pinned
+SDK fast-I2C timing words; Dirt actually writes `0x1080091a`. Unknown words
+fail closed. This is a timing approximation, not an electrical clock model.
+Default lanes retain their old cadence; no guest IRQ priorities or completion
+flags are patched.
+
+New live RAM-image screens for official Aurora and FDN pass with the companion.
+Earlier complete switching-cycle evidence is retained, not relabeled as a new
+execution against this candidate. There are 93 passing applicable VCV tests;
+two historical export tests fail because they pin the former standalone commit
+and file count. Those stale assumptions remain documented, not silently skipped
+as successful checks. Full payload-bearing NOR records stay local and ignored.
+
+### Physical boundary
+
+The real-USB candidate has not been copied to a drive or installed. Before
+release, test selector → Dirt with responsive controls/audio, reset with ready
+selector media and successful selector reinstall, and ordinary stock USB
+restoration. Missing/slow media and interrupted-programming recovery remain
+open. Keep ST-Link disconnected because it previously caused resets.
+
+Virtual programming and handoff checks do not establish physical QSPI timing,
+controller/cache behavior, USB enumeration, payload safety, or recovery. Stop
+here until the user can participate in the exact-build physical campaign.

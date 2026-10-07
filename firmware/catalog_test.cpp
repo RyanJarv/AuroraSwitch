@@ -7,17 +7,18 @@ int main()
 {
     using namespace aurora_selector;
     constexpr auto count = sizeof(Images) / sizeof(Images[0]);
-    static_assert(count == 12);
-    static_assert(StagingCapacity() == 181888);
+    static_assert(count == 14);
+    static_assert(StagingCapacity() == 182240);
     assert(Images[0].menu_color == (std::array<float, 3>{0.f, 0.f, .4f}));
     assert(Images[1].menu_color == (std::array<float, 3>{0.f, .4f, 0.f}));
     // Freeze the public mapping independently of the shared constants. Versions
     // share a family color; unrelated families must remain distinguishable.
-    constexpr unsigned families[] = {0, 1, 2, 3, 4, 5, 6, 5, 5, 6, 7, 8};
+    constexpr unsigned families[] = {0, 1, 2, 3, 4, 5, 6, 5, 5, 6, 7, 8, 9, 10};
     constexpr std::array<float, 3> colors[] = {
         {0.f, 0.f, .4f}, {0.f, .4f, 0.f}, {0.f, .4f, .4f},
         {.4f, 0.f, .4f}, {.4f, .2f, 0.f}, {.4f, .4f, 0.f},
         {.4f, .4f, .4f}, {.4f, .2f, .2f}, {0.f, .2f, .4f},
+        {.4f, 0.f, .1f}, {.1f, .4f, 0.f},
     };
     for(unsigned i = 0; i < count; ++i)
     {

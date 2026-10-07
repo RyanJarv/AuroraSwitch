@@ -1,6 +1,8 @@
 # AuroraSwitch
 
-Choose a supported Aurora firmware from a USB drive and launch it from RAM. Reverse selects, Freeze verifies, and Shift starts it. Reset or power cycling returns to the selector through Aurora's existing bootloader.
+Choose a supported Aurora firmware from a USB drive. Reverse selects, Freeze verifies, and Shift starts it. RAM images launch without flashing; Dirt Verb runs from QSPI.
+
+Dirt Verb launch replaces the installed application, so menu re-entry needs ready USB media containing the selector. This branch includes that support in every build; it is not in the published release yet.
 
 Beta software with limited testing. Keep the original Aurora firmware and a backup of your USB drive. More hardware testing is needed.
 
@@ -29,7 +31,7 @@ Discord must be added manually. See the [user guide](docs/user_guide.md).
 
 ### Supported
 
-Only these exact versions are supported:
+The published release supports these exact versions:
 
 * [Aurora 1.4.4](https://www.qubitelectronix.com/alternate-firmware/p/aurora-spectral-reverb)
 * [FDN 1.2.2](https://www.qubitelectronix.com/alternate-firmware/p/fdn-verb)
@@ -39,23 +41,16 @@ Only these exact versions are supported:
 * [Flux Capacitor 0.3.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/tag/v0.3.0)
 * [Morse 0.2.0](https://github.com/DaveParr/Aurora-Morse/releases/tag/v0.2.0)
 
-### Not supported yet
+### Source-build additions
 
-- **FataMorgana:** upstream QSPI build is unsupported; a RAM experiment is on the development branch.
-- **Dirt Verb:** runs from QSPI, outside this RAM loader's design.
-- **HP-filter Aurora:** too large for the current staging buffer.
-- **Other versions or renamed files:** need separate review and catalog entries.
+Current source adds Flux 0.1.0/0.2.0, Morse 0.1.0, Tempest 1.0.0, and one
+FataMorgana RAM build. This branch also includes Dirt Verb 1.1 (QSPI) and
+HP-filter Aurora (RAM), with no extra build options. See the
+[user guide](docs/user_guide.md#source-build-additions) for files and commands.
 
-### Development branch additions
-
-`codex/older-firmware-onboarding` also supports Flux 0.1.0/0.2.0, Morse 0.1.0,
-and Tempest 1.0.0 in virtual launch/control/audio tests. These are not in
-the published release yet; physical testing and ordinary stock recovery remain
-open. Tempest stores its own settings in QSPI. See the [user guide](docs/user_guide.md#development-branch-additions).
-
-The same branch stages an exact FataMorgana RAM build. Its virtual selector
-handoff/control/audio checks pass; USB wavetable loading and physical testing
-remain open. It is not part of the published release.
+Earlier exact-build virtual screens pass; physical reliability and stock USB
+recovery remain open. Fata's USB wavetable path is unverified. Unsupported
+versions or changed files are rejected.
 
 ## Video
 

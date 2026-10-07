@@ -45,8 +45,7 @@ def fresh_build(commit: str, *, virtual: bool = False):
                        check=True, env=build_environment)
         build_directory = "build-virtual-experimental-dma" if virtual else "build-experimental-dma"
         subprocess.run(["make", "-j2", "-C", str(checkout / "firmware"),
-            f"GCC_PATH={tool_directory}", "EXPERIMENTAL_HANDOFF=1",
-            "DMA_ARENA_CLEANUP=1", f"VIRTUAL_TRANSPORT={int(virtual)}",
+            f"GCC_PATH={tool_directory}", f"VIRTUAL_TRANSPORT={int(virtual)}",
             f"BUILD_DIR={build_directory}"], check=True, env=build_environment)
         yield checkout / "firmware" / build_directory, tools, tool_directory
 
@@ -90,6 +89,7 @@ def seal(build: Path, commit: str, tools: dict, tool_directory: Path, *, virtual
             str(build / f"{target}.elf"), str(converted)], check=True)
         if converted.read_bytes() != payload[f"{target}.bin"]:
             raise RuntimeError("ELF/BIN identity mismatch")
+    # Historical manifest keys describe fixed handoff invariants, not build options.
     manifest = {"schema": "aurora-switch-development-bundle-v1", "development_only": True,
         "physical_qualified": False, "source_commit": commit,
         "build_provenance": {"method": "fresh-isolated-tracked-checkouts",
@@ -134,4 +134,5 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--virtual", action="store_true",
                         help="seal a synthetic-media test build, never install this on hardware")
-    package(virtual=parser.parse_args().virtual)
+    args = parser.parse_args()
+    package(virtual=args.virtual)

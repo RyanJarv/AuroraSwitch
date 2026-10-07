@@ -6,7 +6,7 @@ Fata's real USB/wavetable path remains unverified. Physical reliability and
 ordinary stock USB recovery remain open. Do not expand emulator coverage merely
 to postpone those tests.
 
-## Current build
+## Current source and earlier candidates
 
 The stable-family-color change supersedes the menu colors below: all Flux
 versions are yellow and all Morse versions white. It changes selector bytes,
@@ -69,13 +69,17 @@ read back, and safely ejected. The previous contents were backed up. Only the
 root selector, two new payloads, and build metadata changed.
 Module installation and physical results remain unconfirmed.
 
-## Active checklist
+## Preserved software evidence
 
 - [x] Authenticate isolated builds and all seven exact payloads.
 - [x] Check staged-byte revalidation, complete copy, and DMA cleanup.
 - [x] Preserve repeated official switching cycles and representative stale-approval
   checks; keep staged-byte corruption rejection separate.
 - [x] Complete the bounded community screens at their recorded image identities.
+
+## Active checklist
+
+- [ ] Seal current source; rerun affected virtual checks before physical use.
 - [ ] Run the exact-build physical campaign below.
 - [ ] Demonstrate ordinary stock USB recovery and close the
   [recovery release gate](recovery_release_gate.md).
@@ -83,9 +87,10 @@ Module installation and physical results remain unconfirmed.
 
 The [next firmware batch](firmware_onboarding.md) tracks older versions and
 Tempest's bounded persistence/control/audio review and Fata's experimental RAM
-build. Its upstream QSPI configuration remains unsupported. Dirt Verb
-and oversized HP-filter Aurora remain excluded. Onboarding must not delay
-official recovery testing.
+build. The QSPI branch also admits Dirt Verb and HP-filter; Fata remains
+RAM-only. See the [additional-image checkpoint](qspi_additional_images.md).
+Their virtual checks do not extend the physical results above, and they remain
+excluded from default releases. Onboarding must not delay official recovery testing.
 
 ## Short physical campaign
 

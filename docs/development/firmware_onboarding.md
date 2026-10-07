@@ -1,7 +1,8 @@
-# Next firmware batch
+# Firmware onboarding record
 
 Requested scope: older supported-family releases, Tempest, then FataMorgana.
-Dirt Verb stays deferred. Older releases and Tempest are staged and virtually
+Dirt Verb's QSPI path is tracked in [QSPI status](qspi_feasibility.md).
+Older releases and Tempest are staged and virtually
 tested on the development branch; they are not published or physically tested.
 FataMorgana has a provisional exact RAM entry; real USB and physical tests remain open.
 Keep third-party binaries outside Git and release assets.
@@ -23,10 +24,15 @@ Keep third-party binaries outside Git and release assets.
 - [ ] FataMorgana: real USB/wavetable validation; no broad USB emulator work.
 - [ ] Physical campaign: new selector, launch/control/audio, reset and stock restore.
 
-Next manageable chunk: physical testing of the twelve-entry candidate. Keep
-ST-Link disconnected. It supersedes the older/Tempest-only candidate;
-FataMorgana needs a tested RAM/USB configuration before
-support can be claimed; do not expand the loader to write QSPI.
+Before physical testing, seal current source and rerun affected virtual checks:
+the family-color change supersedes the frozen candidates below. Keep ST-Link
+disconnected. FataMorgana still needs real USB/wavetable validation. `main`
+remains RAM-only; this branch always includes Dirt Verb and HP-filter.
+The duplicate QSPI Fata entry is retired.
+
+The sections below preserve the onboarding chronology and exact-build results.
+Their intermediate limitations and “next” steps describe those checkpoints,
+not additional active campaigns.
 
 ## Older public releases
 
@@ -102,8 +108,9 @@ audio/control runs pass: one baseline and two changed Mix/crossover controls,
 match and differ from baseline. The registration uses Tempest's R6-based store,
 not copied R5 instructions. All partial startup ADC vectors remain checked.
 No physical launch, real USB, full persistence lifecycle or recovery pass is
-claimed. The remaining software question is FataMorgana's QSPI/USB requirement;
-do not expand the RAM loader or add flash-writing support to force admission.
+claimed. The QSPI/USB question was still open at this historical checkpoint.
+The later opt-in implementation and bounded software checks are recorded in
+[the additional-image checkpoint](qspi_additional_images.md); real USB remains unverified.
 
 Cross-image concern: FataMorgana also uses offset `8192`, but its
 `PistonSettings` layout differs from Tempest's `DistortionSettings`. The pinned
@@ -208,10 +215,10 @@ author's stated constraint, not an independently reproduced finding.
 The firmware loads wavetables through USB and also stores settings at `8192`.
 The repository's releases currently contain Tempest assets, not FataMorgana.
 
-The upstream QSPI configuration remains unsupported. The experimental RAM
-build above has passed bounded virtual checks, not physical USB testing.
-Do not add a flash-writing loader; validate the actual USB/wavetable path on
-hardware before claiming full support.
+At this checkpoint only the experimental RAM build had passed bounded virtual
+checks. The later exact upstream QSPI build is now admitted on the opt-in branch;
+see [current evidence](qspi_additional_images.md). Neither record proves the
+actual USB/wavetable path on hardware.
 
 ## Historical intake boundary
 

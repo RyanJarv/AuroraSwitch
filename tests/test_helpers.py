@@ -34,12 +34,25 @@ class HelperTests(unittest.TestCase):
     def test_catalog_colors_and_capacity(self):
         self.compile_and_run("catalog_test")
 
+    def test_qspi_catalog(self):
+        self.compile_and_run("qspi_catalog_test")
+
+    def test_qspi_bounded_writer_and_faults(self):
+        self.compile_and_run("qspi_programming_test")
+
     def test_no_programming_targets(self):
         for target in ("program", "program-dfu", "program-boot"):
             result = subprocess.run(["make", "-n", "-C", str(ROOT / "firmware"), target],
                 capture_output=True, text=True)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("physical deployment is not authorized", result.stderr)
+
+    def test_synthetic_objects_cannot_share_installable_directory(self):
+        result = subprocess.run(["make", "-n", "-C", str(ROOT / "firmware"),
+            "VIRTUAL_TRANSPORT=1", "BUILD_DIR=build-experimental-dma"],
+            capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Use BUILD_DIR=build-virtual-experimental-dma", result.stderr)
 
 
 if __name__ == "__main__":

@@ -3,9 +3,11 @@
 // Shared launch catalog for firmware, host authentication, and payload preparation.
 #include "../support/sram_image_vectors.hpp"
 #include <array>
+#include <cstring>
 
 namespace aurora_selector
 {
+    enum class Execution { Sram, Qspi };
     // Stable family colors: every version reuses its family's entry here.
     // Do not derive colors from discovery order or change them for new versions.
     namespace menu_colors
@@ -19,6 +21,8 @@ namespace aurora_selector
         constexpr std::array<float, 3> Morse{0.4f, 0.4f, 0.4f};
         constexpr std::array<float, 3> Tempest{0.4f, 0.2f, 0.2f};
         constexpr std::array<float, 3> FataMorgana{0.f, 0.2f, 0.4f};
+        constexpr std::array<float, 3> DirtVerb{0.4f, 0.f, 0.1f};
+        constexpr std::array<float, 3> HpFilter{0.1f, 0.4f, 0.f};
     }
 
     // Exact file contract and its panel color, not a general firmware description.
@@ -29,6 +33,7 @@ namespace aurora_selector
         std::size_t size;
         daisy_development::SramImageVectors vectors;
         std::array<float, 3> menu_color;
+        Execution execution = Execution::Sram;
     };
 
     // Local byte identities, not signed vendor/source provenance.
@@ -77,6 +82,14 @@ namespace aurora_selector
         {"0:/aurora/FataMorgana.bin",
          "35bc0bebafa7736ccc61ca788e5f3c3aa2fe4168534761722768eb907743d005",
          151420U, {0x20020000U, 0x24000a49U}, menu_colors::FataMorgana},
+        // Exact-image flash path; only this payload runs from QSPI.
+        {"0:/aurora/DirtVerb 1.1.bin",
+         "e1775fb6c46dd83e33abaf599eb6d6089b7ff56692b42ac48748d2d1555d2784",
+         95196U, {0x20020000U, 0x90040959U}, menu_colors::DirtVerb, Execution::Qspi},
+        // Supplied exact HP-filter variant fits the reviewed staging region.
+        {"0:/aurora/Aurora_v1-4-6_hpfilt.bin",
+         "94f4200efdf47cfb0c055fa51896da4d8c8d0f8b6a6d0a9bc9ec31553d85ebc7",
+         182212U, {0x20020000U, 0x2400070dU}, menu_colors::HpFilter},
     };
 
     // Size the shared buffer for the largest entry, rounded for DMA/cache alignment.
@@ -93,14 +106,31 @@ namespace aurora_selector
     static_assert(StagingCapacity() <= StagingLimit - StagingAddress,
                   "Reviewed image set exceeds internal staging SRAM");
 
+    // Header-local catalogs have different addresses in each translation unit.
+    // Match the reviewed value, never a caller's pointer identity.
+    inline bool IsReviewedQspiImage(const Image& image)
+    {
+        for(const auto& entry : Images)
+            if(entry.execution == Execution::Qspi && image.execution == entry.execution
+               && image.size == entry.size && image.vectors.stack == entry.vectors.stack
+               && image.vectors.reset == entry.vectors.reset && image.menu_color == entry.menu_color
+               && image.path && image.sha256
+               && std::strcmp(image.path, entry.path) == 0
+               && std::strcmp(image.sha256, entry.sha256) == 0)
+                return true;
+        return false;
+    }
+
     // Match staged bytes and their caller-computed digest to one reviewed entry.
     inline bool VerifyImage(const std::uint8_t* bytes, std::size_t size,
                             const Image& image, const std::uint8_t* digest)
     {
         daisy_development::SramImageVectors vectors{};
         if(digest == nullptr || size != image.size
-           || !daisy_development::ReadSramImageVectors(
-               bytes, size, 480U * 1024U, vectors)
+           || (image.execution != Execution::Sram && image.execution != Execution::Qspi)
+           || !daisy_development::ReadImageVectors(
+               bytes, size, 480U * 1024U,
+               image.execution == Execution::Qspi ? 0x90040000U : 0x24000000U, vectors)
            || vectors.stack != image.vectors.stack
            || vectors.reset != image.vectors.reset)
             return false;

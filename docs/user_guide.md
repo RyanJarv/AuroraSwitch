@@ -59,14 +59,10 @@ Morse needs an external Freeze-gate clock and Mix above zero.
 Colors are fixed per firmware family across versions and installs. Keep one
 version per family on the drive: multiple versions have the same menu color.
 
-## Not supported yet
+## Source-build additions
 
-- **FataMorgana's upstream QSPI build:** unsupported. See the RAM experiment below.
-- **Dirt Verb:** runs from QSPI, outside this RAM loader's design.
-- **HP-filter Aurora:** too large for the current staging buffer.
-- **Other versions or renamed files:** need separate review and catalog entries.
-
-## Development branch additions
+<!-- Keep the old guide link usable. -->
+<a id="development-branch-additions"></a>
 
 The current source includes these exact images. Prior virtual
 launch/control/audio checks pass; physical testing remains open. Build from
@@ -83,11 +79,13 @@ Download the named BIN from each linked release and place it in `aurora/`.
 Tempest saves its settings in QSPI. This is payload behavior, not selector
 flashing; do not assume its settings are isolated from other alternative apps.
 
-### FataMorgana RAM experiment
+### FataMorgana
 
-The development branch admits one exact RAM build from source commit `d5504d7`,
+Current source admits one exact RAM build from source commit `d5504d7`,
 not the upstream QSPI configuration. Virtual handoff/control/audio checks pass;
 USB wavetable loading and physical compatibility remain unverified.
+RAM is our preferred build: it avoids programming application flash on launch.
+The duplicate QSPI build is no longer offered in the selector.
 
 With the pinned GNU Arm 10 toolchain on PATH:
 
@@ -100,3 +98,42 @@ on the test drive; the selector menu color is azure. Use only the development
 selector, not the published release. Do not rename another build to this filename.
 Tempest and Fata share a settings sector with different formats, so switching
 can change retained settings.
+
+### QSPI development branch
+
+Every build of `codex/qspi-dirt-verb` also supports these exact files:
+
+| Firmware | Filename | Reverse color |
+| --- | --- | --- |
+| Dirt Verb 1.1 | `DirtVerb 1.1.bin` | Red-pink |
+| HP-filter Aurora | `Aurora_v1-4-6_hpfilt.bin` | Lime |
+
+Earlier exact-build virtual screening passes; physical tests remain open.
+Only Dirt uses QSPI; HP-filter still launches from RAM. QSPI launching replaces
+the installed application. Returning to the selector depends on ready USB media
+containing its root BIN. Do not treat reset alone
+as guaranteed menu re-entry or recovery.
+
+With the pinned GNU Arm 10 toolchain on PATH:
+
+```sh
+make package
+```
+
+Use `AuroraSwitch.bin` from the printed sealed bundle. For incremental build
+and USB copy, use `make usb USB_DIR="/path/to/drive"`.
+Authenticate and name user-supplied Dirt/HP binaries without accessing a drive:
+
+```sh
+python3 scripts/prepare_payloads.py --output prepared-payloads /path/to/DirtVerb.bin /path/to/Aurora_v1-4-6_hpfilt.bin
+```
+
+Use the emitted filenames under `prepared-payloads/aurora/` and keep the selector
+as the only root BIN. No alternative firmware is included in our releases.
+Hardware testing and ordinary stock recovery are still required before release.
+
+## Unsupported firmware
+
+Only catalog versions with matching bytes and filenames are accepted. Other
+images need memory-layout review and a new catalog entry; renaming is not enough.
+The duplicate QSPI FataMorgana option is retired in favor of RAM.

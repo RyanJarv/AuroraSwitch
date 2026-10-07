@@ -24,5 +24,5 @@ Copy supported BINs into the drive's `aurora/` folder. From a source checkout,
 A matching filename is not enough: their bytes must match the supported version.
 Other versions, including newer releases, need separate support.
 
-See the [user guide](user_guide.md#not-supported-yet) for unsupported images
+See the [user guide](user_guide.md#unsupported-firmware) for unsupported images
 and their blockers.

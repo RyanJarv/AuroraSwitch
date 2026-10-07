@@ -9,6 +9,7 @@ For the overview and rationale, read [how it works](../how_it_works.md).
 | [firmware/handoff_sequence.hpp](../../firmware/handoff_sequence.hpp) | Validation and irreversible cleanup ordering |
 | [firmware/handoff.cpp](../../firmware/handoff.cpp) | Hardware cleanup, final verification, trampoline installation |
 | [firmware/copy_jump.s](../../firmware/copy_jump.s) | Stackless payload copy, DMA clearing, target entry |
+| [support/qspi_image_programming.hpp](../../support/qspi_image_programming.hpp) | Opt-in sector/page bounds, driver errors, complete mapped readback |
 | [support/](../../support/) | Small staging, menu, vector, initialization, and timing helpers |
 | [scripts/](../../scripts/) | Pinned dependency setup, payload preparation, isolated packaging |
 | [tests/](../../tests/) | Portable host tests; compiled C++ probes live in `firmware/` |

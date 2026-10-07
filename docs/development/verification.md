@@ -1,17 +1,30 @@
 # Verification status
 
-The current seven-image candidate is source `e983814`. Exact BIN/ELF/MAP and
-manifest hashes are in the [checkpoint](checkpoints/public_releases_20261006.md) and its
+## Current scope
+
+This branch admits 13 RAM images and Dirt Verb (QSPI) in every build.
+QSPI Fata is retired. Physical reliability and ordinary
+stock USB recovery remain open.
+
+Frozen virtual records cover earlier exact builds, not the selector after
+Fata retirement and the family-color merge. See
+[onboarding](firmware_onboarding.md) and [QSPI checkpoints](qspi_additional_images.md).
+Host tests cover the current source; they do not replace live or physical tests.
+
+## Seven-image checkpoint (history)
+
+Source `e983814`. Exact BIN/ELF/MAP and manifest hashes are in the
+[checkpoint](checkpoints/public_releases_20261006.md) and its
 [machine-readable record](evidence/public_releases_20261006.json).
 
-## Software checks
+### Software checks
 
 - 28 host tests pass: staging, discovery, initialization errors, handoff ordering,
   payload preparation, packaging, and rejection controls.
 - The compiled authenticator accepts all seven exact local payloads. Changed
   backing files cannot replace verified staged bytes; staged-byte corruption rejects.
 - Official Aurora, FDN, Flux, and Morse each pass a baseline and two changed-control
-  virtual runs on the current companion: 12 executions, 85 balanced callbacks
+  virtual runs on that companion: 12 executions, 85 balanced callbacks
   and 8192 stereo frames per execution.
 - Complete payload readback, ordered copy/DMA clearing, and the real-USB build's
   bounded cleanup seam pass their checks.
@@ -25,9 +38,9 @@ Virtual tests use synthetic media and approximate peripheral models. They do
 not prove real USB/FatFs transport, physical handoff, every control, long-running
 DSP behavior, persistence safety, or stock recovery.
 
-## Physical boundary
+### Physical boundary
 
-The current candidate and all seven authenticated payloads were staged to a
+That candidate and all seven authenticated payloads were staged to a
 test drive, read back, and safely ejected. Installation and exact-build physical
 results are not confirmed.
 
