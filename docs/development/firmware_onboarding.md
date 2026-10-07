@@ -11,8 +11,8 @@ Keep third-party binaries outside Git and release assets.
 - [x] Stage older exact-image entries on the development branch and extend
   catalog invariants. Linked compatibility remains unproven. Keep existing
   entries; never reuse another version's linked execution addresses.
-- [ ] Run existing virtual launch/control/audio checks on each new image and
-  affected selector regressions. Record exact identities and limitations.
+- [x] Run older-image virtual launch/control/audio checks and affected selector
+  regressions. Tempest and FataMorgana are not covered by this pass.
 - [ ] Review Tempest's linked settings erase/write path before admission.
 - [ ] Resolve FataMorgana's QSPI execution blocker without expanding the loader.
 - [ ] Package an authenticated changed selector and stop for physical testing.
@@ -152,3 +152,25 @@ sabotages, not extra firmware runs.
 Next manageable chunk: derive the older binaries' actual callback registration
 and dispatch PCs, then run existing input/control/audio continuations. Do not
 merge or publish the new entries as compatibility-tested before that passes.
+
+## Older-release audio checkpoint
+
+That subsequent chunk now passes: nine linked runs (baseline and two changed
+repetitions per image), 85 complete planar callbacks and 8192 PCM frames per
+run, exact input/ADC observations, finite returns, and differing baseline versus
+changed PCM. The two changed runs match. Each older BIN has its own checked
+registration literal and five dispatch sites; no newer image addresses are
+substituted. This establishes bounded software compatibility, not hardware.
+
+Observation archive SHA-256:
+`48de31c26f0c2ad79bcd018061f9d78ab02e7b3c771e341c45a8fcd1b3b3de0a`.
+Seven onboarding/replay tests and seven historical community/public tests pass.
+The first Flux 0.1.0 capture failed a current-version boundary assumption:
+it has an additional early ADC vector and final half-transfer/IRQ-pending flags
+`0x9`, with transfer-error clear. Its exact profile now checks those observations.
+The archived repeated baseline has the same ordered trace as that first capture.
+No rows were dropped and no historical profile was relaxed.
+
+Remaining software scope: Tempest's actual NOR persistence behavior and
+cross-image settings policy, then FataMorgana's QSPI/USB execution blocker.
+Physical testing and stock recovery remain open for the changed selector.
