@@ -10,7 +10,7 @@ Source `e983814`; real-USB manifest
 `5a5a5c96814d526d0d3c7c249a71ebfd72d2c4eb62dc33b76999e62adc9b7fcf`;
 BIN SHA-256
 `7eeeba55132482037a3dc7aefe67cb625605fbdf30575607c8750d7e2d625155`.
-See the [checkpoint](public_release_checkpoint.md) for full identities.
+See the [checkpoint](checkpoints/public_releases_20261006.md) for full identities.
 
 On 2026-10-06 the build and seven verified payloads were copied to a test drive,
 read back, and safely ejected. The previous contents were backed up. Only the
@@ -40,7 +40,7 @@ Start with quiet monitoring. All steps below are **not yet run on this build**.
 
 1. Record normal Aurora controls/audio and the working stock updater procedure.
    Keep the original firmware and drive contents backed up.
-2. Install the exact selector using the [user guide](user_guide.md).
+2. Install the exact selector using the [user guide](../user_guide.md).
    Launch Aurora and check that controls change the panel and audio.
 3. Reset/re-enter and test Aurora → FDN → Aurora, then FDN → Aurora → FDN.
    Record each launch, control response, audio response, and any reset failure.

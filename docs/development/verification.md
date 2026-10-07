@@ -1,7 +1,7 @@
 # Verification status
 
 The current seven-image candidate is source `e983814`. Exact BIN/ELF/MAP and
-manifest hashes are in the [checkpoint](public_release_checkpoint.md) and its
+manifest hashes are in the [checkpoint](checkpoints/public_releases_20261006.md) and its
 [machine-readable record](evidence/public_releases_20261006.json).
 
 ## Software checks
@@ -16,7 +16,7 @@ manifest hashes are in the [checkpoint](public_release_checkpoint.md) and its
 - Complete payload readback, ordered copy/DMA clearing, and the real-USB build's
   bounded cleanup seam pass their checks.
 - EchoGarden, Cloudscape, and Oscillator retain their
-  [earlier five-image results](community_virtual_checkpoint.md).
+  [earlier five-image results](history/community_virtual_checkpoint.md).
 - Both complete official switching cycles pass repeatedly on an earlier
   companion. They remain historical evidence for the unchanged handoff, not
   fresh reset/re-entry results for the seven-image candidate.
@@ -47,7 +47,7 @@ make verify-images FIRMWARE_DIR=/path/to/your/files
 ```
 
 The final command needs every catalog file. To validate a subset, use the
-[user guide's preparation command](user_guide.md#supported-firmware).
+[user guide's preparation command](../user_guide.md#supported-firmware).
 Host tests use synthetic inputs; image authentication checks bytes, not DSP.
 The external virtual campaign is recorded evidence, not part of `make test`;
 a portable standalone replay recipe remains a follow-up.

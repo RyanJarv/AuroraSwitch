@@ -42,8 +42,7 @@ Run `make help` for other targets.
 
 ## Read more
 
-- [User guide](docs/user_guide.md): installation, controls, recovery, troubleshooting.
+- [User guide](docs/user_guide.md): build, USB layout, and firmware selection.
 - [How it works](docs/how_it_works.md): RAM handoff, memory layout, design choices.
-- [Development guide](docs/development.md): tests and adding firmware.
-- [Verification status](docs/verification.md): what is checked and what remains open.
+- [Development guide](docs/development/README.md): tests and adding firmware.
 - [Documentation index](docs/README.md): current plans and historical evidence.

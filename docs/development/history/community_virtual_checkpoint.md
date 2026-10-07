@@ -1,7 +1,7 @@
 # Community-image virtual checkpoint
 
 Historical five-image checkpoint. The newer seven-image candidate and bounded
-Morse/Flux observations are in [the public-release checkpoint](public_release_checkpoint.md).
+Morse/Flux observations are in [the public-release checkpoint](../checkpoints/public_releases_20261006.md).
 Preserve the results and identities below; they are not a live pass on that new build.
 
 Status: **bounded virtual checks complete; stop before physical testing**, 2026-10-06.
@@ -50,8 +50,8 @@ Both builds come from source `25c393e794c5ef3002b261a6ee7a6aaa11f91809`.
 Packaging rebuilds application and libDaisy from fresh isolated tracked
 checkouts, records pinned dependencies/toolchain and checks ELF/BIN agreement.
 The complete manifests, hashes and bounded result summaries are in
-[the current machine-readable record](evidence/community_late_impulse_20261006.json).
-The [earlier inconclusive comparison](evidence/community_virtual_20261006.json)
+[the current machine-readable record](../evidence/community_late_impulse_20261006.json).
+The [earlier inconclusive comparison](../evidence/community_virtual_20261006.json)
 is preserved separately. Existing passing receipts for the other four images
 were reused rather than rerunning their completed live campaigns.
 
@@ -84,5 +84,5 @@ The remaining physical screen is both official launch directions, responsive
 controls/audio, reset/re-entry, a small compatibility screen of the three custom
 images, then ordinary stock USB restore. It requires user participation; keep
 ST-Link disconnected because it has caused resets. Virtual results do not close
-the [recovery release gate](recovery_release_gate.md). More modeling and whole
+the [recovery release gate](../recovery_release_gate.md). More modeling and whole
 state equivalence are not prerequisites to that physical screen.

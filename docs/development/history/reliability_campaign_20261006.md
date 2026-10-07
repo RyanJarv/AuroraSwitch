@@ -2,13 +2,13 @@
 
 Archived during the documentation cleanup. Status, candidates, counts, and TODOs
 below describe earlier checkpoints, not current instructions. Use the
-[current documentation index](../README.md) and [verification status](../verification.md).
+[current documentation index](../../README.md) and [verification status](../verification.md).
 Original evidence and artifact identities are retained.
 
 # Reliability campaign and alternative-image onboarding
 
 Status: **bounded virtual checks complete; stop before hardware**; physical campaign
-**NOT RUN**. See [the current seven-image checkpoint](../public_release_checkpoint.md).
+**NOT RUN**. See [the current seven-image checkpoint](../checkpoints/public_releases_20261006.md).
 The hard gate in [recovery_release_gate.md](../recovery_release_gate.md) remains
 OPEN. Catalog admission and bounded virtual results do not waive that gate for beta.
 
@@ -24,7 +24,7 @@ Its evidence remains historical. The changed real-USB candidate is source
 That five-image build was staged to USB, but remains historical and unqualified.
 The newest real-USB candidate is source `e983814`, manifest
 `5a5a5c96814d526d0d3c7c249a71ebfd72d2c4eb62dc33b76999e62adc9b7fcf`.
-Use the [public-release checkpoint](../public_release_checkpoint.md) for its exact
+Use the [public-release checkpoint](../checkpoints/public_releases_20261006.md) for its exact
 identities. On 2026-10-06 it was staged to the test USB with all seven
 authenticated payloads, then read back and safely ejected. The previous drive
 contents were backed up; only the root selector, two new payloads and new build
@@ -162,7 +162,7 @@ tests do not inject real USB/FatFs initialization failures or prove LED hardware
 ## Alternative compatibility tier
 
 The current bounded first-batch work and file-acquisition/version policy are in
-[alternative_firmware.md](../alternative_firmware.md). The Oscillator Is a Lie joins
+[alternative_firmware.md](../../alternative_firmware.md). The Oscillator Is a Lie joins
 EchoGarden and CloudscapeX for review; none is admitted yet. This does not waive
 the official physical campaign or stock-recovery release gate below.
 

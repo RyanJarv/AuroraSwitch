@@ -2,14 +2,14 @@
 
 Archived during the documentation cleanup. Status, candidates, counts, and TODOs
 below describe earlier checkpoints, not current instructions. Use the
-[current documentation index](../README.md) and [verification status](../verification.md).
+[current documentation index](../../README.md) and [verification status](../verification.md).
 Original evidence and artifact identities are retained.
 
 # Verification status and first physical boundary
 
 ## Latest changed catalog — 2026-10-06
 
-The authoritative short status is [the community checkpoint](../community_virtual_checkpoint.md):
+The authoritative short status is [the community checkpoint](community_virtual_checkpoint.md):
 official images, EchoGarden and Oscillator pass bounded repeated virtual
 launch/control/audio checks; Cloudscape also passes after its input impulse was
 moved after the observed control change. Its earlier inconclusive comparison

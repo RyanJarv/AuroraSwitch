@@ -2,7 +2,7 @@
 
 Archived during the documentation cleanup. Status, candidates, counts, and TODOs
 below describe earlier checkpoints, not current instructions. Use the
-[current documentation index](../README.md) and [verification status](../verification.md).
+[current documentation index](../../README.md) and [verification status](../verification.md).
 Original evidence and artifact identities are retained.
 
 # Alternative firmware: bounded onboarding
@@ -86,7 +86,7 @@ or emulator. No new loader features or broad framework are authorized here.
 An ELF/MAP or source from an author could simplify that work, but is not
 assumed available. The authenticated changed-build observations and explicit
 Cloudscape timing correction are now recorded in
-[the current checkpoint](../community_virtual_checkpoint.md). Do not transfer
+[the current checkpoint](community_virtual_checkpoint.md). Do not transfer
 historical results or infer a full community-image pass.
 
 Dirt Verb and other QSPI-linked images remain deferred. HP-filter Aurora remains
@@ -101,7 +101,7 @@ release BINs, not newly compiled substitutes, are the exact catalog inputs.
 Public source is useful review context; no independent source-to-release-BIN
 reproducibility claim is made. The selector/handoff/DMA mechanism is unchanged.
 Their repeated virtual compatibility screen **passes**, physical testing **open**.
-See [the exact-build checkpoint](../public_release_checkpoint.md) for limits and hashes.
+See [the exact-build checkpoint](../checkpoints/public_releases_20261006.md) for limits and hashes.
 
 | Image | Release URL | Bytes | SHA-256 | Stack / reset |
 | --- | --- | ---: | --- | --- |
