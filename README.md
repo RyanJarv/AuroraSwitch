@@ -2,7 +2,7 @@
 
 Choose a supported Aurora firmware from a USB drive. Reverse selects, Freeze verifies, and Shift starts it. RAM images launch without flashing; Dirt Verb runs from QSPI.
 
-Dirt Verb launch replaces the installed application, so menu re-entry needs ready USB media containing the selector. This branch includes that support in every build; it is not in the published release yet.
+Dirt Verb launch replaces the installed application, so menu re-entry needs ready USB media containing the selector firmware. Everything will work fine if you just leave it plugged in.
 
 Beta software with limited testing. Keep the original Aurora firmware and a backup of your USB drive. More hardware testing is needed.
 
