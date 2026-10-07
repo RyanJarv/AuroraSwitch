@@ -11,6 +11,7 @@ import zipfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import prepare_usb
+import setup_dependencies
 
 
 class UsbTests(unittest.TestCase):
@@ -58,6 +59,24 @@ class UsbTests(unittest.TestCase):
         (self.usb / "Stock.BIN").write_bytes(b"recovery")
         with self.assertRaisesRegex(ValueError, "root-level updater"):
             prepare_usb.check_destination(self.usb)
+
+    def test_release_setup_fetches_only_pinned_verifier_dependency(self):
+        revision = setup_dependencies.PINS["mbedtls"][1]
+        origin = setup_dependencies.PINS["mbedtls"][0]
+        with mock.patch.object(setup_dependencies, "ROOT", self.root), \
+                mock.patch.object(setup_dependencies.subprocess, "run") as commands, \
+                mock.patch.object(setup_dependencies, "git", side_effect=[origin, revision, ""]):
+            setup_dependencies.setup(verification_only=True)
+        calls = [call.args[0] for call in commands.call_args_list]
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(calls[0], ["git", "clone", "--no-checkout", origin,
+                                   str(self.root / ".deps/mbedtls")])
+        self.assertEqual(calls[1][-3:], ["checkout", "--detach", revision])
+        with mock.patch.object(setup_dependencies, "ROOT", self.root), \
+                mock.patch.object(setup_dependencies.subprocess, "run"), \
+                mock.patch.object(setup_dependencies, "git", side_effect=[origin, revision, " M source.c"]):
+            with self.assertRaisesRegex(RuntimeError, "modified dependency"):
+                setup_dependencies.setup(verification_only=True)
 
     def test_output_symlink_is_rejected(self):
         (self.usb / "aurora").symlink_to(self.root, target_is_directory=True)

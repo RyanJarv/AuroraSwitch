@@ -6,7 +6,7 @@ Beta software with limited testing. Keep the original Aurora firmware and a back
 
 ## Quick start
 
-Install Git, GitHub CLI (`gh`), GNU Make, Python 3, and a C++ compiler.
+Install Git, GitHub CLI (`gh`), GNU Make, Python 3, and C/C++ compilers.
 
 Back up your FAT USB drive. Change `USB_DIR` below to its mounted path:
 

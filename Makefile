@@ -10,6 +10,7 @@ usb:
 	python3 scripts/prepare_usb.py --usb "$(USB_DIR)"
 download-release:
 	@test -n "$(USB_DIR)" -a -d "$(USB_DIR)" || { echo 'Use make download-release USB_DIR=/path/to/mounted/drive'; exit 1; }
+	python3 scripts/setup_dependencies.py --verification-only
 	python3 scripts/prepare_usb.py --usb "$(USB_DIR)" --release-tag "$(RELEASE_TAG)"
 build-virtual: dependencies
 	$(MAKE) -C firmware VIRTUAL_TRANSPORT=1 EXPERIMENTAL_HANDOFF=1 DMA_ARENA_CLEANUP=1 BUILD_DIR=build-virtual-experimental-dma
