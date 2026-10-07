@@ -3,6 +3,7 @@
 // Shared launch catalog for firmware, host authentication, and payload preparation.
 #include "../support/sram_image_vectors.hpp"
 #include <array>
+#include <cstring>
 
 namespace aurora_selector
 {
@@ -93,6 +94,23 @@ namespace aurora_selector
     constexpr std::uintptr_t StagingLimit = 0x30040000U;
     static_assert(StagingCapacity() <= StagingLimit - StagingAddress,
                   "Reviewed image set exceeds internal staging SRAM");
+
+#ifdef SELECTOR_QSPI_HANDOFF
+    // Header-local catalogs have different addresses in each translation unit.
+    // Match the reviewed value, never a caller's pointer identity.
+    inline bool IsReviewedQspiImage(const Image& image)
+    {
+        for(const auto& entry : Images)
+            if(entry.execution == Execution::Qspi && image.execution == entry.execution
+               && image.size == entry.size && image.vectors.stack == entry.vectors.stack
+               && image.vectors.reset == entry.vectors.reset && image.menu_color == entry.menu_color
+               && image.path && image.sha256
+               && std::strcmp(image.path, entry.path) == 0
+               && std::strcmp(image.sha256, entry.sha256) == 0)
+                return true;
+        return false;
+    }
+#endif
 
     // Match staged bytes and their caller-computed digest to one reviewed entry.
     inline bool VerifyImage(const std::uint8_t* bytes, std::size_t size,

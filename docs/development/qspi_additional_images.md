@@ -42,3 +42,13 @@ streaming loader is needed. The default catalog's capacity remains unchanged.
 No further versions are admitted automatically. Unknown filenames, changed
 hashes, and cross-target vectors continue to fail closed. Physical flash,
 handoff, USB, and ordinary stock restoration remain release requirements.
+
+## Fail-first finding
+
+The first Fata virtual launch (`fata-qspi-handoff-01`) performed zero erases,
+zero page writes, and no terminal branch. The pointer-membership check rejected
+a real entry because the header-local catalog has separate storage in each
+translation unit. It was replaced with complete catalog-value comparison;
+host tests require copied exact entries to pass and altered entries to fail.
+This supersedes provisional selector source `50e54f8`; its bundle must not
+be presented as a working launch candidate.

@@ -104,13 +104,9 @@ namespace aurora_selector
             {
                 if(image.execution == Execution::Sram)
                     return true;
-                // Only an actual QSPI catalog entry can authorize programming.
+                // Only an exact QSPI catalog value can authorize programming.
                 // Vector/hash validation alone must not admit caller-made images.
-                bool reviewed = false;
-                for(const auto& entry : Images)
-                    if(&image == &entry && entry.execution == Execution::Qspi)
-                        reviewed = true;
-                if(!reviewed || !Validate())
+                if(!IsReviewedQspiImage(image) || !Validate())
                     return false;
                 QspiDriver driver{seed.qspi};
                 const auto result = ProgramQspiImage(driver, staged, image.size,

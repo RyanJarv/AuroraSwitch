@@ -10,6 +10,20 @@ int main()
     assert(Images[13].execution == Execution::Qspi);
     assert(Images[13].vectors.reset == 0x90040a49U);
     assert(Images[14].execution == Execution::Sram);
+    for(unsigned index : {12U, 13U})
+    {
+        auto copied = Images[index];
+        assert(IsReviewedQspiImage(copied));
+        copied.size += 1;
+        assert(!IsReviewedQspiImage(copied));
+        copied = Images[index];
+        copied.execution = Execution::Sram;
+        assert(!IsReviewedQspiImage(copied));
+        copied = Images[index];
+        copied.path = "0:/aurora/unknown.bin";
+        assert(!IsReviewedQspiImage(copied));
+    }
+    assert(!IsReviewedQspiImage(Images[14]));
     for(unsigned i = 0; i < 15; ++i)
         for(unsigned j = 0; j < i; ++j)
         {
