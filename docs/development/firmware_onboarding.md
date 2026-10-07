@@ -147,7 +147,7 @@ linked control/audio or USB passes. No catalog entry is added.
 USB OTG is unmodeled, so enumeration, MSC and wavetable-file loading remain
 unverified. Pause this image rather than adding a USB stack. A tested author
 RAM build or separately scoped physical experiment is the next option; its own
-callback/control/audio binding is also still needed. Source inspection shows
+control/audio response and selector-handoff checks are also still needed. Source inspection shows
 the shared settings record can alter behavior, not isolated per-image settings.
 The raw tone-mode byte selects clean/degraded processing rather than indexing
 an array; that observation is not a general firmware safety guarantee.
@@ -156,6 +156,15 @@ The startup archive has SHA-256
 replay checks authenticate complete logs and compare all 8 MiB of modeled NOR.
 Focused virtual checks: 38 pass. Broad virtual checks: 97 pass. Host checks:
 38 pass. No new hardware action is performed.
+
+A follow-up reuses the existing read-only call observer and synthetic SAI
+transport: 85 linked Fata callback entries/finite returns pass, with clear fault
+registers and the same complete NOR result. Its registration is R5+888, not
+Tempest's R6+1080; all five linked dispatch sites were independently bound.
+An initial zero-call attempt is retained as rejected evidence. Follow-up archive
+SHA-256 `2ba162c3fb89a7030236f8d0adc42c32eb0bc922f4a34b8e48d3372cdae0536e`.
+This proves finite callback execution, not PCM/control response, selector
+handoff or USB loading. Those remain open; Fata is still outside the catalog.
 
 Reviewed source: `jfriess/Aurora-Firmwares` commit
 `d5504d76370c370fdb40adcf755d8a4b9c07ee6b`.
