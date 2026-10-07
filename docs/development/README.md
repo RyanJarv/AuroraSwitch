@@ -21,7 +21,8 @@ agreement. It does not prove runtime behavior.
 1. Pin the file/version, size, hash, and vectors. Review RAM layout, startup,
    DMA use, inherited clocks/MPU, and persistent writes.
 2. Add its path and menu color to [images.hpp](../../firmware/images.hpp).
-   Keep existing identities; do not expand staging without review.
+   Reuse its family's `menu_colors` constant for every version; new families
+   need a distinct color. Keep existing identities and review staging changes.
 3. Extend catalog/authentication tests. Run `make check` and validate local
    payloads with `prepare_payloads.py` or `make verify-images`.
 4. Commit and package. Test linked launch, controls/audio, copy, and DMA cleanup.

@@ -110,6 +110,8 @@ class ReferenceSiteTests(unittest.TestCase):
         self.assertEqual(len(self.entries), 12)
         self.assertIn("development-builds", parser.ids)
         page = (SITE / "index.html").read_text()
+        self.assertNotIn("Reference sources and maintenance", page)
+        self.assertNotIn('id="reference-maintenance"', page)
         for entry in self.entries:
             self.assertIn(entry.name, page)
             self.assertIn(entry.color, page)
@@ -118,7 +120,7 @@ class ReferenceSiteTests(unittest.TestCase):
         for entry in self.entries:
             self.assertIn(entry.anchor, self.pages["index.html"].ids)
 
-    def test_firmware_pages_have_local_control_links_and_version_labels(self):
+    def test_firmware_pages_have_control_headings_and_version_labels(self):
         for section in self.sections:
             entries = [entry for entry in self.entries if entry.anchor == section.anchor]
             if not entries:
@@ -128,12 +130,12 @@ class ReferenceSiteTests(unittest.TestCase):
             with self.subTest(firmware=section.title):
                 self.assertIn(section.anchor, parser.ids)
                 self.assertEqual(parser.current, [section.filename, section.filename])
-                self.assertIn("On this page", parser.nav_labels)
+                self.assertNotIn("On this page", parser.nav_labels)
+                self.assertNotIn('class="page-links"', page)
+                self.assertNotIn('class="back-link"', page)
                 self.assertEqual(parser.swatches, len(entries))
                 for heading in re.findall(r"^### (.+)$", section.markdown, re.M):
                     self.assertIn(slug(heading), parser.ids)
-                    if heading != "Details and sources":
-                        self.assertIn(f'#{slug(heading)}', parser.links)
                 for entry in entries:
                     self.assertIn(f"{entry.name} · {entry.color}", page)
                     if entry.availability == "Development":
@@ -252,6 +254,16 @@ class ReferenceSiteTests(unittest.TestCase):
     def test_navigation_rejects_duplicate_selector_colors(self):
         with self.assertRaisesRegex(ValueError, "duplicate selector colors"):
             read_reference(self.source.replace("| Green |", "| Blue |", 1))
+
+    def test_versions_share_stable_family_colors(self):
+        for anchor, color, count in (("flux-capacitor--yellow", "Yellow", 3),
+                                     ("morse--white", "White", 2)):
+            versions = [entry for entry in self.entries if entry.anchor == anchor]
+            self.assertEqual(len(versions), count)
+            self.assertEqual({entry.color for entry in versions}, {color})
+        with self.assertRaisesRegex(ValueError, "Inconsistent family"):
+            read_reference(self.source.replace(
+                "| Yellow | [Flux Capacitor 0.1.0]", "| Azure | [Flux Capacitor 0.1.0]"))
 
     def test_navigation_rejects_sections_without_a_color_entry(self):
         with self.assertRaisesRegex(ValueError, "Unlinked firmware sections"):

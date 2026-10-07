@@ -16,8 +16,7 @@ REPOSITORY = "https://github.com/RyanJarv/AuroraSwitch/blob/main/"
 COLORS = {
     "Blue": "#3787ff", "Green": "#35bf58", "Cyan": "#32c9ce",
     "Magenta": "#d855d5", "Amber": "#dc9a25", "Yellow": "#ead342",
-    "White": "#fff", "Orange": "#ec8734", "Violet": "#a273e7",
-    "Mint": "#79dcaa", "Pale red": "#ec9292", "Azure": "#3ea7dc",
+    "White": "#fff", "Pale red": "#ec9292", "Azure": "#3ea7dc",
 }
 PANEL_CONTROLS = ("Warp", "Time", "Blur", "Reflect", "Mix", "Atmosphere", "Reverse", "Freeze", "Shift")
 
@@ -59,7 +58,7 @@ class Section:
 
     @property
     def filename(self) -> str:
-        if self.heading in ("Color lookup", "Reference maintenance"):
+        if self.heading == "Color lookup":
             return "index.html"
         return f"{slug(self.title)}.html"
 
@@ -82,9 +81,9 @@ def read_reference(source: str) -> tuple[str, list[Section], list[Entry]]:
     by_anchor = {section.anchor: section for section in sections}
     if len(by_anchor) != len(sections):
         raise ValueError("Duplicate reference section")
-    if len({section.filename for section in sections if section.filename != "index.html"}) != len(sections) - 2:
+    if len({section.filename for section in sections if section.filename != "index.html"}) != len(sections) - 1:
         raise ValueError("Duplicate reference page")
-    for required in ("color-lookup", "reference-maintenance", "outside-the-selector-catalog"):
+    for required in ("color-lookup", "outside-the-selector-catalog"):
         if required not in by_anchor:
             raise ValueError(f"Missing reference section: {required}")
     entries = []
@@ -101,10 +100,17 @@ def read_reference(source: str) -> tuple[str, list[Section], list[Entry]]:
         if match[2] not in by_anchor or by_anchor[match[2]].filename == "index.html":
             raise ValueError(f"Missing firmware section: {link}")
         entries.append(Entry(color, match[1], match[2], description, availability))
-    if not entries or len({entry.color for entry in entries}) != len(entries):
-        raise ValueError("Missing or duplicate selector colors")
+    if not entries:
+        raise ValueError("Missing selector colors")
+    # Versions share one family page/color; unrelated families cannot share it.
+    for entry in entries:
+        for other in entries:
+            if (entry.anchor == other.anchor) != (entry.color == other.color):
+                raise ValueError("Inconsistent family or duplicate selector colors")
+    if len({entry.name for entry in entries}) != len(entries):
+        raise ValueError("Duplicate firmware version")
     unused = set(by_anchor) - {entry.anchor for entry in entries} - {
-        "color-lookup", "reference-maintenance", "outside-the-selector-catalog",
+        "color-lookup", "outside-the-selector-catalog",
     }
     if unused:
         raise ValueError(f"Unlinked firmware sections: {sorted(unused)}")
@@ -154,7 +160,7 @@ def navigation(sections: list[Section], entries: list[Entry], current: str) -> s
             if not versions or ("Release" if any(entry.availability == "Release" for entry in versions) else "Development") != availability:
                 continue
             active = ' aria-current="page"' if current == section.filename else ""
-            colors = ", ".join(entry.color + (" (dev)" if entry.availability == "Development" else "") for entry in versions)
+            colors = versions[0].color
             parts.append(f'<li><a href="{section.filename}"{active}><span>{html.escape(section.title)}</span>'
                          f'<small>{html.escape(colors)}</small></a></li>')
         parts.append('</ul>')
@@ -238,7 +244,6 @@ def render_pages() -> dict[str, str]:
         home += '</div></section>\n'
     home += '''<p class="other-firmware"><a href="outside-the-selector-catalog.html">Other firmware and current limitations →</a></p>
 '''
-    home += f'<details id="reference-maintenance"><summary>Reference sources and maintenance</summary>{bodies["reference-maintenance"]}</details>'
     pages = {"index.html": document("Firmware reference", home, navigation(sections, entries, "index.html"), digest)}
     for section in sections:
         if section.filename == "index.html":
@@ -255,13 +260,9 @@ def render_pages() -> dict[str, str]:
         if 'class="reference-details"' in content:
             content += '</details>'
         content = label_controls(content)
-        toc = "".join(f'<a href="#{anchor}">{label}</a>'
-                      for anchor, label in re.findall(r'<h2 id="([^"]+)">(.*?)</h2>', content))
-        body = f'<a class="back-link" href="index.html">← All firmware &amp; colors</a><h1 id="{section.anchor}">{html.escape(section.title)}</h1>'
+        body = f'<h1 id="{section.anchor}">{html.escape(section.title)}</h1>'
         if badges:
             body += f'<div class="version-labels" aria-label="Versions and selector colors">{badges}</div>'
-        if toc:
-            body += f'<nav class="page-links" aria-label="On this page">{toc}</nav>'
         if badges:
             # The original drawing maps physical positions; all functions remain in Markdown.
             intro, separator, controls = content.partition('<h2 ')
@@ -272,7 +273,6 @@ def render_pages() -> dict[str, str]:
             body += separator + controls + '</div></div>'
         else:
             body += content
-        body += '<p class="back-link"><a href="index.html">← Choose another firmware</a></p>'
         pages[section.filename] = document(section.title, body, navigation(sections, entries, section.filename), digest)
     return pages
 

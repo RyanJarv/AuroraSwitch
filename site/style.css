@@ -80,7 +80,6 @@ p { margin: .7rem 0 1rem; }
 .version-labels { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; }
 .version-label { font-size: .85rem; padding: .3rem .65rem; background: var(--surface); border: 1px solid var(--line); border-radius: .4rem; }
 .version-label .swatch { margin-right: .4rem; }
-.back-link { font-size: .9rem; }
 .control-layout { display: grid; grid-template-columns: 205px minmax(0, 1fr); gap: 1.5rem; align-items: start; }
 .panel-map { position: sticky; top: 6rem; margin: 1rem 0; }
 .panel-map img { display: block; width: 100%; height: auto; }
@@ -91,8 +90,6 @@ p { margin: .7rem 0 1rem; }
 .reference-details > summary { font-weight: 600; color: var(--accent); }
 .reference-details li { margin: .3rem 0; }
 summary { cursor: pointer; padding: .4rem 0; }
-.page-links { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.2rem 0; }
-.page-links a { border: 1px solid var(--line); border-radius: .4rem; padding: .4rem .7rem; font-size: .9rem; background: var(--surface); text-decoration: none; }
 /* GitHub's GFM table wrapper permits horizontal scroll on small screens. */
 markdown-accessiblity-table { display: block; overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: .95rem; }
@@ -123,7 +120,7 @@ footer a { display: inline-block; }
     .cards { grid-template-columns: 1fr; }
 }
 @media print {
-    .site-header, .sidebar, .mobile-menu, .page-links, .skip-link, .back-link { display: none; }
+    .site-header, .sidebar, .mobile-menu, .skip-link { display: none; }
     .panel-map { position: static; }
     .layout { display: block; padding: 0; }
     body { color: #000; background: #fff; font-size: 11pt; }

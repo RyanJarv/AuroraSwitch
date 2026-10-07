@@ -8,6 +8,13 @@ to postpone those tests.
 
 ## Current build
 
+The stable-family-color change supersedes the menu colors below: all Flux
+versions are yellow and all Morse versions white. It changes selector bytes,
+not admission or handoff. The previously frozen candidate and virtual results
+remain historical; a new release build needs exact-build physical testing.
+
+### Previous twelve-entry build (history)
+
 Twelve-entry development candidate, source `0657550`; real-USB manifest
 `7c96a4c1fc61266dcfa78f2ff50210e6160010f7054894770f9599d0b931e2a6`;
 BIN SHA-256

@@ -76,6 +76,9 @@ Power cycle to return to the menu. After changing files, reconnect the drive
 to rescan. Changing selection or disconnecting requires verification again.
 Morse needs an external Freeze-gate clock and Mix above zero.
 
+Colors are fixed per firmware family across versions and installs. Keep one
+version per family on the drive: multiple versions have the same menu color.
+
 ## Not supported yet
 
 - **FataMorgana's upstream QSPI build:** unsupported. See the RAM experiment below.
@@ -85,16 +88,16 @@ Morse needs an external Freeze-gate clock and Mix above zero.
 
 ## Development branch additions
 
-The `codex/older-firmware-onboarding` branch adds these exact images. Virtual
-launch/control/audio checks pass; physical testing remains open. Build this
-branch from source; the published release does not include these entries yet.
+The current source includes these exact images. Prior virtual
+launch/control/audio checks pass; physical testing remains open. Build from
+source; the published release does not include these entries yet.
 Download the named BIN from each linked release and place it in `aurora/`.
 
 | Firmware | Filename | Reverse color |
 | --- | --- | --- |
-| [Flux 0.1.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/tag/v0.1.0) | `flux-capacitor-0.1.0.bin` | Orange |
-| [Flux 0.2.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/tag/v0.2.0) | `flux-capacitor-0.2.0.bin` | Violet |
-| [Morse 0.1.0](https://github.com/DaveParr/Aurora-Morse/releases/tag/v0.1.0) | `aurora-morse-0.1.0.bin` | Mint |
+| [Flux 0.1.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/tag/v0.1.0) | `flux-capacitor-0.1.0.bin` | Yellow |
+| [Flux 0.2.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/tag/v0.2.0) | `flux-capacitor-0.2.0.bin` | Yellow |
+| [Morse 0.1.0](https://github.com/DaveParr/Aurora-Morse/releases/tag/v0.1.0) | `aurora-morse-0.1.0.bin` | White |
 | [Tempest 1.0.0](https://github.com/jfriess/Aurora-Firmwares/releases/tag/Tempest-v1.0.0) | `Tempest_v1_0_0.bin` | Pale red |
 
 Tempest saves its settings in QSPI. This is payload behavior, not selector

@@ -11,13 +11,23 @@ int main()
     static_assert(StagingCapacity() == 181888);
     assert(Images[0].menu_color == (std::array<float, 3>{0.f, 0.f, .4f}));
     assert(Images[1].menu_color == (std::array<float, 3>{0.f, .4f, 0.f}));
+    // Freeze the public mapping independently of the shared constants. Versions
+    // share a family color; unrelated families must remain distinguishable.
+    constexpr unsigned families[] = {0, 1, 2, 3, 4, 5, 6, 5, 5, 6, 7, 8};
+    constexpr std::array<float, 3> colors[] = {
+        {0.f, 0.f, .4f}, {0.f, .4f, 0.f}, {0.f, .4f, .4f},
+        {.4f, 0.f, .4f}, {.4f, .2f, 0.f}, {.4f, .4f, 0.f},
+        {.4f, .4f, .4f}, {.4f, .2f, .2f}, {0.f, .2f, .4f},
+    };
     for(unsigned i = 0; i < count; ++i)
     {
+        assert(Images[i].menu_color == colors[families[i]]);
         assert(std::strlen(Images[i].sha256) == 64);
         assert(Images[i].size <= StagingCapacity());
         for(unsigned j = 0; j < i; ++j)
         {
-            assert(Images[i].menu_color != Images[j].menu_color);
+            assert((Images[i].menu_color == Images[j].menu_color)
+                   == (families[i] == families[j]));
             assert(std::strcmp(Images[i].path, Images[j].path) != 0);
             assert(std::strcmp(Images[i].sha256, Images[j].sha256) != 0);
         }

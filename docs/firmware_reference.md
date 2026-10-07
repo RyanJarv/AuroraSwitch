@@ -9,11 +9,11 @@
 | Cyan | [EchoGarden 0.3.1](#echogarden-031--cyan) | Multi-line echo and ambience | Release |
 | Magenta | [CloudscapeX](#cloudscapex--magenta) | Modulated delay, diffusion and filter delay | Release |
 | Amber | [The Oscillator Is a Lie 0.0.2](#the-oscillator-is-a-lie-002--amber) | Aliasing/ring-mod oscillator | Release |
-| Yellow | [Flux Capacitor 0.3.0](#flux-capacitor--yellow-orange-or-violet) | Tape pitch, delay and coloration | Release |
-| White | [Morse 0.2.0](#morse--white-or-mint) | Clocked rhythmic VCA | Release |
-| Orange | [Flux Capacitor 0.1.0](#flux-capacitor--yellow-orange-or-violet) | Tape pitch, stop, wow/flutter | Development |
-| Violet | [Flux Capacitor 0.2.0](#flux-capacitor--yellow-orange-or-violet) | Adds tape delay | Development |
-| Mint | [Morse 0.1.0](#morse--white-or-mint) | Three-pattern rhythmic VCA | Development |
+| Yellow | [Flux Capacitor 0.3.0](#flux-capacitor--yellow) | Tape pitch, delay and coloration | Release |
+| White | [Morse 0.2.0](#morse--white) | Clocked rhythmic VCA | Release |
+| Yellow | [Flux Capacitor 0.1.0](#flux-capacitor--yellow) | Tape pitch, stop, wow/flutter | Development |
+| Yellow | [Flux Capacitor 0.2.0](#flux-capacitor--yellow) | Adds tape delay | Development |
+| White | [Morse 0.1.0](#morse--white) | Three-pattern rhythmic VCA | Development |
 | Pale red | [Tempest 1.0.0](#tempest-100--pale-red) | Multi-bank distortion | Development |
 | Azure | [FataMorgana RAM experiment](#fatamorgana-ram-experiment--azure) | Dual wavetable synthesizer | Development |
 
@@ -204,7 +204,7 @@ Aliasing/ring-mod oscillator, not a reverb. Raise Blur above zero to hear it.
 
 Source: supplied author notes, February 10–11, 2026.
 
-## Flux Capacitor — Yellow, Orange or Violet
+## Flux Capacitor — Yellow
 
 Stereo tape-style pitch, braking, delay and coloration.
 
@@ -231,11 +231,11 @@ A stopped wet signal is silent. Fully dry Mix temporarily becomes wet during bra
 
 ### Version differences
 
-| Version / selector color | Difference |
+| Version | Difference |
 | --- | --- |
-| 0.1.0 / Orange | Pitch, braking, wow/flutter only |
-| 0.2.0 / Violet | Adds delay with fixed feedback |
-| 0.3.0 / Yellow | Adds Atmosphere coloration/feedback |
+| 0.1.0 | Pitch, braking, wow/flutter only |
+| 0.2.0 | Adds delay with fixed feedback |
+| 0.3.0 | Adds Atmosphere coloration/feedback |
 
 ### Details and sources
 
@@ -245,7 +245,7 @@ A stopped wet signal is silent. Fully dry Mix temporarily becomes wet during bra
 Sources: [0.3.0 guide](https://github.com/DaveParr/aurora-flux-capacitor/blob/v0.3.0/README.md)
 and versioned `main.cpp` / `tape_delay.h` at tags 0.1.0 and 0.2.0.
 
-## Morse — White or Mint
+## Morse — White
 
 Clocked stereo VCA: **audio input + clock into Freeze gate + Mix above zero**.
 Freeze button alone does not clock it.
@@ -264,10 +264,10 @@ Freeze button alone does not clock it.
 
 ### Version differences
 
-| Version / selector color | Difference |
+| Version | Difference |
 | --- | --- |
-| 0.1.0 / Mint | Three patterns: dotted-8th, slow pulse, triplet; instant attack + decay |
-| 0.2.0 / White | Twelve patterns; Blur controls attack/decay |
+| 0.1.0 | Three patterns: dotted-8th, slow pulse, triplet; instant attack + decay |
+| 0.2.0 | Twelve patterns; Blur controls attack/decay |
 
 Pattern changes apply at a step boundary or reset, not only the next Reset.
 
@@ -394,9 +394,3 @@ No selector color; these cannot launch with the published RAM selector.
   high-pass and Shift + Blur wet level. Its supplied BIN exceeds staging capacity.
 - **HSO, tape-delay WIP and Phazr:** mentioned in community notes, but not onboarded;
   controls and compatibility are not covered here.
-
-## Reference maintenance
-
-Colors: [`firmware/images.hpp`](../firmware/images.hpp). Controls: author manuals,
-notes and pinned source; not a physical-test claim. [Downloads](alternative_firmware.md).
-Update version-specific controls with catalog changes; unknown does not mean unused.

@@ -4,7 +4,7 @@ GitHub Pages serves the checked-in files in `site/`: no Jekyll or deployment-tim
 build. Firmware and evidence are not uploaded.
 
 The index has a card for each version/color. Each firmware family gets a control
-view, with a desktop sidebar, a native mobile menu and links to its control groups.
+view, with a desktop sidebar and a native mobile menu.
 Older index fragments still find the matching card; share a firmware page URL for
 direct access. Release and development-only entries stay separate.
 
@@ -23,6 +23,8 @@ make test
 ```
 
 The color table drives navigation, so there is no second firmware catalog to edit.
+Versions on the same family page share one color, matching `menu_colors` in
+`firmware/images.hpp`; different families must use distinct colors.
 The renderer uses one GitHub Markdown request and writes the HTML fallbacks and
 SPA data from identical content; shared styling is in `site/style.css`. Regenerate
 after changing the reference, renderer or `app.js` (its URL is content-versioned).
