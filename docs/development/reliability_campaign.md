@@ -15,8 +15,8 @@ BIN SHA-256
 (95972 bytes). ELF `d6c3a8937ec0221425aef2ac1687eff42d1381880dc42173bf323574cc20eeda`,
 MAP `0c4a05f802b75dd7a47c4077837841b1252918d0fc59878e40c9b69e6d61406f`.
 Fresh isolated packaging completed. All twelve local payloads pass the compiled
-byte/staging/corruption predicate. This build is not deployed or physically
-tested on the module. On 2026-10-06 it and all twelve payloads were copied to
+byte/staging/corruption predicate. Initial physical results are reported below;
+reliability and stock recovery remain open. On 2026-10-06 it and all twelve payloads were copied to
 the FAT32 test drive `AURORA MAST` (UUID `2CB7-DC92`), reauthenticated after
 read-only remount, and safely unmounted. Existing settings and recovery files
 were preserved; the full prior contents are backed up locally at
@@ -26,6 +26,16 @@ before module testing because it previously caused resets.
 Its synthetic-media companion is manifest `ca471d61…ca37f`, source
 `2284fbe`; Fata's linked handoff/control/audio checks pass there, not on this
 real-USB BIN. Prior official switching-cycle evidence remains historical.
+
+### Initial physical screen — user reports, 2026-10-06
+
+After the prepared-drive instructions, the user confirmed original Aurora
+launched with responsive controls/audio, then confirmed FDN worked after the
+requested power cycle and blue-selection launch. This supports two initial
+launches and reset/re-entry between them. No independent on-device image
+readback or measurement was taken. Repeated switching, new alternative images,
+Fata USB loading, and ordinary stock restoration remain untested. ST-Link
+disconnection was requested but has not been explicitly confirmed.
 
 ### Previous eleven-entry build (history)
 
@@ -74,7 +84,8 @@ official recovery testing.
 
 Keep ST-Link disconnected. Record the exact selector/payload hashes, hardware
 and bootloader identity, drive/filesystem, power arrangement, and audio setup.
-Start with quiet monitoring. All steps below are **not yet run on this build**.
+Start with quiet monitoring. The initial screen above does not complete the
+campaign below.
 
 1. Record normal Aurora controls/audio and the working stock updater procedure.
    Keep the original firmware and drive contents backed up.
