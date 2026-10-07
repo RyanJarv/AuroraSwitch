@@ -4,6 +4,23 @@ Work stays on `codex/qspi-dirt-verb`; `main` remains RAM-only.
 
 ## Active checklist
 
+The checkpoint below is historical. FataMorgana QSPI was retired from the
+catalog on 2026-10-07 in favor of the RAM build from the same pinned source.
+No musical-feature difference was identified; physical equivalence is not
+claimed. RAM avoids application-flash programming during launch. Preserve
+the earlier QSPI evidence, but do not use it to qualify the changed selector.
+The QSPI build helper remains available only to reproduce that experiment.
+
+Current catalog: 12 RAM entries plus opt-in Dirt Verb and HP-filter Aurora
+(14 total). Dirt remains the only QSPI payload. This catalog change requires
+a new authenticated selector candidate and subsequent physical testing.
+
+`make check` passes all 56 host tests and Python compilation after retirement.
+The opt-in catalog test checks that the retired QSPI entry is rejected, RAM
+Fata stays at index 11, and the remaining colors/paths are unique. HP-filter
+moves from index 14 to 13; historical traces keep their original indices.
+No live emulator campaign has been run against the changed selector yet.
+
 - [x] Fresh-build FataMorgana's pinned upstream `BOOT_QSPI` configuration.
 - [x] Review HP-filter Aurora vectors, size, and staging-region capacity.
 - [x] Add opt-in exact catalog entries and application-bounded writer extents.

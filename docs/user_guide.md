@@ -78,7 +78,7 @@ Morse needs an external Freeze-gate clock and Mix above zero.
 
 ## Not supported yet
 
-- **FataMorgana QSPI and HP-filter Aurora:** available only in the opt-in
+- **Dirt Verb and HP-filter Aurora:** available only in the opt-in
   development build below; not in the published release.
 - **Dirt Verb:** excluded from default builds and releases. See the
   [development-only QSPI experiment](development/qspi_feasibility.md).
@@ -101,11 +101,13 @@ Download the named BIN from each linked release and place it in `aurora/`.
 Tempest saves its settings in QSPI. This is payload behavior, not selector
 flashing; do not assume its settings are isolated from other alternative apps.
 
-### FataMorgana RAM experiment
+### FataMorgana
 
 The development branch admits one exact RAM build from source commit `d5504d7`,
 not the upstream QSPI configuration. Virtual handoff/control/audio checks pass;
 USB wavetable loading and physical compatibility remain unverified.
+RAM is our preferred build: it avoids programming application flash on launch.
+The duplicate QSPI build is no longer offered in the selector.
 
 With the pinned GNU Arm 10 toolchain on PATH:
 
@@ -126,7 +128,6 @@ can change retained settings.
 | Firmware | Filename | Reverse color |
 | --- | --- | --- |
 | Dirt Verb 1.1 | `DirtVerb 1.1.bin` | Red-pink |
-| Pinned FataMorgana QSPI build | `FataMorgana-QSPI.bin` | Sea green |
 | HP-filter Aurora | `Aurora_v1-4-6_hpfilt.bin` | Lime |
 
 Virtual handoff/control/audio screening passes; physical tests remain open.
@@ -137,16 +138,14 @@ as guaranteed menu re-entry or recovery.
 With the pinned GNU Arm 10 toolchain on PATH:
 
 ```sh
-make fata-qspi-probe
 make package QSPI_HANDOFF=1
 ```
 
-The first command prints a payload bundle path; the second prints a sealed
-selector bundle path. User-supplied Dirt/HP binaries and the generated Fata
-payload can be authenticated and named without accessing a drive:
+The command prints a sealed selector bundle path. User-supplied Dirt/HP binaries
+can be authenticated and named without accessing a drive:
 
 ```sh
-python3 scripts/prepare_payloads.py --qspi --output prepared-qspi /path/to/DirtVerb.bin /path/to/FataMorgana.bin /path/to/Aurora_v1-4-6_hpfilt.bin
+python3 scripts/prepare_payloads.py --qspi --output prepared-qspi /path/to/DirtVerb.bin /path/to/Aurora_v1-4-6_hpfilt.bin
 ```
 
 Use the emitted filenames under `prepared-qspi/aurora/` and keep the selector

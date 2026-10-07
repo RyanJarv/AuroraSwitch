@@ -5,12 +5,10 @@
 int main()
 {
     using namespace aurora_selector;
-    static_assert(sizeof(Images) / sizeof(Images[0]) == 15);
+    static_assert(sizeof(Images) / sizeof(Images[0]) == 14);
     static_assert(StagingCapacity() == 182240U);
-    assert(Images[13].execution == Execution::Qspi);
-    assert(Images[13].vectors.reset == 0x90040a49U);
-    assert(Images[14].execution == Execution::Sram);
-    for(unsigned index : {12U, 13U})
+    assert(Images[13].execution == Execution::Sram);
+    for(unsigned index : {12U})
     {
         auto copied = Images[index];
         assert(IsReviewedQspiImage(copied));
@@ -23,8 +21,18 @@ int main()
         copied.path = "0:/aurora/unknown.bin";
         assert(!IsReviewedQspiImage(copied));
     }
-    assert(!IsReviewedQspiImage(Images[14]));
-    for(unsigned i = 0; i < 15; ++i)
+    assert(!IsReviewedQspiImage(Images[13]));
+    // Retired QSPI Fata bytes must not regain admission through a copied entry.
+    auto retired = Images[11];
+    retired.path = "0:/aurora/FataMorgana-QSPI.bin";
+    retired.sha256 = "d97311056ac1562b09e0afb518aeb3587d3df9bbb4a031d68da22be52bee8da1";
+    retired.vectors.reset = 0x90040a49U;
+    retired.menu_color = {0.f, 0.3f, 0.1f};
+    retired.execution = Execution::Qspi;
+    assert(!IsReviewedQspiImage(retired));
+    assert(Images[11].execution == Execution::Sram);
+    assert(std::strcmp(Images[11].path, "0:/aurora/FataMorgana.bin") == 0);
+    for(unsigned i = 0; i < 14; ++i)
         for(unsigned j = 0; j < i; ++j)
         {
             assert(Images[i].menu_color != Images[j].menu_color);

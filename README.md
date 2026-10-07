@@ -43,7 +43,7 @@ Only these exact versions are supported:
 
 ### Not supported yet
 
-- **FataMorgana QSPI and HP-filter Aurora:** opt-in development entries pass virtual checks; physical testing remains open. See [additional images](docs/development/qspi_additional_images.md).
+- **FataMorgana:** use the RAM build; the duplicate QSPI option is retired. Dirt Verb and HP-filter Aurora remain opt-in development entries. See [additional images](docs/development/qspi_additional_images.md).
 - **Dirt Verb:** opt-in QSPI experiment passes virtual checks; hardware testing remains open. Excluded from default builds.
 - **Other versions or renamed files:** need separate review and catalog entries.
 
