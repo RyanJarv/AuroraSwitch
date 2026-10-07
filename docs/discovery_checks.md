@@ -1,5 +1,9 @@
 # Supported-file discovery checks — 2026-10-06
 
+Historical two-image checkpoint. Counts, status, and TODOs below belong to that
+build, not the current catalog. See [verification status](verification.md) and
+the [active checklist](reliability_campaign.md#active-checklist).
+
 Scope: discover the existing two reviewed images on USB connection, not admit
 new firmware or change the terminal handoff. The small menu helper is generic
 over a bounded catalog. The firmware invokes its existing read-only staging,

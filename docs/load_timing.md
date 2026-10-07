@@ -1,5 +1,8 @@
 # Measure before adding load timeouts
 
+Optional developer diagnostics, not an additional active test campaign. Use
+these only to investigate a slow load or a concrete storage failure.
+
 No physical load times have been collected. Instrumentation is diagnostic only;
 it neither installs a watchdog nor turns a synchronous call into bounded work.
 
@@ -25,9 +28,8 @@ file's record, not a per-image history; explicitly select and Freeze each image
 to measure individual successful loads. Avoid halting during a timed operation;
 debugger halts perturb USB/timers and must be labeled separately.
 
-For the physical campaign, record at least five successful loads per official
-image on each tested drive, first-use versus repeat behavior, one full discovery
-scan, failed/truncated reads, disconnect and reconnect. Also record independent
+For a timing investigation, sample successful loads and the failure case on
+the affected drive. Separate first-use and repeat behavior. Also record independent
 wall time/video and whether controls recover. Store observed min/median/max and
 raw measurements with exact build/drive identities. Do not infer a timeout from
 synthetic model speed or choose a threshold before seeing normal variation.
@@ -37,5 +39,5 @@ its cause. Preserve the failure and determine the upstream blocking call before
 adding a watchdog or asynchronous loader. Power loss/failed reads are not the
 same hazard as interruption of flash programming or target settings saves.
 
-TODO: collect real measurements; instrumentation alone does not complete the
-load-time campaign or prove a maximum wall-clock bound.
+Real measurements remain unavailable; instrumentation does not prove a maximum
+wall-clock bound.

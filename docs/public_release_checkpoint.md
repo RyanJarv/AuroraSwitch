@@ -18,7 +18,7 @@ contains exact manifests, artifact hashes, the cleanup census and result summari
 
 | Build | Manifest/package SHA-256 | BIN SHA-256 |
 | --- | --- | --- |
-| Real USB candidate, **not installed or physically qualified** | `5a5a5c96814d526d0d3c7c249a71ebfd72d2c4eb62dc33b76999e62adc9b7fcf` | `7eeeba55132482037a3dc7aefe67cb625605fbdf30575607c8750d7e2d625155` |
+| Real USB candidate, **installation unconfirmed; not physically qualified** | `5a5a5c96814d526d0d3c7c249a71ebfd72d2c4eb62dc33b76999e62adc9b7fcf` | `7eeeba55132482037a3dc7aefe67cb625605fbdf30575607c8750d7e2d625155` |
 | Synthetic-media companion, **never install** | `5febca4aef3b4ba6699eede4b531c54ad7ce1db17b38394d8eeea6bfb504d608` | `feee7f0cb6e01795967cb39f454d8af16d73d2cfa6686fc7875e6769af61e975` |
 
 The existing virtual launch runner executes discovery, Freeze verification,
@@ -55,26 +55,9 @@ seven-image reset/re-entry pass. No whole-memory equivalence requirement is adde
 
 ## Obtain and prepare payloads
 
-From the repository root, with `gh` installed:
-
-```sh
-gh release download v0.3.0 --repo DaveParr/aurora-flux-capacitor \
-  --pattern flux-capacitor-0.3.0.bin --dir local-firmware
-gh release download v0.2.0 --repo DaveParr/Aurora-Morse \
-  --pattern aurora-morse-0.2.0.bin --dir local-firmware
-make setup
-python3 scripts/prepare_payloads.py --output prepared-public-releases \
-  local-firmware/flux-capacitor-0.3.0.bin \
-  local-firmware/aurora-morse-0.2.0.bin
-```
-
-The preparation helper authenticates against the compiled catalog and publishes
-only a new output directory. It never overwrites an existing directory or
-installs anything. Add other supported local files to the same command if wanted.
-Copy its `aurora/` directory under the USB root; payloads must not compete with
-the selector's sole updater BIN at the root. Downloaded assets are checked,
-not trusted by filename or by resolving “latest.” Source/release identities and
-the deferred Tempest review are in [alternative firmware](alternative_firmware.md).
+Use the [user guide](user_guide.md#prepare-the-firmware-files) for preparation
+and the [firmware support page](alternative_firmware.md#obtain-files) for pinned
+public downloads. These commands validate bytes; they do not install firmware.
 
 ## Checks and limits
 
@@ -92,5 +75,7 @@ Payloads are unsandboxed after launch.
 
 Next is a small physical screen on this exact real-USB candidate, then ordinary
 stock USB restoration. **Keep ST-Link disconnected** given the reported resets.
-The [recovery release gate](recovery_release_gate.md) remains open. No new
-candidate was written to a USB drive or module during this software tranche.
+The [recovery release gate](recovery_release_gate.md) remains open. After this
+software tranche, the candidate and seven authenticated payloads were staged
+to a test drive and read back. Module installation remains unconfirmed; see
+the [reliability checklist](reliability_campaign.md#current-build).

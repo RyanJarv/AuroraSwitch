@@ -1,113 +1,79 @@
-# How AuroraSwitch works and where its guarantees stop
+# How it works
 
-AuroraSwitch is an experimental application for Aurora, not a replacement
-bootloader. Its purpose is to choose between a small reviewed set of firmware
-files on USB and run one from RAM. It is not seamless audio-effect switching,
-an arbitrary binary loader, a security sandbox, or a general firmware updater.
+AuroraSwitch is an application, not a replacement bootloader. It selects an
+exact supported file and starts that firmware from RAM.
 
-## The lifecycle
+## Why a RAM selector?
 
-1. The existing bootloader loads the installed selector into AXI SRAM at
-   `0x24000000`. The selector inherits clocks, external-memory mappings and MPU
-   regions. It deliberately does not initialize Aurora's normal audio/ADC or
-   persistent-storage setup. See `firmware/selector.cpp`, `main()`.
-2. USB host and FatFs are initialized from pinned upstream implementations.
-   On media readiness/reconnect, each known catalog pathname is probed. Reads
-   use `FA_READ`, exact-size checks and at most 4096 bytes per staging iteration.
-   Disconnect/read/close failures reject that probe. See `UsbFileReader`,
-   `AuthenticateFile()` and `support/read_only_image_staging.hpp`.
-3. Each staged file must match the exact SHA-256, length, initial stack pointer
-   and reset vector in `firmware/images.hpp`. Only those files enter the menu.
-   Discovery does not authorize execution: it overwrites the shared staging
-   buffer while checking multiple files.
-4. Reverse selects an available image. Freeze reloads and verifies it, marking
-   the selection Verified only on success. Reverse and observed media absence
-   revoke approval. Shift requires Verified, ready media, an available selection
-   and no simultaneous Reverse/Freeze edge.
-5. `PrepareAndJump()` verifies the staged bytes and unmounts the filesystem.
-   Failure here refuses launch before irreversible teardown. It then stops USB,
-   masks interrupts, resets scoped DMA/USB/I2C/SAI peripherals and deinitializes
-   the system. It clears SysTick/NVIC pending/enabled state, but preserves MPU,
-   clocks and external-memory configuration. This is **not** a hardware reset.
-6. It verifies the staged bytes again after cleanup and installs a tiny
-   stackless trampoline in SRAM4. Failure now cannot safely restore the UI:
-   `Fatal()` waits indefinitely and requires reset/recovery.
-7. `firmware/copy_jump.s` copies the image over the selector in AXI SRAM, clears
-   the full SDK 32-KiB DMA-buffer arena, installs the target vector table, stack
-   and selected CPU control registers, and branches to the target reset handler.
-   The trampoline uses no stack or calls into the application it overwrites.
-8. The selected firmware owns the module. The selector does not remain resident
-   to supervise it. Reset returns through the existing bootloader to the
-   installed selector under the supported boot contract.
+Aurora's existing bootloader already starts SRAM-linked applications.
+Reusing it preserves the normal updater and avoids flashing each selected
+payload when switching. A reviewed catalog is simpler than a general loader:
+different versions and layouts do not silently inherit permission to run.
 
-## Memory map used by the selector
+The tradeoff is the handoff. A RAM jump is not a hardware reset, so the selector
+must clean up its own runtime while preserving state the target expects.
+Switching restarts the firmware and interrupts audio; it is not seamless.
 
-| Region | Use and boundary |
+## Lifecycle
+
+1. **Boot:** the existing bootloader loads the installed selector at
+   `0x24000000`. Clocks, external-memory mappings, and MPU regions are inherited.
+   The selector initializes buttons, LEDs, and USB/FatFs, not audio, ADC, or
+   persistent-storage defaults.
+2. **Discover:** probe the catalog's known paths on media connection. Read each
+   file into staging and check exact length, SHA-256, stack, and reset vector.
+   Only matches enter the menu. Discovery does not authorize launch because
+   later probes overwrite staging.
+3. **Select and verify:** Reverse chooses; Freeze reloads the selected file.
+   Only a complete read, successful close, and authentication mark it Verified.
+   Selection changes or media absence revoke that approval.
+4. **Prepare:** Shift requires a verified selection and ready media. The handoff
+   rechecks the same staged bytes, unmounts/stops USB, masks interrupts, resets
+   scoped DMA/USB/I2C/SAI peripherals, and deinitializes the runtime.
+   SysTick and NVIC enabled/pending state are cleared.
+5. **Final check:** verify staged bytes again after cleanup and copy a tiny
+   trampoline to SRAM4. Failure before teardown refuses launch; failure after
+   irreversible teardown halts and requires reset.
+6. **Replace and start:** the stackless trampoline copies the payload over the
+   selector, clears the SDK's full 32-KiB DMA arena, installs the target vector
+   table and stack, resets selected CPU control registers, enables interrupts,
+   and branches to the target reset handler.
+
+AuroraSwitch is gone after launch. The payload owns the module. Reset returns
+through the existing bootloader; there is no resident supervisor.
+
+## Memory layout
+
+| Region | Purpose |
 | --- | --- |
-| AXI SRAM, `0x24000000` | Selector execution; replaced by selected image |
-| DTCM, `0x20000000` | Ordinary selector globals/stack; not USB-DMA accessible |
-| D2, `[0x30000000,0x30008000)` | SDK DMA objects; cleared during terminal handoff |
-| D2, `[0x30008000,0x30034680)` | 181888-byte staging buffer; not in cleared DMA arena |
+| AXI SRAM, `0x24000000` | Selector execution; overwritten by the payload |
+| DTCM, `0x20000000` | Globals and stack; inaccessible to USB DMA |
+| D2, `[0x30000000,0x30008000)` | SDK DMA arena; cleared at terminal handoff |
+| D2, `[0x30008000,0x30034680)` | 181888-byte staging buffer; outside the cleared arena |
 | SRAM4, `[0x38000000,0x38000400)` | Reserved trampoline space |
-| SDRAM/QSPI | Existing mappings inherited, not globally wiped/reconfigured |
+| SDRAM/QSPI | Bootloader mappings retained; not globally wiped or reconfigured |
 
-The linker scripts assert staging/trampoline placement. These allocations and
-the two image contracts are reviewed constraints, not portable addresses for
-other Seed variants or modules. Memory outside the cleared/copy regions can
-retain data. The target's own startup must initialize everything it relies on.
+The trampoline must run elsewhere because it overwrites the selector's code.
+It uses no stack or calls into that code. Linker assertions enforce placement.
 
-## What “authenticated” means here
+MPU regions, clocks, and FMC/QSPI configuration are retained for `BOOT_SRAM`
+startup. Unused RAM may retain data; targets must initialize what they read.
+The selector disables data caching for USB-DMA coherence and tears down caches
+before copying. Real cache/DMA timing still needs physical testing.
 
-SHA-256 establishes equality with locally recorded supported bytes. It does
-not establish a vendor signature, source provenance of a distributed binary,
-absence of bugs, or safe persistent writes. Every launched image has ordinary
-privileged hardware access. The selector's read-only payload loading does not
-constrain the target's USB, calibration, settings or flash behavior.
+## Checks and limits
 
-The selector installation is itself a separate persistent update. It must use
-a known recovery process and preserve the existing bootloader. Do not confuse
-“no flash write when selecting a payload” with “installation cannot go wrong.”
+SHA-256 means equality with recorded bytes, not an author signature or safety
+certification. Loading and handoff do not program internal flash or QSPI.
+Installing the selector is a persistent update; a launched payload has normal
+hardware access and may write its own settings or flash.
 
-## Failure and user-risk boundaries
+The loader reuses pinned Aurora SDK/libDaisy USB/FatFs and Mbed TLS SHA-256.
+It has no overall load deadline; upstream storage calls can stall.
+Audio transients, hardware variants, long-run stability, and physical recovery
+remain unverified. QSPI-linked and oversized payloads are unsupported.
 
-The non-negotiable release requirement is that supported-use failures need at
-most the original USB updater/original firmware restore. Any need for debug
-tools, internal backups or recalibration blocks release. This is currently
-unproven, not an unconditional safety guarantee; see `recovery_release_gate.md`.
-
-- Wrong/missing/corrupt catalog files fail closed; unknown/renamed files are
-  not discovered. New image support requires reviewing layout/startup/runtime
-  behavior, not just adding a hash.
-- File count and read sizes are bounded, but the selector has no overarching
-  wall-clock load deadline. USB/FatFs calls depend on upstream error handling;
-  a bad drive can leave the UI unresponsive. No automatic recovery is promised.
-- Initialization failure is latched as Error before media pumping or control
-  handling. Shared host tests cover short-circuiting and the distinction from
-  ordinary absent media; physical USB initialization failure is not injected.
-- After irreversible teardown, a failure halts rather than retrying a partially
-  destroyed runtime. Reset or power cycling may be required.
-- Retained peripheral/cache/memory state can produce frozen UI or incorrect
-  audio even when sound passes through. The earlier DMA-buffer issue motivates
-  checking controls and startup behavior, not merely audible output.
-- Audio interruption, clicks and transient output levels are not characterized.
-  Attenuate monitoring during first tests. Do not describe switching as seamless.
-- There is no claimed support for arbitrary firmware, QSPI-linked payloads,
-  firmware beyond the staging contract, or untested hardware/bootloader variants.
-
-## Packaging authority
-
-`make package` requires committed clean source and authenticated pinned
-dependencies. It creates fresh local Git checkouts of the exact commits,
-rebuilds libDaisy and the application without copying old object/archive files,
-and verifies BIN equals `objcopy` of the ELF. It records tool executable hashes,
-versions and fixed configuration, checks the source did not change, then seals
-the ELF/BIN/MAP and manifest in a content-addressed directory.
-
-This improves source-to-build traceability, not behavioral qualification. It
-trusts the local compiler, Git and build host. It is not a signed distribution
-system or a fully hermetic/reproducible supply-chain proof. Temporary build
-paths may affect ELF/MAP bytes; historical packages stay unchanged.
-
-See `verification.md` for current evidence limits and `reliability_campaign.md`
-for the active checklist. `boot_equivalence_plan.md` is historical research,
-not a requirement for whole-machine equality or further emulator expansion.
+Ordinary stock USB restoration is a
+[release requirement](recovery_release_gate.md), not a proven guarantee.
+See [verification status](verification.md), the [source map](architecture.md),
+and the [development guide](development.md).
