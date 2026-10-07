@@ -47,8 +47,8 @@ or runtime behavior. Older Discord-only images and older official releases
 require an obtainable exact artifact; do not invent identities or use expiring
 URLs as permanent download sources.
 
-Development catalog entries use orange (Flux 0.1.0), violet (Flux 0.2.0), and
-mint (Morse 0.1.0). Existing indices, colors, and staging capacity stay unchanged.
+All Flux versions now use yellow; all Morse versions use white. Earlier tests
+used version-specific colors. Indices, byte identities, and staging stay unchanged.
 The linked virtual checks below now pass; physical compatibility remains open.
 Public release downloads still select the existing four
 current payloads; older files are prepared explicitly with `prepare_payloads.py`.

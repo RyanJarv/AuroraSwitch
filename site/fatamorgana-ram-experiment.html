@@ -4,11 +4,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="reference-sha256" content="c3b9da1d4832c8d19c8a3a225f14a803bbd876cef56a5c8b82698e24cfbe72e8">
-<meta name="renderer-sha256" content="793d80dce3f7579c378c83aab9725cae9fdadb50a47ff9555b2c8d8b622dd72b">
+<meta name="reference-sha256" content="3e56b6b6be5e6b5f4d6329ae620fefcb070fd5b6a3f25b0f432d0551e0b1b171">
+<meta name="renderer-sha256" content="cebc2d54d1b316a5d60c2675244882e20b3d59b4cfdf50d75fd90b21a774ece4">
 <meta name="description" content="AuroraSwitch firmware colors, knobs, buttons, gates and modes.">
 <title>FataMorgana RAM experiment · AuroraSwitch</title>
 <link rel="stylesheet" href="style.css">
+<script type="module" src="app.js?v=30c48a50c9d8163084c1cb584d39e8010fb652c33c126a0e7e657ab7acd070a0" data-reference="reference.json?v=3e56b6b6be5e6b5f4d6329ae620fefcb070fd5b6a3f25b0f432d0551e0b1b171-cebc2d54d1b316a5d60c2675244882e20b3d59b4cfdf50d75fd90b21a774ece4"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to controls</a>
@@ -27,12 +28,14 @@
 <li><a href="echogarden-031.html"><span>EchoGarden 0.3.1</span><small>Cyan</small></a></li>
 <li><a href="cloudscapex.html"><span>CloudscapeX</span><small>Magenta</small></a></li>
 <li><a href="the-oscillator-is-a-lie-002.html"><span>The Oscillator Is a Lie 0.0.2</span><small>Amber</small></a></li>
-<li><a href="flux-capacitor.html"><span>Flux Capacitor</span><small>Yellow, Orange (dev), Violet (dev)</small></a></li>
-<li><a href="morse.html"><span>Morse</span><small>White, Mint (dev)</small></a></li>
+<li><a href="flux-capacitor.html"><span>Flux Capacitor</span><small>Yellow</small></a></li>
+<li><a href="morse.html"><span>Morse</span><small>White</small></a></li>
 </ul>
 <h2>Development additions</h2><ul>
-<li><a href="tempest-100.html"><span>Tempest 1.0.0</span><small>Pale red (dev)</small></a></li>
-<li><a href="fatamorgana-ram-experiment.html" aria-current="page"><span>FataMorgana RAM experiment</span><small>Azure (dev)</small></a></li>
+<li><a href="tempest-100.html"><span>Tempest 1.0.0</span><small>Pale red</small></a></li>
+<li><a href="fatamorgana-ram-experiment.html" aria-current="page"><span>FataMorgana RAM experiment</span><small>Azure</small></a></li>
+<li><a href="dirt-verb-11.html"><span>Dirt Verb 1.1</span><small>Red-pink</small></a></li>
+<li><a href="aurora-hp-filter-variant.html"><span>Aurora HP-filter variant</span><small>Lime</small></a></li>
 </ul>
 <a class="index-link" href="outside-the-selector-catalog.html">Other firmware / limitations</a></nav></aside>
 <div class="content">
@@ -44,22 +47,23 @@
 <li><a href="echogarden-031.html"><span>EchoGarden 0.3.1</span><small>Cyan</small></a></li>
 <li><a href="cloudscapex.html"><span>CloudscapeX</span><small>Magenta</small></a></li>
 <li><a href="the-oscillator-is-a-lie-002.html"><span>The Oscillator Is a Lie 0.0.2</span><small>Amber</small></a></li>
-<li><a href="flux-capacitor.html"><span>Flux Capacitor</span><small>Yellow, Orange (dev), Violet (dev)</small></a></li>
-<li><a href="morse.html"><span>Morse</span><small>White, Mint (dev)</small></a></li>
+<li><a href="flux-capacitor.html"><span>Flux Capacitor</span><small>Yellow</small></a></li>
+<li><a href="morse.html"><span>Morse</span><small>White</small></a></li>
 </ul>
 <h2>Development additions</h2><ul>
-<li><a href="tempest-100.html"><span>Tempest 1.0.0</span><small>Pale red (dev)</small></a></li>
-<li><a href="fatamorgana-ram-experiment.html" aria-current="page"><span>FataMorgana RAM experiment</span><small>Azure (dev)</small></a></li>
+<li><a href="tempest-100.html"><span>Tempest 1.0.0</span><small>Pale red</small></a></li>
+<li><a href="fatamorgana-ram-experiment.html" aria-current="page"><span>FataMorgana RAM experiment</span><small>Azure</small></a></li>
+<li><a href="dirt-verb-11.html"><span>Dirt Verb 1.1</span><small>Red-pink</small></a></li>
+<li><a href="aurora-hp-filter-variant.html"><span>Aurora HP-filter variant</span><small>Lime</small></a></li>
 </ul>
 <a class="index-link" href="outside-the-selector-catalog.html">Other firmware / limitations</a></nav></details>
 <main id="main">
-<a class="back-link" href="index.html">← All firmware &amp; colors</a><h1 id="fatamorgana-ram-experiment--azure">FataMorgana RAM experiment</h1><div class="version-labels" aria-label="Versions and selector colors"><span class="version-label"><span class="swatch" style="background:#3ea7dc" aria-hidden="true"></span>FataMorgana RAM experiment · Azure · development</span></div><details class="conventions"><summary>How to read the controls</summary>
-<p>Names refer to the original Aurora panel. <strong>Shift + control</strong> means hold Shift
-while using that control. CCW / CW mean counterclockwise / clockwise. Selector colors are
-not the firmware’s running LED colors.</p></details><nav class="page-links" aria-label="On this page"><a href="#knobs-and-cv">Knobs and CV</a><a href="#buttons-and-gates">Buttons and gates</a><a href="#lights-and-pickup">Lights and pickup</a><a href="#usb-tables">USB tables</a></nav>
-<p>Dual wavetable synth: oscillator A left, B right; external audio can modulate or<br>
-be waveshaped. Only the exact development RAM build is admitted, not upstream QSPI.</p>
-<h2 id="knobs-and-cv">Knobs and CV</h2>
+<h1 id="fatamorgana-ram-experiment--azure">FataMorgana RAM experiment</h1><p class="firmware-meta"><span class="color-label"><span class="swatch" style="background:#3ea7dc" aria-hidden="true"></span>Azure</span></p>
+<p>Dual wavetable synth: A left, B right. External audio can modulate or be waveshaped.<br>
+Only the exact development RAM build is supported, not upstream QSPI.</p>
+<div class="control-layout"><figure class="panel-map">
+<img src="aurora-panel.svg" width="280" height="580" alt="Aurora panel: knobs 1 Warp, 2 Time, 3 Blur, 4 Reflect, 5 Mix, 6 Atmosphere; buttons 7 Reverse, 8 Freeze, 9 Shift.">
+</figure><div class="control-tables"><h2 id="knobs-and-cv">Knobs and CV</h2>
 <markdown-accessiblity-table><table role="table">
 <thead>
 <tr>
@@ -68,59 +72,117 @@ be waveshaped. Only the exact development RAM build is admitted, not upstream QS
 </tr>
 </thead>
 <tbody>
-<tr>
-<td>Warp + CV</td>
+<tr><td><span class="control-number">1</span> Warp + CV</td>
 <td>Pitch, V/oct (0 V = C0) / B offset ±24 semitones</td>
 </tr>
-<tr>
-<td>Time + CV</td>
+<tr><td><span class="control-number">2</span> Time + CV</td>
 <td>X wave position / sub A level</td>
 </tr>
-<tr>
-<td>Reflect + CV</td>
+<tr><td><span class="control-number">4</span> Reflect + CV</td>
 <td>Y wave position / sub B level</td>
 </tr>
-<tr>
-<td>Atmosphere + CV</td>
+<tr><td><span class="control-number">6</span> Atmosphere + CV</td>
 <td>Z wave position / no separate shifted function documented</td>
 </tr>
-<tr>
-<td>Blur + CV</td>
+<tr><td><span class="control-number">3</span> Blur + CV</td>
 <td>Effect depth / choose FM, ring mod, bitcrush, wavefold, overdrive</td>
 </tr>
-<tr>
-<td>Mix knob</td>
+<tr><td><span class="control-number">5</span> Mix knob</td>
 <td>Unison detune 0–5% / output trim</td>
 </tr>
-<tr>
-<td>Mix CV</td>
+<tr><td><span class="control-number">5</span> Mix CV</td>
 <td>VCA: 0 V unity, negative attenuates, positive boosts</td>
 </tr>
 </tbody>
 </table></markdown-accessiblity-table>
 <h2 id="buttons-and-gates">Buttons and gates</h2>
-<p>Freeze toggles smooth/glitchy morphing (green/red). Reverse tap selects A/B/both<br>
-(orange/cyan/purple); hold <strong>5 seconds</strong> to copy A's wave positions to B.<br>
-Shift + Freeze toggles external waveshaping; Shift + Reverse toggles clean/degraded<br>
-tone. Reverse gate randomizes both XYZ positions; Freeze gate is reserved.</p>
-<h2 id="lights-and-pickup">Lights and pickup</h2>
-<p>After changing oscillator selection, knobs use pickup: move to the stored position<br>
-before editing. Warp also uses pickup after Shift. Effect colors: FM green,<br>
-ring mod yellow, bitcrush red, wavefold magenta, overdrive orange.<br>
-Arc pairs show X red, Y green, Z blue; shifted LEDs show subs/effect/trim.</p>
-<h2 id="usb-tables">USB tables</h2>
-<p>USB tables: root <code class="notranslate">1.wav</code>–<code class="notranslate">8.wav</code>, each mono 16-bit PCM, 64 consecutive 256-sample<br>
-waves (16,384 samples). Without tables, a generated cube is used. Loading status:<br>
-yellow busy, green success, red missing, orange invalid WAV, magenta compressed,<br>
-blue stereo, white wrong depth, cyan too short. <strong>USB table loading remains<br>
-unverified for this RAM build.</strong> Tempest/Fata share a settings sector with different<br>
-formats; switching can change retained settings.</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>Control</th>
+<th>Function / LED</th>
+</tr>
+</thead>
+<tbody>
+<tr><td><span class="control-number">8</span> Freeze</td>
+<td>Smooth green ↔ glitchy red morphing</td>
+</tr>
+<tr><td><span class="control-number">7</span> Reverse</td>
+<td>Select A orange → B cyan → both purple</td>
+</tr>
+<tr><td><span class="control-number">7</span> Reverse, hold 5 seconds</td>
+<td>Copy A's wave positions to B</td>
+</tr>
+<tr><td><span class="control-number">9</span><span class="control-number">8</span> Shift + Freeze</td>
+<td>Toggle external waveshaping</td>
+</tr>
+<tr><td><span class="control-number">9</span><span class="control-number">7</span> Shift + Reverse</td>
+<td>Toggle clean/degraded tone</td>
+</tr>
+<tr><td><span class="control-number">7</span> Reverse gate</td>
+<td>Randomize both XYZ positions</td>
+</tr>
+<tr><td><span class="control-number">8</span> Freeze gate</td>
+<td>Reserved</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>Knobs use pickup after oscillator selection: move to the stored position. Warp also after Shift.<br>
+Tempest/Fata share a settings sector: switching can change retained settings.</p>
+<details class="reference-details" id="details-and-sources"><summary>Details &amp; sources</summary>
+<ul>
+<li>Effect LEDs: FM green, ring mod yellow, bitcrush red, wavefold magenta, overdrive orange.</li>
+<li>Arc pairs: X red, Y green, Z blue; shifted LEDs: subs/effect/trim.</li>
+<li>USB tables: root <code class="notranslate">1.wav</code>–<code class="notranslate">8.wav</code>, mono 16-bit PCM, 64 × 256 samples (16,384 total).</li>
+<li>Without tables, a generated cube is used. USB table loading remains unverified for this RAM build.</li>
+</ul>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>Table-loading LED</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Yellow</td>
+<td>Busy</td>
+</tr>
+<tr>
+<td>Green</td>
+<td>Success</td>
+</tr>
+<tr>
+<td>Red</td>
+<td>Missing</td>
+</tr>
+<tr>
+<td>Orange</td>
+<td>Invalid WAV</td>
+</tr>
+<tr>
+<td>Magenta</td>
+<td>Compressed</td>
+</tr>
+<tr>
+<td>Blue</td>
+<td>Stereo</td>
+</tr>
+<tr>
+<td>White</td>
+<td>Wrong depth</td>
+</tr>
+<tr>
+<td>Cyan</td>
+<td>Too short</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
 <p>Source: <a href="https://github.com/jfriess/Aurora-Firmwares/blob/d5504d76370c370fdb40adcf755d8a4b9c07ee6b/FataMorgana/README.md">pinned FataMorgana guide</a><br>
 and <code class="notranslate">src/FataMorgana.cpp</code> at the same commit.</p>
-<p class="back-link"><a href="index.html">← Choose another firmware</a></p>
+</details></div></div>
 </main>
-<footer>Selector colors identify firmware before launch. Running LED colors may differ.
-<a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/firmware_reference.md">Markdown reference</a></footer>
+<footer><a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/firmware_reference.md">Markdown reference</a></footer>
 </div>
 </div>
 </body>

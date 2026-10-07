@@ -17,9 +17,15 @@ a new authenticated selector candidate and subsequent physical testing.
 
 `make check` passes all 56 host tests and Python compilation after retirement.
 The opt-in catalog test checks that the retired QSPI entry is rejected, RAM
-Fata stays at index 11, and the remaining colors/paths are unique. HP-filter
+Fata stays at index 11, and opt-in colors/paths are unique. HP-filter
 moves from index 14 to 13; historical traces keep their original indices.
 No live emulator campaign has been run against the changed selector yet.
+
+The subsequent merge from `main` retains its fixed per-family colors (older
+Flux/Morse versions now share their family color) and compact Pages directory.
+Dirt Verb (red-pink) and HP-filter (lime) have development-only control pages;
+Fata has only its RAM page. `make check` passes 63 tests after the merge.
+Earlier frozen selector packages do not cover the merged firmware.
 
 - [x] Fresh-build FataMorgana's pinned upstream `BOOT_QSPI` configuration.
 - [x] Review HP-filter Aurora vectors, size, and staging-region capacity.

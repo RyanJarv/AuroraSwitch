@@ -4,11 +4,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="reference-sha256" content="c3b9da1d4832c8d19c8a3a225f14a803bbd876cef56a5c8b82698e24cfbe72e8">
-<meta name="renderer-sha256" content="793d80dce3f7579c378c83aab9725cae9fdadb50a47ff9555b2c8d8b622dd72b">
+<meta name="reference-sha256" content="3e56b6b6be5e6b5f4d6329ae620fefcb070fd5b6a3f25b0f432d0551e0b1b171">
+<meta name="renderer-sha256" content="cebc2d54d1b316a5d60c2675244882e20b3d59b4cfdf50d75fd90b21a774ece4">
 <meta name="description" content="AuroraSwitch firmware colors, knobs, buttons, gates and modes.">
 <title>Morse · AuroraSwitch</title>
 <link rel="stylesheet" href="style.css">
+<script type="module" src="app.js?v=30c48a50c9d8163084c1cb584d39e8010fb652c33c126a0e7e657ab7acd070a0" data-reference="reference.json?v=3e56b6b6be5e6b5f4d6329ae620fefcb070fd5b6a3f25b0f432d0551e0b1b171-cebc2d54d1b316a5d60c2675244882e20b3d59b4cfdf50d75fd90b21a774ece4"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to controls</a>
@@ -27,12 +28,14 @@
 <li><a href="echogarden-031.html"><span>EchoGarden 0.3.1</span><small>Cyan</small></a></li>
 <li><a href="cloudscapex.html"><span>CloudscapeX</span><small>Magenta</small></a></li>
 <li><a href="the-oscillator-is-a-lie-002.html"><span>The Oscillator Is a Lie 0.0.2</span><small>Amber</small></a></li>
-<li><a href="flux-capacitor.html"><span>Flux Capacitor</span><small>Yellow, Orange (dev), Violet (dev)</small></a></li>
-<li><a href="morse.html" aria-current="page"><span>Morse</span><small>White, Mint (dev)</small></a></li>
+<li><a href="flux-capacitor.html"><span>Flux Capacitor</span><small>Yellow</small></a></li>
+<li><a href="morse.html" aria-current="page"><span>Morse</span><small>White</small></a></li>
 </ul>
 <h2>Development additions</h2><ul>
-<li><a href="tempest-100.html"><span>Tempest 1.0.0</span><small>Pale red (dev)</small></a></li>
-<li><a href="fatamorgana-ram-experiment.html"><span>FataMorgana RAM experiment</span><small>Azure (dev)</small></a></li>
+<li><a href="tempest-100.html"><span>Tempest 1.0.0</span><small>Pale red</small></a></li>
+<li><a href="fatamorgana-ram-experiment.html"><span>FataMorgana RAM experiment</span><small>Azure</small></a></li>
+<li><a href="dirt-verb-11.html"><span>Dirt Verb 1.1</span><small>Red-pink</small></a></li>
+<li><a href="aurora-hp-filter-variant.html"><span>Aurora HP-filter variant</span><small>Lime</small></a></li>
 </ul>
 <a class="index-link" href="outside-the-selector-catalog.html">Other firmware / limitations</a></nav></aside>
 <div class="content">
@@ -44,22 +47,23 @@
 <li><a href="echogarden-031.html"><span>EchoGarden 0.3.1</span><small>Cyan</small></a></li>
 <li><a href="cloudscapex.html"><span>CloudscapeX</span><small>Magenta</small></a></li>
 <li><a href="the-oscillator-is-a-lie-002.html"><span>The Oscillator Is a Lie 0.0.2</span><small>Amber</small></a></li>
-<li><a href="flux-capacitor.html"><span>Flux Capacitor</span><small>Yellow, Orange (dev), Violet (dev)</small></a></li>
-<li><a href="morse.html" aria-current="page"><span>Morse</span><small>White, Mint (dev)</small></a></li>
+<li><a href="flux-capacitor.html"><span>Flux Capacitor</span><small>Yellow</small></a></li>
+<li><a href="morse.html" aria-current="page"><span>Morse</span><small>White</small></a></li>
 </ul>
 <h2>Development additions</h2><ul>
-<li><a href="tempest-100.html"><span>Tempest 1.0.0</span><small>Pale red (dev)</small></a></li>
-<li><a href="fatamorgana-ram-experiment.html"><span>FataMorgana RAM experiment</span><small>Azure (dev)</small></a></li>
+<li><a href="tempest-100.html"><span>Tempest 1.0.0</span><small>Pale red</small></a></li>
+<li><a href="fatamorgana-ram-experiment.html"><span>FataMorgana RAM experiment</span><small>Azure</small></a></li>
+<li><a href="dirt-verb-11.html"><span>Dirt Verb 1.1</span><small>Red-pink</small></a></li>
+<li><a href="aurora-hp-filter-variant.html"><span>Aurora HP-filter variant</span><small>Lime</small></a></li>
 </ul>
 <a class="index-link" href="outside-the-selector-catalog.html">Other firmware / limitations</a></nav></details>
 <main id="main">
-<a class="back-link" href="index.html">← All firmware &amp; colors</a><h1 id="morse--white-or-mint">Morse</h1><div class="version-labels" aria-label="Versions and selector colors"><span class="version-label"><span class="swatch" style="background:#fff" aria-hidden="true"></span>Morse 0.2.0 · White</span><span class="version-label"><span class="swatch" style="background:#79dcaa" aria-hidden="true"></span>Morse 0.1.0 · Mint · development</span></div><details class="conventions"><summary>How to read the controls</summary>
-<p>Names refer to the original Aurora panel. <strong>Shift + control</strong> means hold Shift
-while using that control. CCW / CW mean counterclockwise / clockwise. Selector colors are
-not the firmware’s running LED colors.</p></details><nav class="page-links" aria-label="On this page"><a href="#knobs-and-buttons">Knobs and buttons</a><a href="#gates-and-lights">Gates and lights</a><a href="#version-differences">Version differences</a></nav>
+<h1 id="morse--white">Morse</h1><p class="firmware-meta"><span class="color-label"><span class="swatch" style="background:#fff" aria-hidden="true"></span>White</span><span class="version-list">0.2.0 · 0.1.0 (development)</span></p>
 <p>Clocked stereo VCA: <strong>audio input + clock into Freeze gate + Mix above zero</strong>.<br>
 Freeze button alone does not clock it.</p>
-<h2 id="knobs-and-buttons">Knobs and buttons</h2>
+<div class="control-layout"><figure class="panel-map">
+<img src="aurora-panel.svg" width="280" height="580" alt="Aurora panel: knobs 1 Warp, 2 Time, 3 Blur, 4 Reflect, 5 Mix, 6 Atmosphere; buttons 7 Reverse, 8 Freeze, 9 Shift.">
+</figure><div class="control-tables"><h2 id="knobs-and-buttons">Knobs and buttons</h2>
 <markdown-accessiblity-table><table role="table">
 <thead>
 <tr>
@@ -68,48 +72,61 @@ Freeze button alone does not clock it.</p>
 </tr>
 </thead>
 <tbody>
-<tr>
-<td>Time + CV</td>
+<tr><td><span class="control-number">2</span> Time + CV</td>
 <td>Pattern selection</td>
 </tr>
-<tr>
-<td>Mix</td>
+<tr><td><span class="control-number">5</span> Mix</td>
 <td>Output level</td>
 </tr>
-<tr>
-<td>Blur</td>
+<tr><td><span class="control-number">3</span> Blur</td>
 <td>Envelope attack/decay balance in 0.2; unused in 0.1</td>
 </tr>
-<tr>
-<td>Warp, Reflect, Atmosphere</td>
+<tr><td><span class="control-number">1</span><span class="control-number">4</span><span class="control-number">6</span> Warp, Reflect, Atmosphere</td>
 <td>Unused</td>
 </tr>
-<tr>
-<td>Reverse button / gate</td>
+<tr><td><span class="control-number">7</span> Reverse button / gate</td>
 <td>Reset pattern</td>
 </tr>
-<tr>
-<td>Shift + Freeze</td>
+<tr><td><span class="control-number">8</span> Freeze gate</td>
+<td>Clock input</td>
+</tr>
+<tr><td><span class="control-number">9</span><span class="control-number">8</span> Shift + Freeze</td>
 <td>Cycle clock ratio: /8 → /4 → /2 → ×1 → ×2 → ×4 → ×8</td>
 </tr>
 </tbody>
 </table></markdown-accessiblity-table>
-<h2 id="gates-and-lights">Gates and lights</h2>
-<p>Other knob CVs are unused. While Shift is held, Freeze indicates ratio:<br>
-violet /8, blue /4, light blue /2, white ×1, yellow ×2, orange ×4, red ×8.<br>
-Otherwise Freeze flashes on ticks; Reverse flashes on reset. Arc position and<br>
-brightness show pattern steps/envelope.</p>
 <h2 id="version-differences">Version differences</h2>
-<p><strong>0.1.0 (Mint):</strong> three patterns—dotted-8th groove, slow pulse, triplet feel;<br>
-instant attack with decay. <strong>0.2.0 (White):</strong> twelve patterns and Blur-controlled<br>
-attack/decay. Pattern changes apply at a step boundary or reset in linked source;<br>
-the README's “next Reset” wording is incomplete.</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>Version</th>
+<th>Difference</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.1.0</td>
+<td>Three patterns: dotted-8th, slow pulse, triplet; instant attack + decay</td>
+</tr>
+<tr>
+<td>0.2.0</td>
+<td>Twelve patterns; Blur controls attack/decay</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>Pattern changes apply at a step boundary or reset, not only the next Reset.</p>
+<details class="reference-details" id="details-and-sources"><summary>Details &amp; sources</summary>
+<ul>
+<li>Other knob CVs: unused.</li>
+<li>With Shift held, Freeze shows ratio: violet /8, blue /4, light blue /2,<br>
+white ×1, yellow ×2, orange ×4, red ×8.</li>
+<li>Freeze flashes on ticks; Reverse on reset. Arc LEDs show pattern step/envelope.</li>
+</ul>
 <p>Sources: <a href="https://github.com/DaveParr/Aurora-Morse/blob/v0.2.0/README.md">0.2.0 guide</a><br>
 and <code class="notranslate">main.cpp</code>, <code class="notranslate">pattern.h</code>, <code class="notranslate">envelope.h</code> at tags 0.1.0/0.2.0.</p>
-<p class="back-link"><a href="index.html">← Choose another firmware</a></p>
+</details></div></div>
 </main>
-<footer>Selector colors identify firmware before launch. Running LED colors may differ.
-<a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/firmware_reference.md">Markdown reference</a></footer>
+<footer><a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/firmware_reference.md">Markdown reference</a></footer>
 </div>
 </div>
 </body>

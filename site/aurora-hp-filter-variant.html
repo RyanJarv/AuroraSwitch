@@ -7,7 +7,7 @@
 <meta name="reference-sha256" content="3e56b6b6be5e6b5f4d6329ae620fefcb070fd5b6a3f25b0f432d0551e0b1b171">
 <meta name="renderer-sha256" content="cebc2d54d1b316a5d60c2675244882e20b3d59b4cfdf50d75fd90b21a774ece4">
 <meta name="description" content="AuroraSwitch firmware colors, knobs, buttons, gates and modes.">
-<title>CloudscapeX · AuroraSwitch</title>
+<title>Aurora HP-filter variant · AuroraSwitch</title>
 <link rel="stylesheet" href="style.css">
 <script type="module" src="app.js?v=30c48a50c9d8163084c1cb584d39e8010fb652c33c126a0e7e657ab7acd070a0" data-reference="reference.json?v=3e56b6b6be5e6b5f4d6329ae620fefcb070fd5b6a3f25b0f432d0551e0b1b171-cebc2d54d1b316a5d60c2675244882e20b3d59b4cfdf50d75fd90b21a774ece4"></script>
 </head>
@@ -26,7 +26,7 @@
 <li><a href="fdn-122.html"><span>FDN 1.2.2</span><small>Blue</small></a></li>
 <li><a href="aurora-144.html"><span>Aurora 1.4.4</span><small>Green</small></a></li>
 <li><a href="echogarden-031.html"><span>EchoGarden 0.3.1</span><small>Cyan</small></a></li>
-<li><a href="cloudscapex.html" aria-current="page"><span>CloudscapeX</span><small>Magenta</small></a></li>
+<li><a href="cloudscapex.html"><span>CloudscapeX</span><small>Magenta</small></a></li>
 <li><a href="the-oscillator-is-a-lie-002.html"><span>The Oscillator Is a Lie 0.0.2</span><small>Amber</small></a></li>
 <li><a href="flux-capacitor.html"><span>Flux Capacitor</span><small>Yellow</small></a></li>
 <li><a href="morse.html"><span>Morse</span><small>White</small></a></li>
@@ -35,7 +35,7 @@
 <li><a href="tempest-100.html"><span>Tempest 1.0.0</span><small>Pale red</small></a></li>
 <li><a href="fatamorgana-ram-experiment.html"><span>FataMorgana RAM experiment</span><small>Azure</small></a></li>
 <li><a href="dirt-verb-11.html"><span>Dirt Verb 1.1</span><small>Red-pink</small></a></li>
-<li><a href="aurora-hp-filter-variant.html"><span>Aurora HP-filter variant</span><small>Lime</small></a></li>
+<li><a href="aurora-hp-filter-variant.html" aria-current="page"><span>Aurora HP-filter variant</span><small>Lime</small></a></li>
 </ul>
 <a class="index-link" href="outside-the-selector-catalog.html">Other firmware / limitations</a></nav></aside>
 <div class="content">
@@ -45,7 +45,7 @@
 <li><a href="fdn-122.html"><span>FDN 1.2.2</span><small>Blue</small></a></li>
 <li><a href="aurora-144.html"><span>Aurora 1.4.4</span><small>Green</small></a></li>
 <li><a href="echogarden-031.html"><span>EchoGarden 0.3.1</span><small>Cyan</small></a></li>
-<li><a href="cloudscapex.html" aria-current="page"><span>CloudscapeX</span><small>Magenta</small></a></li>
+<li><a href="cloudscapex.html"><span>CloudscapeX</span><small>Magenta</small></a></li>
 <li><a href="the-oscillator-is-a-lie-002.html"><span>The Oscillator Is a Lie 0.0.2</span><small>Amber</small></a></li>
 <li><a href="flux-capacitor.html"><span>Flux Capacitor</span><small>Yellow</small></a></li>
 <li><a href="morse.html"><span>Morse</span><small>White</small></a></li>
@@ -54,80 +54,40 @@
 <li><a href="tempest-100.html"><span>Tempest 1.0.0</span><small>Pale red</small></a></li>
 <li><a href="fatamorgana-ram-experiment.html"><span>FataMorgana RAM experiment</span><small>Azure</small></a></li>
 <li><a href="dirt-verb-11.html"><span>Dirt Verb 1.1</span><small>Red-pink</small></a></li>
-<li><a href="aurora-hp-filter-variant.html"><span>Aurora HP-filter variant</span><small>Lime</small></a></li>
+<li><a href="aurora-hp-filter-variant.html" aria-current="page"><span>Aurora HP-filter variant</span><small>Lime</small></a></li>
 </ul>
 <a class="index-link" href="outside-the-selector-catalog.html">Other firmware / limitations</a></nav></details>
 <main id="main">
-<h1 id="cloudscapex--magenta">CloudscapeX</h1><p class="firmware-meta"><span class="color-label"><span class="swatch" style="background:#d855d5" aria-hidden="true"></span>Magenta</span></p>
-<p>Modulated delay, diffusion and filter delay.</p>
+<h1 id="aurora-hp-filter-variant--lime">Aurora HP-filter variant</h1><p class="firmware-meta"><span class="color-label"><span class="swatch" style="background:#81d43b" aria-hidden="true"></span>Lime</span></p>
+<p>Stock Aurora controls with two shifted changes. Place the exact supplied<br>
+<code class="notranslate">Aurora_v1-4-6_hpfilt.bin</code> in <code class="notranslate">aurora/</code>; only the opt-in development selector<br>
+has enough reviewed staging capacity for this image.</p>
 <div class="control-layout"><figure class="panel-map">
 <img src="aurora-panel.svg" width="280" height="580" alt="Aurora panel: knobs 1 Warp, 2 Time, 3 Blur, 4 Reflect, 5 Mix, 6 Atmosphere; buttons 7 Reverse, 8 Freeze, 9 Shift.">
-</figure><div class="control-tables"><h2 id="knobs">Knobs</h2>
+</figure><div class="control-tables"><h2 id="shifted-controls">Shifted controls</h2>
 <markdown-accessiblity-table><table role="table">
 <thead>
 <tr>
-<th>Panel knob</th>
-<th>Normal / Filter Delay mode</th>
+<th>Control</th>
+<th>Function</th>
 </tr>
 </thead>
 <tbody>
-<tr><td><span class="control-number">1</span> Warp</td>
-<td>Timing spread and modulation / resonance plus cutoff motion</td>
+<tr><td><span class="control-number">9</span><span class="control-number">6</span> Shift + Atmosphere</td>
+<td>Dry-input high-pass</td>
 </tr>
-<tr><td><span class="control-number">2</span> Time</td>
-<td>Delay about 10 ms–1.05 s / about 18–780 ms</td>
-</tr>
-<tr><td><span class="control-number">3</span> Blur</td>
-<td>Diffusion/reverb / filter cutoff about 85 Hz–18 kHz</td>
-</tr>
-<tr><td><span class="control-number">4</span> Reflect</td>
-<td>Network feedback / delay feedback</td>
-</tr>
-<tr><td><span class="control-number">5</span> Mix</td>
-<td>Dry/wet</td>
-</tr>
-<tr><td><span class="control-number">6</span> Atmosphere</td>
-<td>1–4 lines / LP → BP → HP → notch filter selection</td>
+<tr><td><span class="control-number">9</span><span class="control-number">3</span> Shift + Blur</td>
+<td>Wet level</td>
 </tr>
 </tbody>
 </table></markdown-accessiblity-table>
-<h2 id="buttons-and-gates">Buttons and gates</h2>
-<markdown-accessiblity-table><table role="table">
-<thead>
-<tr>
-<th>Button</th>
-<th>Latched effect / active LED</th>
-</tr>
-</thead>
-<tbody>
-<tr><td><span class="control-number">8</span> Freeze</td>
-<td>Hold cloud / white</td>
-</tr>
-<tr><td><span class="control-number">7</span> Reverse</td>
-<td>Rotate or ping-pong routing / cyan</td>
-</tr>
-<tr><td><span class="control-number">9</span><span class="control-number">8</span> Shift + Freeze</td>
-<td>Lush Reverb / blue</td>
-</tr>
-<tr><td><span class="control-number">9</span><span class="control-number">7</span> Shift + Reverse</td>
-<td>Filter Delay / yellow</td>
-</tr>
-<tr><td><span class="control-number">7</span><span class="control-number">8</span> Reverse / Freeze gates</td>
-<td>Temporarily invert stored button states</td>
-</tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<p>All four effects latch independently.</p>
+<p>Other controls follow the <a href="aurora-144.html#aurora-144--green">stock Aurora reference</a>.</p>
 <details class="reference-details" id="details-and-sources"><summary>Details &amp; sources</summary>
 <ul>
-<li>Combined LEDs alternate: Freeze white/blue (Hold + Lush); Reverse cyan/yellow (Rotate + Filter Delay).</li>
-<li>Parameter LEDs: Time blue, Reflect red, Mix yellow, Atmosphere green, Blur cyan, Warp magenta.</li>
-<li>Starting point: Time 30%, Reflect 40%, Mix 55%, Atmosphere 50%, Blur 30%, Warp 25%.</li>
-<li>CV scaling/ranges: not specified.</li>
-</ul>
-<p>Source: author-supplied Cloudscape v1.6 One Page Parameter Manual;<br>
-identified as the only release paired with <code class="notranslate">CloudscapeX.bin</code>.</p>
-</details></div></div>
+<li>RAM launch; no selector QSPI programming for this payload.</li>
+<li>Changes are described in the supplied community notes. Physical behavior<br>
+remains unverified; this is not an official Aurora release.</li>
+</ul></details></div></div>
 </main>
 <footer><a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/firmware_reference.md">Markdown reference</a></footer>
 </div>
