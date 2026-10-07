@@ -1,14 +1,28 @@
 # Reliability checklist
 
-Software screening is complete for the original seven and four development
-additions (older Flux/Morse and Tempest). FataMorgana remains unresolved.
-Physical reliability and
+Historical software screening covers the original seven; bounded checks also
+pass for older Flux/Morse, Tempest and the experimental Fata RAM build.
+Fata's real USB/wavetable path remains unverified. Physical reliability and
 ordinary stock USB recovery remain open. Do not expand emulator coverage merely
 to postpone those tests.
 
 ## Current build
 
-Eleven-entry development candidate, source `2270613`; real-USB manifest
+Twelve-entry development candidate, source `0657550`; real-USB manifest
+`7c96a4c1fc61266dcfa78f2ff50210e6160010f7054894770f9599d0b931e2a6`;
+BIN SHA-256
+`0c79b24989144817dc43b2b2b7f4cc16ea2d41d93c5a302c4ebdefefeb362957`
+(95972 bytes). ELF `d6c3a8937ec0221425aef2ac1687eff42d1381880dc42173bf323574cc20eeda`,
+MAP `0c4a05f802b75dd7a47c4077837841b1252918d0fc59878e40c9b69e6d61406f`.
+Fresh isolated packaging completed. All twelve local payloads pass the compiled
+byte/staging/corruption predicate. This build is not deployed or physically
+tested. Its synthetic-media companion is manifest `ca471d61…ca37f`, source
+`2284fbe`; Fata's linked handoff/control/audio checks pass there, not on this
+real-USB BIN. Prior official switching-cycle evidence remains historical.
+
+### Previous eleven-entry build (history)
+
+Source `2270613`; real-USB manifest
 `00737185bfa680f8b5e22de0677b71f6f0bf898150d8914b01b6966aad4ad4bb`;
 BIN SHA-256
 `8cd5ebd90708c8a7a4002bb2422c07dd931522a52f3fc15e3f09330fccf0a163`
@@ -44,7 +58,8 @@ Module installation and physical results remain unconfirmed.
 - [ ] Publish results, supported hardware scope, and remaining limitations.
 
 The [next firmware batch](firmware_onboarding.md) tracks older versions and
-Tempest's bounded persistence/control/audio review. FataMorgana currently selects QSPI execution. Dirt Verb
+Tempest's bounded persistence/control/audio review and Fata's experimental RAM
+build. Its upstream QSPI configuration remains unsupported. Dirt Verb
 and oversized HP-filter Aurora remain excluded. Onboarding must not delay
 official recovery testing.
 
@@ -65,6 +80,9 @@ Start with quiet monitoring. All steps below are **not yet run on this build**.
 
 A small alternative-image screen may precede stock restoration. Morse needs a
 Freeze-gate clock and nonzero Mix. Sound with frozen controls is a failure.
+For Fata, test the default cube without media first, then the documented USB
+wavetable-loading path; a default-cube pass alone does not close its USB concern.
+Check settings after Tempest/Fata switching: their records share a flash sector.
 
 Stop on frozen controls, unexplained persistent changes, indeterminate updates,
 or failed restoration. Preserve the failure before fixing it. These initial

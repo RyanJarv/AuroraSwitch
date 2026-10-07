@@ -23,8 +23,8 @@ Keep third-party binaries outside Git and release assets.
 - [ ] FataMorgana: real USB/wavetable validation; no broad USB emulator work.
 - [ ] Physical campaign: new selector, launch/control/audio, reset and stock restore.
 
-Next manageable chunk: physical testing of the older/Tempest candidate. Keep
-ST-Link disconnected. The new twelve-entry build supersedes that candidate;
+Next manageable chunk: physical testing of the twelve-entry candidate. Keep
+ST-Link disconnected. It supersedes the older/Tempest-only candidate;
 FataMorgana needs a tested RAM/USB configuration before
 support can be claimed; do not expand the loader to write QSPI.
 
@@ -194,6 +194,11 @@ cleanup remain checked. Archive SHA-256:
 The too-early 1.3-second stimulus is preserved as rejected evidence; the fixed
 handoff scenario changes Time at 1.5 seconds and requires both ADC states.
 This is development evidence, not real USB, physical compatibility or recovery.
+The real-USB candidate is now sealed at source `0657550`, manifest
+`7c96a4c1…e2a6`, BIN `0c79b249…62957` (95972 bytes). All twelve payloads pass
+offline preparation. The next step needs user participation; no drive or
+hardware has been accessed in this tranche. See the reliability checklist for
+full identities and the short physical campaign.
 
 Reviewed source: `jfriess/Aurora-Firmwares` commit
 `d5504d76370c370fdb40adcf755d8a4b9c07ee6b`.
