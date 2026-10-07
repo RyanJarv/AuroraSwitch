@@ -176,6 +176,12 @@ This closes the bounded default-cube PCM/control check only. Fata still needs
 linked selector handoff and real USB/wavetable validation before support is
 claimed. No loader code or frozen physical candidate changed.
 
+Fata is now staged as a provisional twelfth development entry for linked
+handoff testing. It accepts only the exact clean RAM build above, not an
+arbitrary build or the upstream QSPI binary. Existing entries and staging
+capacity stay unchanged. No loader feature or flash-writing path is added.
+Compatibility, USB loading and physical recovery are not claimed by admission.
+
 Reviewed source: `jfriess/Aurora-Firmwares` commit
 `d5504d76370c370fdb40adcf755d8a4b9c07ee6b`.
 `FataMorgana/Makefile:12` selects `BOOT_QSPI`; its preceding comment says

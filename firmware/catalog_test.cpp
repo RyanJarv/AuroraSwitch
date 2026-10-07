@@ -7,7 +7,7 @@ int main()
 {
     using namespace aurora_selector;
     constexpr auto count = sizeof(Images) / sizeof(Images[0]);
-    static_assert(count == 11);
+    static_assert(count == 12);
     static_assert(StagingCapacity() == 181888);
     assert(Images[0].menu_color == (std::array<float, 3>{0.f, 0.f, .4f}));
     assert(Images[1].menu_color == (std::array<float, 3>{0.f, .4f, 0.f}));
@@ -27,4 +27,6 @@ int main()
     assert(Images[9].size == 86952);
     assert(Images[7].vectors.reset == 0x24001675U);
     assert(Images[9].vectors.reset == 0x24000f4dU);
+    assert(Images[11].size == 151420);
+    assert(Images[11].vectors.reset == 0x24000a49U);
 }
