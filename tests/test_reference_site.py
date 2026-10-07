@@ -156,19 +156,20 @@ class ReferenceSiteTests(unittest.TestCase):
             page = (SITE / filename).read_text()
             with self.subTest(page=filename):
                 self.assertEqual(parser.h1_count, 1)
+                self.assertEqual(parser.current, [filename, filename])
                 self.assertIn("main", parser.ids)
                 self.assertIn("Firmware directory", parser.nav_labels)
                 self.assertIn("Mobile firmware directory", parser.nav_labels)
                 self.assertEqual(len(parser.scripts), 1)
                 script = parser.scripts[0]
                 self.assertEqual(script["type"], "module")
-                self.assertEqual(urlsplit(script["src"]).path, "app.js")
+                self.assertEqual(urlsplit(script["src"]).path, "navigation.js")
                 self.assertEqual(urlsplit(script["data-reference"]).path, "reference.json")
                 reference = parser.metadata["reference-sha256"]
                 renderer = parser.metadata["renderer-sha256"]
                 quickstart = parser.metadata["quickstart-sha256"]
                 self.assertEqual(urlsplit(script["data-reference"]).query, f"v={reference}-{renderer}-{quickstart}")
-                digest = hashlib.sha256((SITE / "app.js").read_bytes()).hexdigest()
+                digest = hashlib.sha256((SITE / "navigation.js").read_bytes()).hexdigest()
                 self.assertEqual(urlsplit(script["src"]).query, f"v={digest}")
                 self.assertIn('name="viewport"', page)
                 self.assertIn('lang="en"', page)

@@ -8,7 +8,7 @@ desktop sidebar/mobile menu is the firmware directory; each family has a
 control page. Release and development-only entries stay separate. Share a
 firmware page URL for direct access.
 
-A small `app.js` loads `reference.json` once and replaces only the main content
+A small `navigation.js` loads `reference.json` once and replaces only the main content
 on navigation. The sidebar, mobile menu and footer stay as ordinary HTML.
 Back/Forward and direct links work; if JavaScript or the content bundle is
 unavailable, links load the static pages normally. There is no framework,
@@ -30,7 +30,7 @@ Versions on the same family page share one color, matching `menu_colors` in
 `firmware/images.hpp`; different families must use distinct colors.
 The renderer uses GitHub Markdown and writes the HTML fallbacks and
 SPA data from identical content; shared styling is in `site/style.css`. Regenerate
-after changing the reference, renderer or `app.js` (its URL is content-versioned).
+after changing the reference, renderer or `navigation.js` (its URL is content-versioned).
 Commit source and generated files together.
 Offline tests check reference/Quick start fingerprints, links, versions, colors
 and equality between SPA content and fallbacks. The Pages workflow refuses stale pages.
