@@ -2,7 +2,7 @@
 from pathlib import Path
 from contextlib import contextmanager
 import subprocess
-import sys
+import argparse
 import tempfile
 from setup_dependencies import PINS, git
 
@@ -10,8 +10,10 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 @contextmanager
-def authenticator():
+def authenticator(*, qspi: bool = False):
     """Compile the firmware's exact predicate once for a host operation."""
+    if type(qspi) is not bool:
+        raise ValueError("qspi must be a boolean")
     tls = ROOT / ".deps/mbedtls"
     url, revision = PINS["mbedtls"]
     if (git(tls, "remote", "get-url", "origin") != url
@@ -29,6 +31,7 @@ def authenticator():
             objects.append(str(obj))
         executable = destination / "authenticate-image"
         subprocess.run(["c++", "-std=c++17", "-Wall", "-Wextra", "-Werror",
+            *(["-DSELECTOR_QSPI_HANDOFF"] if qspi else []),
             '-DMBEDTLS_CONFIG_FILE="sha256_config.h"', "-I" + str(tls / "include"),
             "-I" + str(ROOT / "firmware"), str(ROOT / "firmware/authenticate_image.cpp"),
             *objects, "-o", str(executable)], check=True)
@@ -55,15 +58,17 @@ def catalog(executable: Path) -> list[dict]:
     return images
 
 
-def verify(directory: Path) -> None:
+def verify(directory: Path, *, qspi: bool = False) -> None:
     """Require every catalog file to pass the compiled firmware authenticator."""
-    with authenticator() as executable:
+    with authenticator(qspi=qspi) as executable:
         for image in catalog(executable):
             name = image["filename"]
             subprocess.run([str(executable), name, str(directory / name)], check=True)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2 or not sys.argv[1]:
-        raise SystemExit("usage: make verify-images FIRMWARE_DIR=/path/to/user-supplied/files")
-    verify(Path(sys.argv[1]).resolve())
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("directory", type=Path)
+    parser.add_argument("--qspi", action="store_true", help="include experimental QSPI catalog")
+    args = parser.parse_args()
+    verify(args.directory.resolve(), qspi=args.qspi)

@@ -4,6 +4,10 @@
 **Conclusion:** a narrow exact-image QSPI mode is plausible without replacing
 the bootloader. It is not implemented or qualified. RAM switching stays unchanged.
 
+Follow-up: an opt-in `QSPI_HANDOFF=1` implementation is being tested. Default
+builds remain RAM-only. Results and exact candidate identities will be recorded
+below before any hardware test; this investigation is not execution evidence.
+
 ## What the installed updater does
 
 The previously captured loader matches the pinned Daisy v5.4 binary:
