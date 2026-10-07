@@ -73,7 +73,8 @@ class ReferenceSiteTests(unittest.TestCase):
             cls.pages[file.name] = parser
 
     def test_static_pages_match_source_and_renderer(self):
-        expected = {section.filename for section in self.sections}
+        expected = {"index.html"} | {section.filename for section in self.sections
+                                    if any(entry.anchor == section.anchor for entry in self.entries)}
         self.assertEqual(set(self.pages), expected, "Regenerate pages with make reference-html")
         fingerprints = {
             "reference-sha256": hashlib.sha256((ROOT / "docs/firmware_reference.md").read_bytes()).hexdigest(),
@@ -273,6 +274,29 @@ class ReferenceSiteTests(unittest.TestCase):
             if name != section.title:
                 self.assertNotIn(f'<span>{section.title}</span>', menu)
         self.assertEqual(menu.count('class="swatch"'), self.navigation_swatches // 2)
+
+    def test_menu_is_one_list_in_selector_family_order(self):
+        # Bind web ordering to the real catalog, not Markdown section placement.
+        family_pages = {
+            "Fdn": "fdn-122.html", "Aurora": "aurora-144.html",
+            "EchoGarden": "echogarden-031.html", "Cloudscape": "cloudscapex.html",
+            "Oscillator": "the-oscillator-is-a-lie-002.html", "Flux": "flux-capacitor.html",
+            "Morse": "morse.html", "Tempest": "tempest-100.html",
+            "FataMorgana": "fatamorgana-ram-experiment.html",
+            "DirtVerb": "dirt-verb-11.html", "HpFilter": "aurora-hp-filter-variant.html",
+        }
+        catalog = (ROOT / "firmware/images.hpp").read_text()
+        families = list(dict.fromkeys(re.findall(r"menu_colors::(\w+)", catalog)))
+        self.assertEqual(set(families), set(family_pages))
+        menu = navigation(list(reversed(self.sections)), self.entries, "index.html")
+        parser = ReferenceParser()
+        parser.feed(menu)
+        self.assertEqual(parser.links, ["index.html"] + [family_pages[family] for family in families])
+        self.assertEqual(menu.count("<h2>"), 1)
+        self.assertNotIn("Release firmware", menu)
+        self.assertNotIn("Development additions", menu)
+        self.assertNotIn("outside-the-selector-catalog.html", menu)
+        self.assertNotIn("outside-the-selector-catalog.html", self.pages)
 
     def test_quick_start_extraction_is_exact_and_fail_closed(self):
         source = "# Project\n\n## Quick start\n\nInstall.\n\n### Select\nUse.\n\n## Other\nIgnore.\n"

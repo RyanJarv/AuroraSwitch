@@ -2,7 +2,7 @@ name: Firmware reference site
 on:
   push:
     branches: [main]
-    paths: ['site/**', 'README.md', 'docs/firmware_reference.md', '.github/workflows/pages.yml', 'scripts/render_reference.py', 'tests/test_reference_site.py']
+    paths: ['site/**', 'README.md', 'docs/firmware_reference.md', 'firmware/images.hpp', '.github/workflows/pages.yml', 'scripts/render_reference.py', 'tests/test_reference_site.py']
   workflow_dispatch:
 permissions:
   contents: read
