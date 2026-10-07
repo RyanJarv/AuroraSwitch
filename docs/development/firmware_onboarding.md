@@ -63,9 +63,13 @@ distinct, but this alone does not prove release-BIN behavior, compatibility
 with other payloads' settings, or recovery safety. Initialization can write
 defaults: do not bypass it to produce a startup pass.
 
-Next: bind the released BIN to its actual persistence call sites and check
-whether existing emulation can observe the erase/write behavior. Stop if that
-requires substantial new flash infrastructure. No persistence pass is claimed.
+The first exact-image 0.5-second startup inventory uses existing bounded NOR
+and carrier models. It records 646 QSPI writes, two erase commands, and 48
+programmed bytes. Erase/program addresses include `0x1000` (calibration) and
+`0x2000` (settings) on blank synthetic flash. This is not a compatibility or
+persistence pass. Next: check sector contents/retention and settings reload,
+then bind the actual control/audio route. Do not bypass initialization or add
+substantial flash infrastructure to manufacture a pass.
 
 Cross-image concern: FataMorgana also uses offset `8192`, but its
 `PistonSettings` layout differs from Tempest's `DistortionSettings`. The pinned
