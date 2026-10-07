@@ -1,4 +1,5 @@
-"""Fresh-build a pinned RAM experiment; this does not admit or qualify FataMorgana."""
+"""Fresh-build pinned RAM/QSPI payloads; building does not admit or qualify them."""
+import argparse
 from pathlib import Path
 import json
 import os
@@ -21,17 +22,23 @@ def check_cache(path: Path, revision: str) -> None:
         raise RuntimeError(f"changed source cache: {path}")
 
 
-def check_vectors(data: bytes) -> None:
+def check_vectors(data: bytes, *, qspi: bool = False) -> None:
     """Require the existing staging/RAM contract, without claiming startup safety."""
     if not 8 <= len(data) <= 181888:
         raise ValueError("RAM probe exceeds current staging or has no vectors")
+    if type(qspi) is not bool:
+        raise ValueError("qspi must be a boolean")
+    base = 0x90040000 if qspi else 0x24000000
     stack, reset = struct.unpack_from("<II", data)
-    if stack != 0x20020000 or not reset & 1 or not 0x24000000 <= reset < 0x24000000 + len(data):
+    if stack != 0x20020000 or not reset & 1 or not base <= reset < base + len(data):
         raise ValueError("RAM probe vector contract mismatch")
 
 
-def build() -> Path:
+def build(*, qspi: bool = False) -> Path:
     """Rebuild all objects in isolated tracked checkouts and retain exact identities."""
+    if type(qspi) is not bool:
+        raise ValueError("qspi must be a boolean")
+    app_type = "BOOT_QSPI" if qspi else "BOOT_SRAM"
     setup()
     tool_directory, tools = toolchain_identity()
     source = ROOT / ".deps/Aurora-Firmwares"
@@ -59,7 +66,7 @@ def build() -> Path:
             subprocess.run(["make", "-j2", "-C", str(root / relative),
                             f"GCC_PATH={tool_directory}"], check=True, env=environment)
         application = root / "source/FataMorgana"
-        subprocess.run(["make", "-j2", "-C", str(application), "all", "APP_TYPE=BOOT_SRAM",
+        subprocess.run(["make", "-j2", "-C", str(application), "all", f"APP_TYPE={app_type}",
                         f"AURORA_SDK_PATH={root / 'sdk'}", f"GCC_PATH={tool_directory}"],
                        check=True, env=environment)
         artifacts = {f"FataMorgana.{suffix}": (application / "build" / f"FataMorgana.{suffix}").read_bytes()
@@ -69,13 +76,13 @@ def build() -> Path:
                         str(application / "build/FataMorgana.elf"), str(converted)], check=True)
         if converted.read_bytes() != artifacts["FataMorgana.bin"]:
             raise ValueError("FataMorgana ELF/BIN mismatch")
-        check_vectors(artifacts["FataMorgana.bin"])
+        check_vectors(artifacts["FataMorgana.bin"], qspi=qspi)
     for path, revision, _ in inputs:
         check_cache(path, revision)
     manifest = {"schema": "aurora-switch-source-payload-v1", "development_only": True,
         "method": "fresh-isolated-tracked-checkouts", "source_url": SOURCE_URL,
         "source_commit": SOURCE_COMMIT, "dependencies": {relative: revision for _, revision, relative in inputs[1:]},
-        "configuration": {"APP_TYPE": "BOOT_SRAM"}, "toolchain": tools,
+        "configuration": {"APP_TYPE": app_type}, "toolchain": tools,
         "usb_behavior_verified": False, "selector_admitted": False,
         "files": {name: {"bytes": len(data), "sha256": digest(data)} for name, data in artifacts.items()}}
     encoded = (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode()
@@ -91,4 +98,7 @@ def build() -> Path:
 
 
 if __name__ == "__main__":
-    print("DEVELOPMENT ONLY, NOT ADMITTED:", build())
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--qspi", action="store_true", help="build the upstream QSPI configuration")
+    args = parser.parse_args()
+    print("DEVELOPMENT ONLY, NOT ADMITTED:", build(qspi=args.qspi))

@@ -37,7 +37,7 @@ package:
 package-virtual:
 	python3 scripts/package.py --virtual $(QSPI_PACKAGE_OPTION)
 fata-ram-probe:
-	python3 scripts/build_fatamorgana.py
+	python3 scripts/build_fatamorgana.py $(QSPI_PACKAGE_OPTION)
 help:
 	@printf '%s\n' \
 	  'make build          Fetch dependencies and build USB firmware (default)' \

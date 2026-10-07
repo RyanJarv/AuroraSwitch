@@ -5,7 +5,17 @@
 int main()
 {
     using namespace aurora_selector;
-    static_assert(sizeof(Images) / sizeof(Images[0]) == 13);
+    static_assert(sizeof(Images) / sizeof(Images[0]) == 15);
+    static_assert(StagingCapacity() == 182240U);
+    assert(Images[13].execution == Execution::Qspi);
+    assert(Images[13].vectors.reset == 0x90040a49U);
+    assert(Images[14].execution == Execution::Sram);
+    for(unsigned i = 0; i < 15; ++i)
+        for(unsigned j = 0; j < i; ++j)
+        {
+            assert(Images[i].menu_color != Images[j].menu_color);
+            assert(std::strcmp(Images[i].path, Images[j].path) != 0);
+        }
     assert(Images[12].size == 95196U);
     assert(Images[12].vectors.reset == 0x90040959U);
     assert(Images[12].execution == Execution::Qspi);

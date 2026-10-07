@@ -28,6 +28,13 @@ class FataBuildTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, "changed source cache"):
                     builder.check_cache(Path("/unused"), builder.SOURCE_COMMIT)
 
+    def test_qspi_vector_mode_is_explicit(self):
+        data = struct.pack("<II", 0x20020000, 0x90040009) + bytes(248)
+        builder.check_vectors(data, qspi=True)
+        for mode in (False, 1, "yes"):
+            with self.assertRaises(ValueError):
+                builder.check_vectors(data, qspi=mode)
+
     def test_fresh_build_and_sealed_bundle_guards(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -40,13 +47,15 @@ class FataBuildTests(unittest.TestCase):
                 if command[:2] == ["git", "clone"]:
                     self.assertIn("--no-local", command)
                     Path(command[-1]).mkdir(parents=True, exist_ok=True)
-                elif command[0] == "make" and "APP_TYPE=BOOT_SRAM" in command:
+                elif command[0] == "make" and any(c.startswith("APP_TYPE=") for c in command):
                     build = Path(command[command.index("-C") + 1]) / "build"
                     build.mkdir(parents=True)
-                    for suffix, contents in (("bin", data), ("elf", b"synthetic-elf"), ("map", b"synthetic-map")):
+                    payload = (struct.pack("<II", 0x20020000, 0x90040009) + data[8:]
+                               if "APP_TYPE=BOOT_QSPI" in command else data)
+                    for suffix, contents in (("bin", payload), ("elf", b"synthetic-elf"), ("map", b"synthetic-map")):
                         (build / ("FataMorgana." + suffix)).write_bytes(contents)
                 elif command[0].endswith("objcopy"):
-                    Path(command[-1]).write_bytes(data)
+                    Path(command[-1]).write_bytes((Path(command[-2]).parent / "FataMorgana.bin").read_bytes())
 
             with patch.object(builder, "ROOT", root), patch.object(builder, "setup"), \
                     patch.object(builder, "toolchain_identity", return_value=(Path("/pinned-tools"), {"gcc": "synthetic"})), \
@@ -64,6 +73,10 @@ class FataBuildTests(unittest.TestCase):
                     self.assertNotIn("MAKEFLAGS", kwargs["env"])
                     self.assertNotIn(str(root / ".deps/Aurora-SDK"), cmd)
                 self.assertEqual(builder.build(), destination)
+                qspi = builder.build(qspi=True)
+                self.assertNotEqual(qspi, destination)
+                self.assertEqual(json.loads((qspi / "manifest.json").read_text())["configuration"],
+                                 {"APP_TYPE": "BOOT_QSPI"})
                 (destination / "FataMorgana.bin").write_bytes(b"changed")
                 with self.assertRaisesRegex(RuntimeError, "bundle changed"):
                     builder.build()

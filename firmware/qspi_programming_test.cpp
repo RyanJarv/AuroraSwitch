@@ -8,7 +8,8 @@ using namespace aurora_selector;
 
 struct Driver
 {
-    std::array<std::uint8_t, QspiApplicationEnd + 4096U> nor{};
+    std::array<std::uint8_t, QspiMaximumEnd + 4096U> nor{};
+    QspiExtent extent = DirtExtent;
     unsigned erase_fail = 0, page_fail = 0, erase_count = 0, page_count = 0;
     bool init_fail = false, corrupt = false, unmapped = false;
     std::vector<std::uint32_t> erased;
@@ -16,7 +17,7 @@ struct Driver
     bool Initialize() { return !init_fail; }
     bool EraseSector(std::uint32_t offset)
     {
-        assert(offset >= QspiApplicationOffset && offset + 4096 <= QspiApplicationEnd);
+        assert(offset >= QspiApplicationOffset && offset + 4096 <= extent.erase_end);
         erased.push_back(offset);
         if(++erase_count == erase_fail) return false;
         std::memset(nor.data() + offset, 255, 4096);
@@ -25,7 +26,7 @@ struct Driver
     bool WritePage(std::uint32_t offset, std::size_t size, const std::uint8_t* data)
     {
         assert((offset & 255U) == 0 && size > 0 && size <= 256);
-        assert(offset >= QspiApplicationOffset && offset + size <= QspiApplicationOffset + DirtImageSize);
+        assert(offset >= QspiApplicationOffset && offset + size <= QspiApplicationOffset + extent.size);
         if(++page_count == page_fail) return false;
         std::memcpy(nor.data() + offset, data, size);
         return true;
@@ -65,6 +66,24 @@ int main()
     Driver rejected;
     assert(ProgramQspiImage(rejected, bytes.data(), bytes.size() - 1, good, diagnostic) == QspiResult::Rejected);
     assert(ProgramQspiImage(rejected, bytes.data(), bytes.size(), [] { return false; }, diagnostic) == QspiResult::Rejected);
+    assert(rejected.erase_count == 0 && rejected.page_count == 0);
+    // A second reviewed length must use its own rounded extent, not Dirt's.
+    std::vector<std::uint8_t> fata(151420U, 0x42);
+    Driver second;
+    second.extent = {fata.size(), 0x65000U};
+    assert(ProgramQspiImage(second, fata.data(), fata.size(), good, diagnostic, second.extent)
+           == QspiResult::Ready);
+    assert(diagnostic.erase_attempts == 37 && diagnostic.pages == 592);
+    for(unsigned i = 0; i < QspiApplicationOffset; ++i) assert(second.nor[i] == 0x5a);
+    for(unsigned i = second.extent.erase_end; i < second.nor.size(); ++i) assert(second.nor[i] == 0x5a);
+    for(unsigned i = QspiApplicationOffset + fata.size(); i < second.extent.erase_end; ++i)
+        assert(second.nor[i] == 0xff);
+    for(const auto extent : {QspiExtent{fata.size(), 0x64000U},
+                            QspiExtent{fata.size(), 0x66000U},
+                            QspiExtent{fata.size() + 1, 0x65000U},
+                            QspiExtent{0x38001U, 0x79000U}})
+        assert(ProgramQspiImage(rejected, fata.data(), fata.size(), good, diagnostic, extent)
+               == QspiResult::Rejected);
     assert(rejected.erase_count == 0 && rejected.page_count == 0);
     unsigned validations = 0;
     Driver changed;

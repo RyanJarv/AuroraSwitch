@@ -104,16 +104,19 @@ namespace aurora_selector
             {
                 if(image.execution == Execution::Sram)
                     return true;
-                // No generic flash admission: exactly the appended Dirt contract.
-                const auto& reviewed = Images[12];
-                if(image.size != reviewed.size || image.vectors.stack != reviewed.vectors.stack
-                   || image.vectors.reset != reviewed.vectors.reset
-                   || std::strcmp(image.sha256, reviewed.sha256) != 0
-                   || std::strcmp(image.path, reviewed.path) != 0 || !Validate())
+                // Only an actual QSPI catalog entry can authorize programming.
+                // Vector/hash validation alone must not admit caller-made images.
+                bool reviewed = false;
+                for(const auto& entry : Images)
+                    if(&image == &entry && entry.execution == Execution::Qspi)
+                        reviewed = true;
+                if(!reviewed || !Validate())
                     return false;
                 QspiDriver driver{seed.qspi};
                 const auto result = ProgramQspiImage(driver, staged, image.size,
-                    [this] { return Validate(); }, selector_qspi_diagnostic);
+                    [this] { return Validate(); }, selector_qspi_diagnostic,
+                    {image.size, QspiApplicationOffset
+                        + static_cast<std::uint32_t>((image.size + 4095U) & ~std::size_t(4095U))});
                 if(result != QspiResult::Ready)
                 {
                     // Any attempted erase may have destroyed the installed selector.

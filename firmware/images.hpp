@@ -69,6 +69,14 @@ namespace aurora_selector
         {"0:/aurora/DirtVerb 1.1.bin",
          "e1775fb6c46dd83e33abaf599eb6d6089b7ff56692b42ac48748d2d1555d2784",
          95196U, {0x20020000U, 0x90040959U}, {0.4f, 0.f, 0.1f}, Execution::Qspi},
+        // Fresh pinned upstream BOOT_QSPI build; distinct from the RAM experiment.
+        {"0:/aurora/FataMorgana-QSPI.bin",
+         "d97311056ac1562b09e0afb518aeb3587d3df9bbb4a031d68da22be52bee8da1",
+         151420U, {0x20020000U, 0x90040a49U}, {0.f, 0.3f, 0.1f}, Execution::Qspi},
+        // Supplied exact HP-filter variant fits the reviewed staging region.
+        {"0:/aurora/Aurora_v1-4-6_hpfilt.bin",
+         "94f4200efdf47cfb0c055fa51896da4d8c8d0f8b6a6d0a9bc9ec31553d85ebc7",
+         182212U, {0x20020000U, 0x2400070dU}, {0.1f, 0.4f, 0.f}},
 #endif
     };
 
