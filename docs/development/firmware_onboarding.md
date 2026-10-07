@@ -82,6 +82,13 @@ using pale red. Existing indices, staging capacity and loader code are unchanged
 This is preparation for linked tests, not release admission or a compatibility
 claim; it must not be shipped on the strength of the flash inventory alone.
 
+The clean virtual companion from `d9b84b5` now passes two linked Tempest
+handoffs through discovery, selection, verification and DMA-cleared copy to
+reset entry. Manifest `4637757f…57a7`, BIN `90d6329d…52bf` (65620 bytes).
+The older ten-entry companion/evidence is preserved. Tempest callback/control/
+audio continuation is still rejected pending its own exact binding; no startup,
+physical launch or recovery pass is claimed.
+
 Cross-image concern: FataMorgana also uses offset `8192`, but its
 `PistonSettings` layout differs from Tempest's `DistortionSettings`. The pinned
 `PersistentStorage::Init` recognizes only the common FACTORY/USER marker, not
