@@ -29,8 +29,10 @@ Module installation and physical results remain unconfirmed.
   [recovery release gate](recovery_release_gate.md).
 - [ ] Publish results, supported hardware scope, and remaining limitations.
 
-Tempest's QSPI persistence review is deferred. Dirt Verb and oversized HP-filter
-Aurora remain excluded. Alternative onboarding must not delay official testing.
+The [next firmware batch](firmware_onboarding.md) tracks older versions and
+Tempest's persistence review. FataMorgana is blocked on QSPI execution. Dirt Verb
+and oversized HP-filter Aurora remain excluded. Onboarding must not delay
+official recovery testing.
 
 ## Short physical campaign
 

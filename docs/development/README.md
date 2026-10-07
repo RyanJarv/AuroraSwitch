@@ -33,6 +33,8 @@ Do not create a new emulator for a difficult image; defer it.
 
 ## Working notes
 
+- [Next firmware batch](firmware_onboarding.md): older versions, Tempest, and
+  the FataMorgana blocker. Intake is not supported-image evidence.
 - [Architecture](architecture.md): source map, memory, and handoff.
 - [Builds and releases](releases.md): tag workflow and build-only CI.
 - [Verification status](verification.md) and [active checklist](reliability_campaign.md#active-checklist).
