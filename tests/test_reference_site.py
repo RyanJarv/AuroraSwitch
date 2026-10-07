@@ -9,7 +9,7 @@ import unittest
 from urllib.parse import urlsplit
 import xml.etree.ElementTree as ET
 
-from scripts.render_reference import PANEL_CONTROLS, label_controls, read_quick_start, read_reference, slug
+from scripts.render_reference import PANEL_CONTROLS, label_controls, navigation, read_quick_start, read_reference, slug, swatch
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "site"
@@ -65,6 +65,7 @@ class ReferenceSiteTests(unittest.TestCase):
     def setUpClass(cls):
         cls.source = (ROOT / "docs/firmware_reference.md").read_text()
         _, cls.sections, cls.entries = read_reference(cls.source)
+        cls.navigation_swatches = 2 * len({entry.anchor for entry in cls.entries})
         cls.pages = {}
         for file in SITE.glob("*.html"):
             parser = ReferenceParser()
@@ -102,7 +103,7 @@ class ReferenceSiteTests(unittest.TestCase):
 
     def test_index_has_summary_and_install_directions_not_a_second_directory(self):
         parser = self.pages["index.html"]
-        self.assertEqual(parser.swatches, 0)
+        self.assertEqual(parser.swatches, self.navigation_swatches)
         self.assertEqual(len(self.entries), 14)
         page = (SITE / "index.html").read_text()
         body = re.search(r'<main id="main">\n(.*?)\n</main>', page, re.S)[1]
@@ -153,7 +154,7 @@ class ReferenceSiteTests(unittest.TestCase):
                 self.assertNotIn("On this page", parser.nav_labels)
                 self.assertNotIn('class="page-links"', page)
                 self.assertNotIn('class="back-link"', page)
-                self.assertEqual(parser.swatches, 1)
+                self.assertEqual(parser.swatches, self.navigation_swatches + 1)
                 for heading in re.findall(r"^### (.+)$", section.markdown, re.M):
                     self.assertIn(slug(heading), parser.ids)
                 self.assertIn(entries[0].color, page)
@@ -259,6 +260,19 @@ class ReferenceSiteTests(unittest.TestCase):
         for old, new in (("| Blue |", "| Invisible |"), ("| Release |", "| Available maybe |")):
             with self.subTest(replacement=new), self.assertRaises(ValueError):
                 read_reference(self.source.replace(old, new, 1))
+
+    def test_menu_names_omit_versions_and_have_adjacent_family_colors(self):
+        menu = navigation(self.sections, self.entries, "index.html")
+        for section in self.sections:
+            entries = [entry for entry in self.entries if entry.anchor == section.anchor]
+            if not entries:
+                continue
+            name = re.sub(r" \d+(?:\.\d+)+$", "", section.title)
+            self.assertIn(f'<span>{name}</span><small class="color-label">'
+                          f'{swatch(entries[0].color)}{entries[0].color}</small>', menu)
+            if name != section.title:
+                self.assertNotIn(f'<span>{section.title}</span>', menu)
+        self.assertEqual(menu.count('class="swatch"'), self.navigation_swatches // 2)
 
     def test_quick_start_extraction_is_exact_and_fail_closed(self):
         source = "# Project\n\n## Quick start\n\nInstall.\n\n### Select\nUse.\n\n## Other\nIgnore.\n"

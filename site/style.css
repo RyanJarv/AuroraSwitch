@@ -46,8 +46,8 @@ a:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outli
 .sidebar { position: sticky; top: 6rem; align-self: start; max-height: calc(100dvh - 7rem); overflow-y: auto; padding-right: .5rem; }
 .sidebar h2, .mobile-menu h2 { font-size: .75rem; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; margin: 1.5rem 0 .5rem; border: 0; padding: 0; }
 .sidebar ul, .mobile-menu ul { list-style: none; padding: 0; margin: 0 0 1rem; }
-.sidebar li a, .mobile-menu li a { display: block; padding: .45rem .65rem; border-radius: .2rem; text-decoration: none; color: var(--fg); }
-.sidebar small, .mobile-menu small { display: block; color: var(--muted); font-size: .8rem; }
+.sidebar li a, .mobile-menu li a { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .5rem; padding: .45rem .65rem; border-radius: .2rem; text-decoration: none; color: var(--fg); }
+.sidebar .color-label, .mobile-menu .color-label { color: var(--muted); font-size: .75rem; gap: .35rem; }
 .sidebar a:hover, .mobile-menu li a:hover, a[aria-current="page"] { background: var(--selected); }
 .index-link { display: block; font-size: .9rem; margin: .5rem 0; }
 .content { min-width: 0; }
