@@ -77,6 +77,11 @@ process seeded with that complete array performs zero erase/program operations
 and leaves every byte unchanged. Non-default runtime settings, later saves,
 selector handoff and control/audio behavior are still unverified.
 
+Tempest is now a provisional eleventh catalog entry on the development branch,
+using pale red. Existing indices, staging capacity and loader code are unchanged.
+This is preparation for linked tests, not release admission or a compatibility
+claim; it must not be shipped on the strength of the flash inventory alone.
+
 Cross-image concern: FataMorgana also uses offset `8192`, but its
 `PistonSettings` layout differs from Tempest's `DistortionSettings`. The pinned
 `PersistentStorage::Init` recognizes only the common FACTORY/USER marker, not
