@@ -104,7 +104,19 @@ source-level finding, not an observed hardware failure. Both images must not
 be described as having isolated retained settings without resolving or testing
 that interaction. No selector flash write or automatic clearing is added.
 
-## FataMorgana — blocked
+## FataMorgana — not admitted
+
+A bounded build probe on 2026-10-06 overrides `APP_TYPE=BOOT_SRAM` on the
+make command line, without editing upstream source (`d5504d7`). It compiles
+with GNU Arm 10 and pinned Aurora SDK/DaisySP. Probe BIN: 151420 bytes,
+SHA-256 `35bc0bebafa7736ccc61ca788e5f3c3aa2fe4168534761722768eb907743d005`,
+stack/reset `0x20020000` / `0x24000a49`. It fits existing staging.
+This probe consumed an existing libDaisy archive, so it is **not** an
+authenticated source-to-binary bundle or an admitted payload. No source changes,
+catalog addition, hardware access or deployment occurred. Next: a fresh
+isolated source/dependency rebuild before any virtual execution. The author's
+USB concern and cross-image settings interaction remain unresolved; a successful
+compile does not resolve either. Do not add a flash-writing loader.
 
 Reviewed source: `jfriess/Aurora-Firmwares` commit
 `d5504d76370c370fdb40adcf755d8a4b9c07ee6b`.
