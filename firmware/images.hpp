@@ -6,6 +6,7 @@
 
 namespace aurora_selector
 {
+    enum class Execution { Sram, Qspi };
     // Exact file contract and its panel color, not a general firmware description.
     struct Image
     {
@@ -14,6 +15,7 @@ namespace aurora_selector
         std::size_t size;
         daisy_development::SramImageVectors vectors;
         std::array<float, 3> menu_color;
+        Execution execution = Execution::Sram;
     };
 
     // Local byte identities, not signed vendor/source provenance.
@@ -62,6 +64,12 @@ namespace aurora_selector
         {"0:/aurora/FataMorgana.bin",
          "35bc0bebafa7736ccc61ca788e5f3c3aa2fe4168534761722768eb907743d005",
          151420U, {0x20020000U, 0x24000a49U}, {0.f, 0.2f, 0.4f}},
+#ifdef SELECTOR_QSPI_HANDOFF
+        // Experimental exact-image flash path; absent from default RAM builds.
+        {"0:/aurora/DirtVerb 1.1.bin",
+         "e1775fb6c46dd83e33abaf599eb6d6089b7ff56692b42ac48748d2d1555d2784",
+         95196U, {0x20020000U, 0x90040959U}, {0.4f, 0.f, 0.1f}, Execution::Qspi},
+#endif
     };
 
     // Size the shared buffer for the largest entry, rounded for DMA/cache alignment.
@@ -84,8 +92,10 @@ namespace aurora_selector
     {
         daisy_development::SramImageVectors vectors{};
         if(digest == nullptr || size != image.size
-           || !daisy_development::ReadSramImageVectors(
-               bytes, size, 480U * 1024U, vectors)
+           || (image.execution != Execution::Sram && image.execution != Execution::Qspi)
+           || !daisy_development::ReadImageVectors(
+               bytes, size, 480U * 1024U,
+               image.execution == Execution::Qspi ? 0x90040000U : 0x24000000U, vectors)
            || vectors.stack != image.vectors.stack
            || vectors.reset != image.vectors.reset)
             return false;

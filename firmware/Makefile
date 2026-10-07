@@ -18,6 +18,17 @@ ifeq ($(filter $(EXPERIMENTAL_HANDOFF),0 1),)
 $(error EXPERIMENTAL_HANDOFF must be 0 or 1)
 endif
 VIRTUAL_TRANSPORT ?= 0
+QSPI_HANDOFF ?= 0
+ifeq ($(filter $(QSPI_HANDOFF),0 1),)
+$(error QSPI_HANDOFF must be 0 or 1)
+endif
+ifeq ($(QSPI_HANDOFF),1)
+ifneq ($(EXPERIMENTAL_HANDOFF),1)
+$(error QSPI handoff requires experimental handoff)
+endif
+HANDOFF_BUILD_SUFFIX := $(HANDOFF_BUILD_SUFFIX)-qspi
+C_DEFS += -DSELECTOR_QSPI_HANDOFF
+endif
 ifeq ($(filter $(VIRTUAL_TRANSPORT),0 1),)
 $(error VIRTUAL_TRANSPORT must be 0 or 1)
 endif
@@ -77,6 +88,9 @@ include $(SYSTEM_FILES_DIR)/Makefile
 ifeq ($(DMA_ARENA_CLEANUP),1)
 # Upstream initializes AS_DEFS; append after inclusion, not before it.
 AS_DEFS += -DSELECTOR_DMA_ARENA_CLEANUP
+endif
+ifeq ($(QSPI_HANDOFF),1)
+AS_DEFS += -DSELECTOR_QSPI_HANDOFF
 endif
 LDFLAGS += -Tstaging_reserve.ld
 $(BUILD_DIR)/$(TARGET).elf: staging_reserve.ld

@@ -62,3 +62,49 @@ invalid_length:
     b invalid_length
     .ltorg
 selector_copy_jump_end:
+#ifdef SELECTOR_QSPI_HANDOFF
+
+// Separate terminal blob: R0 is the verified, memory-mapped QSPI vector base.
+// No relocation/copy. Selector SRAM remains intact; runtime cleanup is shared.
+.balign 4
+.global selector_qspi_jump_blob_start
+.global selector_qspi_jump_start
+.global selector_qspi_jump_end
+selector_qspi_jump_blob_start:
+.thumb_func
+selector_qspi_jump_start:
+    cpsid i
+    mov r4, r0
+#ifdef SELECTOR_DMA_ARENA_CLEANUP
+    ldr r0, =0x30000000
+    ldr r1, =0x30008000
+    movs r3, #0
+qspi_clear_dma_word:
+    str r3, [r0], #4
+    cmp r0, r1
+    bne qspi_clear_dma_word
+#endif
+    dsb sy
+    isb sy
+    ldr r3, =0xe000ed08
+    str r4, [r3]
+    ldr r5, [r4]
+    ldr r6, [r4, #4]
+    movs r0, #0
+    msr control, r0
+    msr basepri, r0
+    msr faultmask, r0
+    msr psp, r0
+    msr msp, r5
+    dsb sy
+    isb sy
+    adr r7, qspi_terminal
+    adds r7, r7, #1
+    mov lr, r7
+    cpsie i
+    bx r6
+qspi_terminal:
+    b qspi_terminal
+    .ltorg
+selector_qspi_jump_end:
+#endif

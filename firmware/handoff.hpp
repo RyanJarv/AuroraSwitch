@@ -9,8 +9,8 @@
 
 namespace aurora_selector
 {
-    // Experimental only. False means pre-teardown rejection; later failure is
-    // terminal and requires reset. Not a physically qualified boot contract.
+    // Experimental only. False means rejection before teardown or flash erase;
+    // later failure is terminal and requires reset with recovery media ready.
     bool ExperimentalLaunch(daisy::DaisySeed& seed, daisy::USBHostHandle& usb,
                             const char* media_path, const Image& image,
                             const std::uint8_t* staged);

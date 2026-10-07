@@ -1,9 +1,15 @@
-// Hardware adapter for the shared handoff sequence; no flash programming.
+// Hardware adapter for RAM handoff and the opt-in exact-image QSPI path.
 #include "handoff.hpp"
 #include "handoff_sequence.hpp"
 #include "fatfs.h"
 #include "mbedtls/sha256.h"
 #include <cstring>
+#ifdef SELECTOR_QSPI_HANDOFF
+#include "../support/qspi_image_programming.hpp"
+extern "C" {
+volatile aurora_selector::QspiDiagnostic selector_qspi_diagnostic{};
+}
+#endif
 #ifdef SELECTOR_VIRTUAL_TRANSPORT
 #include "../support/backed_image_reader.hpp"
 #endif
@@ -14,12 +20,53 @@ extern "C"
     extern const std::uint8_t selector_copy_jump_end[];
     extern std::uint8_t selector_trampoline_ram[];
     extern std::uint8_t selector_trampoline_limit[];
+#ifdef SELECTOR_QSPI_HANDOFF
+    extern const std::uint8_t selector_qspi_jump_blob_start[];
+    extern const std::uint8_t selector_qspi_jump_end[];
+#endif
 }
 
 namespace aurora_selector
 {
     namespace
     {
+#ifdef SELECTOR_QSPI_HANDOFF
+        // Same pin/device configuration as pinned DaisySeed, without audio Init.
+        struct QspiDriver
+        {
+            daisy::QSPIHandle& qspi;
+            bool Initialize()
+            {
+                daisy::QSPIHandle::Config config{};
+                config.device = daisy::QSPIHandle::Config::IS25LP064A;
+                config.mode = daisy::QSPIHandle::Config::MEMORY_MAPPED;
+                config.pin_config.io0 = dsy_pin(DSY_GPIOF, 8);
+                config.pin_config.io1 = dsy_pin(DSY_GPIOF, 9);
+                config.pin_config.io2 = dsy_pin(DSY_GPIOF, 7);
+                config.pin_config.io3 = dsy_pin(DSY_GPIOF, 6);
+                config.pin_config.clk = dsy_pin(DSY_GPIOF, 10);
+                config.pin_config.ncs = dsy_pin(DSY_GPIOG, 6);
+                return qspi.Init(config) == daisy::QSPIHandle::OK;
+            }
+            bool EraseSector(std::uint32_t offset)
+            { return qspi.EraseSector(offset) == daisy::QSPIHandle::OK; }
+            bool WritePage(std::uint32_t offset, std::size_t size, const std::uint8_t* bytes)
+            {
+                // Bulk Write discards page errors in this pinned SDK.
+                return qspi.WritePage(offset, size, const_cast<std::uint8_t*>(bytes))
+                       == daisy::QSPIHandle::OK;
+            }
+            const std::uint8_t* MappedData()
+            {
+                if(qspi.GetConfig().mode != daisy::QSPIHandle::Config::MEMORY_MAPPED
+                   || qspi.GetStatus() != daisy::QSPIHandle::GOOD)
+                    return nullptr;
+                __DSB();
+                // Selector initializes with D-cache disabled; preserve that policy.
+                return static_cast<const std::uint8_t*>(qspi.GetData(QspiApplicationOffset));
+            }
+        };
+#endif
         // Release the selector's real filesystem and USB host before replacement.
         struct UsbTransport
         {
@@ -50,15 +97,53 @@ namespace aurora_selector
             Transport& transport;
             const Image& image;
             const std::uint8_t* staged;
+#ifdef SELECTOR_QSPI_HANDOFF
+            bool qspi_prepared = false;
+
+            bool PrepareTarget()
+            {
+                if(image.execution == Execution::Sram)
+                    return true;
+                // No generic flash admission: exactly the appended Dirt contract.
+                const auto& reviewed = Images[12];
+                if(image.size != reviewed.size || image.vectors.stack != reviewed.vectors.stack
+                   || image.vectors.reset != reviewed.vectors.reset
+                   || std::strcmp(image.sha256, reviewed.sha256) != 0
+                   || std::strcmp(image.path, reviewed.path) != 0 || !Validate())
+                    return false;
+                QspiDriver driver{seed.qspi};
+                const auto result = ProgramQspiImage(driver, staged, image.size,
+                    [this] { return Validate(); }, selector_qspi_diagnostic);
+                if(result != QspiResult::Ready)
+                {
+                    // Any attempted erase may have destroyed the installed selector.
+                    // Reset with the root selector USB present; never retry the UI.
+                    if(selector_qspi_diagnostic.erase_attempts != 0)
+                        Fatal();
+                    return false;
+                }
+                qspi_prepared = true;
+                return true;
+            }
+#endif
 
             // Rehash the same fixed staging buffer before and after cleanup.
             bool Validate()
             {
                 std::uint8_t digest[32]{};
-                return reinterpret_cast<std::uintptr_t>(staged) == StagingAddress
+                const bool staged_valid = reinterpret_cast<std::uintptr_t>(staged) == StagingAddress
                        && image.size <= StagingCapacity()
                        && mbedtls_sha256_ret(staged, image.size, digest, 0) == 0
                        && VerifyImage(staged, image.size, image, digest);
+#ifdef SELECTOR_QSPI_HANDOFF
+                if(staged_valid && qspi_prepared)
+                {
+                    QspiDriver driver{seed.qspi};
+                    const auto* mapped = driver.MappedData();
+                    return mapped != nullptr && std::memcmp(mapped, staged, image.size) == 0;
+                }
+#endif
+                return staged_valid;
             }
             bool Unmount() { return transport.Unmount(); }
             void StopMedia() { transport.Stop(); }
@@ -111,22 +196,32 @@ namespace aurora_selector
             // Copy and read back the stackless routine into reserved SRAM4.
             bool InstallTrampoline()
             {
-                const auto begin = reinterpret_cast<std::uintptr_t>(selector_copy_jump_blob_start);
-                const auto end = reinterpret_cast<std::uintptr_t>(selector_copy_jump_end);
+                const std::uint8_t* blob = selector_copy_jump_blob_start;
+                const std::uint8_t* blob_end = selector_copy_jump_end;
+#ifdef SELECTOR_QSPI_HANDOFF
+                if(image.execution == Execution::Qspi)
+                {
+                    blob = selector_qspi_jump_blob_start;
+                    blob_end = selector_qspi_jump_end;
+                }
+#endif
+                const auto begin = reinterpret_cast<std::uintptr_t>(blob);
+                const auto end = reinterpret_cast<std::uintptr_t>(blob_end);
                 const auto ram = reinterpret_cast<std::uintptr_t>(selector_trampoline_ram);
                 const auto limit = reinterpret_cast<std::uintptr_t>(selector_trampoline_limit);
                 if(end <= begin || ram != 0x38000000U || limit <= ram
                    || end - begin > limit - ram)
                     return false;
-                std::memcpy(selector_trampoline_ram, selector_copy_jump_blob_start, end - begin);
+                std::memcpy(selector_trampoline_ram, blob, end - begin);
                 __DSB();
                 __ISB();
-                return std::memcmp(selector_trampoline_ram, selector_copy_jump_blob_start,
+                return std::memcmp(selector_trampoline_ram, blob,
                                    end - begin) == 0;
             }
             [[noreturn]] void Fatal()
             {
                 // Irreversible teardown: never pretend that the UI can retry.
+                __disable_irq();
                 while(true) { __WFI(); }
             }
             // Enter SRAM4 to replace selector code without returning to it.
@@ -135,6 +230,13 @@ namespace aurora_selector
                 using Entry = void (*)(const std::uint8_t*, std::uint8_t*, std::size_t);
                 auto entry = reinterpret_cast<Entry>(
                     reinterpret_cast<std::uintptr_t>(selector_trampoline_ram) | 1U);
+#ifdef SELECTOR_QSPI_HANDOFF
+                if(image.execution == Execution::Qspi)
+                {
+                    entry(reinterpret_cast<const std::uint8_t*>(0x90040000U), nullptr, 0);
+                    Fatal();
+                }
+#endif
                 entry(staged, reinterpret_cast<std::uint8_t*>(0x24000000U), image.size);
                 Fatal();
             }
@@ -147,7 +249,13 @@ namespace aurora_selector
     {
         UsbTransport transport{usb, media_path};
         Platform<UsbTransport> platform{seed, transport, image, staged};
+#ifdef SELECTOR_QSPI_HANDOFF
+        if(!platform.PrepareTarget())
+            return false;
+        return PrepareAndJump(platform, platform.qspi_prepared);
+#else
         return PrepareAndJump(platform);
+#endif
     }
 #ifdef SELECTOR_VIRTUAL_TRANSPORT
     bool VirtualLaunch(daisy::DaisySeed& seed,
@@ -156,7 +264,13 @@ namespace aurora_selector
     {
         BackedTransport transport{descriptor};
         Platform<BackedTransport> platform{seed, transport, image, staged};
+#ifdef SELECTOR_QSPI_HANDOFF
+        if(!platform.PrepareTarget())
+            return false;
+        return PrepareAndJump(platform, platform.qspi_prepared);
+#else
         return PrepareAndJump(platform);
+#endif
     }
 #endif
 }

@@ -8,12 +8,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class HelperTests(unittest.TestCase):
-    def compile_and_run(self, source: str) -> None:
+    def compile_and_run(self, source: str, defines: tuple[str, ...] = ()) -> None:
         """Use the same warnings and isolated output for every native probe."""
         with tempfile.TemporaryDirectory(prefix="aurora-host-tests-") as directory:
             executable = Path(directory) / source
             subprocess.run(["c++", "-std=c++17", "-Wall", "-Wextra", "-Werror",
-                str(ROOT / "firmware" / (source + ".cpp")), "-o",
+                *defines, str(ROOT / "firmware" / (source + ".cpp")), "-o",
                 str(executable)], check=True)
             subprocess.run([str(executable)], check=True)
 
@@ -33,6 +33,12 @@ class HelperTests(unittest.TestCase):
 
     def test_catalog_colors_and_capacity(self):
         self.compile_and_run("catalog_test")
+
+    def test_opt_in_qspi_catalog(self):
+        self.compile_and_run("qspi_catalog_test", ("-DSELECTOR_QSPI_HANDOFF",))
+
+    def test_qspi_bounded_writer_and_faults(self):
+        self.compile_and_run("qspi_programming_test")
 
     def test_no_programming_targets(self):
         for target in ("program", "program-dfu", "program-boot"):
