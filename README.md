@@ -8,7 +8,7 @@ Beta software with limited testing. Keep the original Aurora firmware and a back
 
 Install Git, GitHub CLI (`gh`), GNU Make, Python 3, and a C++ compiler.
 
-Back up your FAT USB drive. Change `USB_DIR` below to its mounted path (Linux example: `/media/your-user/AURORA`):
+Back up your FAT USB drive. Change `USB_DIR` below to its mounted path:
 
 ```sh
 git clone https://github.com/RyanJarv/AuroraSwitch.git && cd AuroraSwitch
