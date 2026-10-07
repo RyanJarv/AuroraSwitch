@@ -3,7 +3,7 @@
 Requested scope: older supported-family releases, Tempest, then FataMorgana.
 Dirt Verb stays deferred. Older releases and Tempest are staged and virtually
 tested on the development branch; they are not published or physically tested.
-FataMorgana remains outside the catalog.
+FataMorgana has a provisional exact RAM entry; real USB and physical tests remain open.
 Keep third-party binaries outside Git and release assets.
 
 ## Checklist
@@ -19,11 +19,13 @@ Keep third-party binaries outside Git and release assets.
   bounded selector handoff/control/audio checks. Physical recovery stays open.
 - [x] Package the authenticated eleven-image selector (not deployed).
 - [x] Build FataMorgana in RAM from fresh pinned source and inventory startup.
-- [ ] FataMorgana: pause before USB/wavetable validation or catalog admission.
+- [x] FataMorgana: exact development catalog entry and linked handoff/control/audio.
+- [ ] FataMorgana: real USB/wavetable validation; no broad USB emulator work.
 - [ ] Physical campaign: new selector, launch/control/audio, reset and stock restore.
 
 Next manageable chunk: physical testing of the older/Tempest candidate. Keep
-ST-Link disconnected. FataMorgana needs a tested RAM/USB configuration before
+ST-Link disconnected. The new twelve-entry build supersedes that candidate;
+FataMorgana needs a tested RAM/USB configuration before
 support can be claimed; do not expand the loader to write QSPI.
 
 ## Older public releases
@@ -112,7 +114,7 @@ source-level finding, not an observed hardware failure. Both images must not
 be described as having isolated retained settings without resolving or testing
 that interaction. No selector flash write or automatic clearing is added.
 
-## FataMorgana — not admitted
+## FataMorgana build and virtual checkpoints
 
 A bounded build probe on 2026-10-06 overrides `APP_TYPE=BOOT_SRAM` on the
 make command line, without editing upstream source (`d5504d7`). It compiles
@@ -182,6 +184,17 @@ arbitrary build or the upstream QSPI binary. Existing entries and staging
 capacity stay unchanged. No loader feature or flash-writing path is added.
 Compatibility, USB loading and physical recovery are not claimed by admission.
 
+The twelve-entry virtual companion is authenticated at source `2284fbe`,
+manifest `ca471d61…ca37f`. One linked handoff and the subsequent baseline plus
+two changed-Time continuations pass. Each continuation has 85 complete finite
+callbacks and 8192 PCM frames; both changed results match and differ from
+baseline. All entries, source payload manifest, registration bytes and DMA
+cleanup remain checked. Archive SHA-256:
+`1c009fc3cd52cac095cd7dc75dad637104c852c62c72e094c5bcdd5df61f3e6f`.
+The too-early 1.3-second stimulus is preserved as rejected evidence; the fixed
+handoff scenario changes Time at 1.5 seconds and requires both ADC states.
+This is development evidence, not real USB, physical compatibility or recovery.
+
 Reviewed source: `jfriess/Aurora-Firmwares` commit
 `d5504d76370c370fdb40adcf755d8a4b9c07ee6b`.
 `FataMorgana/Makefile:12` selects `BOOT_QSPI`; its preceding comment says
@@ -190,11 +203,10 @@ author's stated constraint, not an independently reproduced finding.
 The firmware loads wavetables through USB and also stores settings at `8192`.
 The repository's releases currently contain Tempest assets, not FataMorgana.
 
-The existing RAM selector cannot launch this QSPI-linked configuration.
-Do not simply override the build mode and claim support: a RAM port needs
-USB/DMA/memory review and testing. A flash-writing loader would change this
-project's scope. Pause this image for a compatible author build or a separately
-approved bounded port; it must not block the smaller older-release batch.
+The upstream QSPI configuration remains unsupported. The experimental RAM
+build above has passed bounded virtual checks, not physical USB testing.
+Do not add a flash-writing loader; validate the actual USB/wavetable path on
+hardware before claiming full support.
 
 ## Historical intake boundary
 

@@ -75,7 +75,7 @@ Morse needs an external Freeze-gate clock and Mix above zero.
 
 ## Not supported yet
 
-- **FataMorgana:** currently builds for QSPI, not this RAM loader.
+- **FataMorgana's upstream QSPI build:** unsupported. See the RAM experiment below.
 - **Dirt Verb:** runs from QSPI, outside this RAM loader's design.
 - **HP-filter Aurora:** too large for the current staging buffer.
 - **Other versions or renamed files:** need separate review and catalog entries.
@@ -96,3 +96,21 @@ Download the named BIN from each linked release and place it in `aurora/`.
 
 Tempest saves its settings in QSPI. This is payload behavior, not selector
 flashing; do not assume its settings are isolated from other alternative apps.
+
+### FataMorgana RAM experiment
+
+The development branch admits one exact RAM build from source commit `d5504d7`,
+not the upstream QSPI configuration. Virtual handoff/control/audio checks pass;
+USB wavetable loading and physical compatibility remain unverified.
+
+With the pinned GNU Arm 10 toolchain on PATH:
+
+```sh
+make fata-ram-probe
+```
+
+The command prints a bundle path. Its `FataMorgana.bin` belongs in `aurora/`
+on the test drive; the selector menu color is azure. Use only the development
+selector, not the published release. Do not rename another build to this filename.
+Tempest and Fata share a settings sector with different formats, so switching
+can change retained settings.

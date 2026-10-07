@@ -43,7 +43,7 @@ Only these exact versions are supported:
 
 ### Not supported yet
 
-- **FataMorgana:** currently builds for QSPI; needs a RAM-compatible version.
+- **FataMorgana:** upstream QSPI build is unsupported; a RAM experiment is on the development branch.
 - **Dirt Verb:** runs from QSPI, outside this RAM loader's design.
 - **HP-filter Aurora:** too large for the current staging buffer.
 - **Other versions or renamed files:** need separate review and catalog entries.
@@ -54,6 +54,10 @@ Only these exact versions are supported:
 and Tempest 1.0.0 in virtual launch/control/audio tests. These are not in
 the published release yet; physical testing and ordinary stock recovery remain
 open. Tempest stores its own settings in QSPI. See the [user guide](docs/user_guide.md#development-branch-additions).
+
+The same branch stages an exact FataMorgana RAM build. Its virtual selector
+handoff/control/audio checks pass; USB wavetable loading and physical testing
+remain open. It is not part of the published release.
 
 ## Video
 
