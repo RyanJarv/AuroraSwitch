@@ -6,7 +6,10 @@ Files shared only on Discord must be supplied manually.
 
 ## Obtain files
 
-For the two public GitHub releases, use GitHub CLI:
+The [README quick start](../README.md#quick-start) downloads and checks official
+Aurora 1.4.4 and FDN 1.2.2, then copies them and the selector to your USB drive.
+
+For Flux Capacitor and Morse's public GitHub releases, use GitHub CLI:
 
 ```sh
 mkdir -p local-firmware
