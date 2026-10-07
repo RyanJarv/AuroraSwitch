@@ -9,8 +9,7 @@ endif
 QSPI_PACKAGE_OPTION = $(if $(filter 1,$(QSPI_HANDOFF)),--qspi,)
 all: build
 reference-html:
-	python3 scripts/render_reference.py > site/index.html.tmp
-	mv site/index.html.tmp site/index.html
+	python3 scripts/render_reference.py
 build: dependencies
 	$(MAKE) -C firmware BUILD_DIR=build-experimental-dma$(if $(filter 1,$(QSPI_HANDOFF)),-qspi,)
 usb:

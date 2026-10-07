@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Refresh the checked-in HTML using GitHub's GFM renderer; no site build needed."""
+"""Generate a static color index and firmware pages from one Markdown reference."""
 
+from dataclasses import dataclass
 import hashlib
 import html
 import json
@@ -25,13 +26,84 @@ def slug(heading: str) -> str:
     return re.sub(r"[^\w\- ]", "", html.unescape(heading).lower()).replace(" ", "-")
 
 
-def render() -> str:
-    """Render Markdown once, then add navigation and static HTML styling."""
-    source = SOURCE.read_text()
-    digest = hashlib.sha256(SOURCE.read_bytes()).hexdigest()
+@dataclass(frozen=True)
+class Section:
+    """A source section owns its stable legacy anchor and generated page."""
+
+    heading: str
+    markdown: str
+
+    @property
+    def anchor(self) -> str:
+        return slug(self.heading)
+
+    @property
+    def title(self) -> str:
+        return self.heading.split(" — ")[0]
+
+    @property
+    def filename(self) -> str:
+        if self.heading in ("Color lookup", "Reference maintenance"):
+            return "index.html"
+        return f"{slug(self.title)}.html"
+
+
+@dataclass(frozen=True)
+class Entry:
+    """One version/color row; versions can share a firmware control page."""
+
+    color: str
+    name: str
+    anchor: str
+    description: str
+    availability: str
+
+
+def read_reference(source: str) -> tuple[str, list[Section], list[Entry]]:
+    """Use the color table as the only navigation catalog; reject stale links."""
+    parts = re.split(r"^## (.+)\n", source, flags=re.M)
+    sections = [Section(parts[i], parts[i + 1]) for i in range(1, len(parts), 2)]
+    by_anchor = {section.anchor: section for section in sections}
+    if len(by_anchor) != len(sections):
+        raise ValueError("Duplicate reference section")
+    if len({section.filename for section in sections if section.filename != "index.html"}) != len(sections) - 2:
+        raise ValueError("Duplicate reference page")
+    for required in ("color-lookup", "reference-maintenance", "outside-the-selector-catalog"):
+        if required not in by_anchor:
+            raise ValueError(f"Missing reference section: {required}")
+    entries = []
+    for line in by_anchor["color-lookup"].markdown.splitlines():
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if not line.startswith("|") or cells[0] in ("Selector color", "---"):
+            continue
+        if len(cells) != 4:
+            raise ValueError(f"Malformed color row: {line}")
+        color, link, description, availability = cells
+        match = re.fullmatch(r"\[([^]]+)\]\(#([\w-]+)\)", link)
+        if color not in COLORS or availability not in ("Release", "Development") or not match:
+            raise ValueError(f"Invalid color row: {line}")
+        if match[2] not in by_anchor or by_anchor[match[2]].filename == "index.html":
+            raise ValueError(f"Missing firmware section: {link}")
+        entries.append(Entry(color, match[1], match[2], description, availability))
+    if not entries or len({entry.color for entry in entries}) != len(entries):
+        raise ValueError("Missing or duplicate selector colors")
+    unused = set(by_anchor) - {entry.anchor for entry in entries} - {
+        "color-lookup", "reference-maintenance", "outside-the-selector-catalog",
+    }
+    if unused:
+        raise ValueError(f"Unlinked firmware sections: {sorted(unused)}")
+    return parts[0], sections, entries
+
+
+def render_markdown(source: str, sections: list[Section]) -> str:
+    """Render once with GitHub GFM; link source sections to their static pages."""
+    by_anchor = {section.anchor: section for section in sections}
 
     def absolute_link(match: re.Match) -> str:
         target = match[1]
+        if target.startswith("#") and target[1:] in by_anchor:
+            section = by_anchor[target[1:]]
+            return f"]({section.filename}#{section.anchor})"
         if target.startswith(("#", "https://", "http://")):
             return match[0]
         file, separator, anchor = target.partition("#")
@@ -44,16 +116,39 @@ def render() -> str:
         input=json.dumps({"text": source, "mode": "gfm"}),
         text=True, capture_output=True, check=True,
     )
-    body = re.sub(
+    return re.sub(
         r"<h([1-6])>(.*?)</h\1>",
         lambda m: f'<h{m[1]} id="{slug(m[2])}">{m[2]}</h{m[1]}>',
         response.stdout, flags=re.S,
     )
-    for name, color in COLORS.items():
-        body = body.replace(
-            f"<td>{name}</td>",
-            f'<td><span class="swatch" style="background:{color}" aria-hidden="true"></span>{name}</td>',
-        )
+
+
+def swatch(color: str) -> str:
+    """Always accompany the visual LED approximation with a written color name."""
+    return f'<span class="swatch" style="background:{COLORS[color]}" aria-hidden="true"></span>'
+
+
+def navigation(sections: list[Section], entries: list[Entry], current: str) -> str:
+    """Share the same directory between the desktop sidebar and mobile menu."""
+    parts = ['<a class="index-link" href="index.html">All firmware &amp; colors</a>']
+    for availability, label in (("Release", "Release firmware"), ("Development", "Development additions")):
+        parts.append(f'<h2>{label}</h2><ul>')
+        for section in sections:
+            versions = [entry for entry in entries if entry.anchor == section.anchor]
+            if not versions or ("Release" if any(entry.availability == "Release" for entry in versions) else "Development") != availability:
+                continue
+            active = ' aria-current="page"' if current == section.filename else ""
+            colors = ", ".join(entry.color + (" (dev)" if entry.availability == "Development" else "") for entry in versions)
+            parts.append(f'<li><a href="{section.filename}"{active}><span>{html.escape(section.title)}</span>'
+                         f'<small>{html.escape(colors)}</small></a></li>')
+        parts.append('</ul>')
+    parts.append('<a class="index-link" href="outside-the-selector-catalog.html">Other firmware / limitations</a>')
+    return "\n".join(parts)
+
+
+def document(title: str, body: str, menu: str, digest: str) -> str:
+    """A common accessible shell, with no JavaScript or hosted asset dependency."""
+    renderer_digest = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
     return f'''<!doctype html>
 <!-- Generated by scripts/render_reference.py; edit docs/firmware_reference.md. -->
 <html lang="en">
@@ -61,46 +156,107 @@ def render() -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="reference-sha256" content="{digest}">
+<meta name="renderer-sha256" content="{renderer_digest}">
 <meta name="description" content="AuroraSwitch firmware colors, knobs, buttons, gates and modes.">
-<title>AuroraSwitch · Firmware reference</title>
-<style>
-:root {{ color-scheme: light dark; --bg:#fafafa; --fg:#222; --line:#d1d5db; --accent:#175bb5; --cell:#f0f2f5; }}
-@media (prefers-color-scheme: dark) {{ :root {{ --bg:#171a20; --fg:#e6e9ef; --line:#454b56; --accent:#91baff; --cell:#222731; }} }}
-* {{ box-sizing:border-box; }}
-html {{ scroll-padding-top:4rem; }}
-body {{ margin:0; background:var(--bg); color:var(--fg); font:16px/1.6 system-ui,sans-serif; }}
-nav {{ position:sticky; top:0; background:var(--bg); border-bottom:1px solid var(--line); padding:.65rem max(1rem,calc((100vw - 960px)/2)); display:flex; gap:1.2rem; flex-wrap:wrap; z-index:1; }}
-main {{ max-width:960px; margin:auto; padding:1rem 1rem 4rem; }}
-a {{ color:var(--accent); text-underline-offset:.15em; }}
-h1 {{ line-height:1.2; }}
-h2 {{ margin-top:2.5rem; border-top:1px solid var(--line); padding-top:1rem; line-height:1.3; }}
-markdown-accessiblity-table {{ display:block; overflow-x:auto; }}
-table {{ width:100%; border-collapse:collapse; font-size:.95rem; }}
-th,td {{ text-align:left; vertical-align:top; padding:.55rem .7rem; border:1px solid var(--line); }}
-th {{ background:var(--cell); }}
-td:first-child {{ min-width:8rem; }}
-code {{ background:var(--cell); padding:.1rem .25rem; border-radius:3px; overflow-wrap:anywhere; }}
-.swatch {{ display:inline-block; width:.9rem; height:.9rem; border:1px solid #777; border-radius:50%; margin-right:.45rem; }}
-@media print {{ nav {{ display:none; }} body {{ font-size:11pt; }} h2 {{ break-after:avoid; }} tr {{ break-inside:avoid; }} }}
-</style>
+<title>{html.escape(title)} · AuroraSwitch</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<nav aria-label="Reference navigation">
-<a href="#color-lookup">Colors</a>
-<a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/user_guide.md">Setup</a>
+<a class="skip-link" href="#main">Skip to controls</a>
+<header class="site-header">
+<a class="brand" href="index.html">AuroraSwitch <span>Firmware reference</span></a>
+<nav aria-label="Site navigation">
+<a href="{REPOSITORY}docs/user_guide.md">Setup guide</a>
 <a href="https://github.com/RyanJarv/AuroraSwitch">GitHub</a>
 </nav>
-<main>
+</header>
+<div class="layout">
+<aside class="sidebar"><nav aria-label="Firmware directory">{menu}</nav></aside>
+<div class="content">
+<details class="mobile-menu"><summary>Choose firmware / color</summary>
+<nav aria-label="Mobile firmware directory">{menu}</nav></details>
+<main id="main">
 {body}
 </main>
+<footer>Selector colors identify firmware before launch. Running LED colors may differ.
+<a href="{REPOSITORY}docs/firmware_reference.md">Markdown reference</a></footer>
+</div>
+</div>
 </body>
 </html>
 '''
 
 
+def render_pages() -> dict[str, str]:
+    """Keep one source of control facts while generating short, direct-link pages."""
+    source = SOURCE.read_text()
+    _, sections, entries = read_reference(source)
+    digest = hashlib.sha256(SOURCE.read_bytes()).hexdigest()
+    rendered = render_markdown(source, sections)
+    parts = re.split(r'(<h2 id="[^"]+">.*?</h2>)', rendered, flags=re.S)
+    if len(parts) != 1 + 2 * len(sections):
+        raise ValueError("Rendered sections do not match Markdown sections")
+    bodies = {section.anchor: parts[2 * i + 2] for i, section in enumerate(sections)}
+    by_anchor = {section.anchor: section for section in sections}
+    home = '''<h1>Find your firmware</h1>
+<p class="lead">Choose by name or match the selector’s Reverse LED color.</p>
+<p class="launch-line">Reverse selects → Freeze verifies → wait for <strong>Freeze green</strong> → Shift launches.</p>
+'''
+    for availability, label, note in (
+        ("Release", "Release firmware", "Available in the published seven-entry selector."),
+        ("Development", "Development builds", "Not in the published selector. Older versions share their family’s control page."),
+    ):
+        anchor = "color-lookup" if availability == "Release" else "development-builds"
+        home += f'<section aria-labelledby="{anchor}"><h2 id="{anchor}">{label}</h2><p>{note}</p><div class="cards">'
+        for entry in entries:
+            if entry.availability != availability:
+                continue
+            section = by_anchor[entry.anchor]
+            # Preserve old index fragments at the first card for each firmware family.
+            legacy = f' id="{entry.anchor}"' if entry == next(e for e in entries if e.anchor == entry.anchor) else ""
+            home += (f'<a class="firmware-card" href="{section.filename}"{legacy}>'
+                     f'<span class="color-label">{swatch(entry.color)}{entry.color}</span>'
+                     f'<h3>{html.escape(entry.name)}</h3><p>{html.escape(entry.description)}</p>'
+                     '<span class="card-action">View controls →</span></a>\n')
+        home += '</div></section>\n'
+    home += '''<p class="other-firmware"><a href="outside-the-selector-catalog.html">Other firmware and current limitations →</a></p>
+<p class="reference-note">Control descriptions come from author notes, manuals or versioned source;
+they do not mean every function has been physically tested. Only exact supported files appear in the selector.</p>
+'''
+    home += f'<details id="reference-maintenance"><summary>Reference sources and maintenance</summary>{bodies["reference-maintenance"]}</details>'
+    pages = {"index.html": document("Firmware reference", home, navigation(sections, entries, "index.html"), digest)}
+    for section in sections:
+        if section.filename == "index.html":
+            continue
+        versions = [entry for entry in entries if entry.anchor == section.anchor]
+        badges = "".join(f'<span class="version-label">{swatch(entry.color)}{html.escape(entry.name)} · {entry.color}'
+                         f'{" · development" if entry.availability == "Development" else ""}</span>' for entry in versions)
+        content = bodies[section.anchor]
+        # Each page starts at h1; source h3 control groups become its h2 landmarks.
+        content = re.sub(r'<(/?)h3\b', r'<\1h2', content)
+        toc = "".join(f'<a href="#{anchor}">{label}</a>'
+                      for anchor, label in re.findall(r'<h2 id="([^"]+)">(.*?)</h2>', content))
+        body = f'<a class="back-link" href="index.html">← All firmware &amp; colors</a><h1 id="{section.anchor}">{html.escape(section.title)}</h1>'
+        if badges:
+            body += f'<div class="version-labels" aria-label="Versions and selector colors">{badges}</div>'
+            body += '''<details class="conventions"><summary>How to read the controls</summary>
+<p>Names refer to the original Aurora panel. <strong>Shift + control</strong> means hold Shift
+while using that control. CCW / CW mean counterclockwise / clockwise. Selector colors are
+not the firmware’s running LED colors.</p></details>'''
+        if toc:
+            body += f'<nav class="page-links" aria-label="On this page">{toc}</nav>'
+        body += content
+        body += '<p class="back-link"><a href="index.html">← Choose another firmware</a></p>'
+        pages[section.filename] = document(section.title, body, navigation(sections, entries, section.filename), digest)
+    return pages
+
+
 if __name__ == "__main__":
     try:
-        sys.stdout.write(render())
+        pages = render_pages()
+        for filename, page in pages.items():
+            (ROOT / "site" / filename).write_text(page)
+        print(f"Updated {len(pages)} static reference pages.")
     except subprocess.CalledProcessError as error:
         sys.stderr.write(error.stderr)
         raise SystemExit(error.returncode) from error
