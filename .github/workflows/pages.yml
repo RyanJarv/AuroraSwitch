@@ -1,0 +1,31 @@
+name: Firmware reference site
+on:
+  push:
+    branches: [main]
+    paths: ['site/**', 'docs/firmware_reference.md', '.github/workflows/pages.yml', 'scripts/render_reference.py', 'tests/test_reference_site.py']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Check static reference
+        run: python3 -m unittest discover -s tests -p test_reference_site.py -v
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
+        with:
+          path: site
+      - name: Deploy static HTML
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e

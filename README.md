@@ -65,6 +65,7 @@ https://github.com/user-attachments/assets/828c759e-82dc-492c-8cff-8abad066c41e
 
 ## More Info
 
+- [Online firmware reference](https://RyanJarv.github.io/AuroraSwitch/): color lookup and controls.
 - [Firmware control reference](docs/firmware_reference.md): colors and controls for every catalog entry.
 - [User guide](docs/user_guide.md): build, USB layout, and firmware selection.
 - [How it works](docs/how_it_works.md): RAM handoff, memory layout, design choices.

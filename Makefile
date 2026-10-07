@@ -1,5 +1,5 @@
 # Build/test and USB preparation; module installation remains a manual step.
-.PHONY: all build usb download-release build-virtual setup dependencies test check verify-images package package-virtual fata-ram-probe help
+.PHONY: all build usb download-release build-virtual setup dependencies test check verify-images package package-virtual fata-ram-probe help reference-html
 RELEASE_TAG ?= latest
 # Explicit development opt-in; releases and USB preparation remain RAM-only.
 QSPI_HANDOFF ?= 0
@@ -8,6 +8,9 @@ $(error QSPI_HANDOFF must be 0 or 1)
 endif
 QSPI_PACKAGE_OPTION = $(if $(filter 1,$(QSPI_HANDOFF)),--qspi,)
 all: build
+reference-html:
+	python3 scripts/render_reference.py > site/index.html.tmp
+	mv site/index.html.tmp site/index.html
 build: dependencies
 	$(MAKE) -C firmware BUILD_DIR=build-experimental-dma$(if $(filter 1,$(QSPI_HANDOFF)),-qspi,)
 usb:
