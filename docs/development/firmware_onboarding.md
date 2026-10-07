@@ -166,6 +166,16 @@ SHA-256 `2ba162c3fb89a7030236f8d0adc42c32eb0bc922f4a34b8e48d3372cdae0536e`.
 This proves finite callback execution, not PCM/control response, selector
 handoff or USB loading. Those remain open; Fata is still outside the catalog.
 
+The subsequent PCM/control probe passes one baseline and two changed-Time runs:
+85 finite callbacks and 8192 PCM frames each. Every callback's input/output
+buffers and ADC halfwords are checked; both changed runs match and differ from
+baseline. The two early disconnected-ADC captures remain rejected evidence.
+Audio archive SHA-256
+`d57c44ab6ceb029244297ecbc1c5dbec8841bb4f621dab3b28f615cbb47e5fcb`.
+This closes the bounded default-cube PCM/control check only. Fata still needs
+linked selector handoff and real USB/wavetable validation before support is
+claimed. No loader code or frozen physical candidate changed.
+
 Reviewed source: `jfriess/Aurora-Firmwares` commit
 `d5504d76370c370fdb40adcf755d8a4b9c07ee6b`.
 `FataMorgana/Makefile:12` selects `BOOT_QSPI`; its preceding comment says
