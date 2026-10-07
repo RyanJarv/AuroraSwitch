@@ -3,8 +3,7 @@
 RELEASE_TAG ?= latest
 all: build
 reference-html:
-	python3 scripts/render_reference.py > site/index.html.tmp
-	mv site/index.html.tmp site/index.html
+	python3 scripts/render_reference.py
 build: dependencies
 	$(MAKE) -C firmware
 usb:

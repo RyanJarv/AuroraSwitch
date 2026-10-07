@@ -1,7 +1,12 @@
 # Reference site
 
-GitHub Pages serves `site/index.html` directly: no Jekyll, JavaScript, dependency
-installation or website build. Only `site/` is uploaded, not firmware or evidence.
+GitHub Pages serves the checked-in HTML and CSS in `site/`: no Jekyll,
+JavaScript or deployment-time build. Firmware and evidence are not uploaded.
+
+The index has a card for each version/color. Each firmware family gets a control
+page, with a desktop sidebar, a native mobile menu and links to its control groups.
+Older index fragments still find the matching card; share a firmware page URL for
+direct access. Release and development-only entries stay separate.
 
 Edit `docs/firmware_reference.md`, then refresh the HTML using GitHub's Markdown
 renderer (requires authenticated `gh` and network):
@@ -11,9 +16,12 @@ make reference-html
 make test
 ```
 
-Commit both files. The offline test checks the source fingerprint, anchors and
-color swatches; the Pages workflow refuses a stale HTML copy.
+The color table drives navigation, so there is no second firmware catalog to edit.
+The renderer uses one GitHub Markdown request and writes all pages; shared styling
+is in `site/style.css`. Commit the source, renderer/style changes and generated pages.
+Offline tests check fingerprints, links, versions, colors and page navigation;
+the Pages workflow refuses stale pages.
 
 Repository **Settings → Pages → Source** must be **GitHub Actions**.
 Pushes to `main` deploy automatically; the workflow can also be run manually.
-The public URL is https://RyanJarv.github.io/AuroraSwitch/.
+The public URL is https://aurora-switch.ryanjarv.sh/.

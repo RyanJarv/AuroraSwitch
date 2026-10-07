@@ -1,10 +1,10 @@
 # Firmware control reference
 
-Find a firmware by its **Reverse LED color in the selector**, then use its
-section below. Colors after launch belong to that firmware, not AuroraSwitch.
-Knob names always refer to the original Aurora panel, even when their function changes.
-**Shift + control** means hold Shift while pressing the button or turning the knob.
-CCW/CW mean counterclockwise/clockwise.
+Choose a firmware below, or match its **Reverse LED color in the selector**.
+Colors after launch belong to that firmware, not AuroraSwitch.
+
+Knob names refer to the original Aurora panel. **Shift + control** means hold Shift
+while using that control. CCW / CW mean counterclockwise / clockwise.
 
 This covers the current 12-entry development catalog. Entries marked **development**
 are not in the published seven-entry selector. Control descriptions come from
@@ -36,6 +36,8 @@ Power cycle to return. See the [user guide](user_guide.md) for files and install
 Stereo feedback-delay-network reverb. The original panel labels map to the
 FDN overlay as follows:
 
+### Knobs and CV
+
 | Panel knob / matching CV | Function |
 | --- | --- |
 | Warp | **Pitch:** modulation amount; CCW disables modulation |
@@ -45,12 +47,16 @@ FDN overlay as follows:
 | Mix | Dry/wet balance |
 | Atmosphere | **Damp:** damping increases CW |
 
+### Buttons and gates
+
 | Button | Function |
 | --- | --- |
 | Reverse | Reverse incoming audio |
 | Freeze | Hold captured audio |
 | Shift + Reverse | Swap DSP order: reverb last ↔ reverse last |
 | Shift + Freeze | Switch input-level range: 25–150% ↔ 0–150% |
+
+### Notes and sources
 
 CVs follow the remapped controls; the guide specifies ±5 V and a 0.4 V gate
 threshold for Reverse/Freeze. Left input normals to both channels without a
@@ -64,6 +70,8 @@ available with the [official FDN documentation](https://www.qubitelectronix.com/
 
 Stock spectral reverb: pitch manipulation, spectral smearing and stereo delays.
 
+### Knobs and CV
+
 | Panel knob / matching CV | Function |
 | --- | --- |
 | Warp | Pitch shift ±3 octaves; noon is unshifted; CV tracks 1 V/oct |
@@ -72,6 +80,8 @@ Stock spectral reverb: pitch manipulation, spectral smearing and stereo delays.
 | Reflect | Increasing multi-delay time zones, from no extra delay CCW |
 | Mix | Dry ↔ wet |
 | Atmosphere | Spectral/time filtering: underwater below noon, brighter then high-pass above noon |
+
+### Buttons and shifted controls
 
 | Button / shifted control | Function |
 | --- | --- |
@@ -82,6 +92,8 @@ Stock spectral reverb: pitch manipulation, spectral smearing and stereo delays.
 | Shift + Reverse | Cycle FFT size: 4096 blue → 2048 green → 1024 cyan → 512 purple |
 | Shift + Reverse, held 2 seconds | Factory reset UI/options defaults; white confirmation animation |
 | Shift + Freeze | Reload USB settings; successful reload flashes white |
+
+### Lights and settings
 
 Changing FFT size loses the frozen spectrum; freeze again afterward. Larger FFTs
 give smoother pitch/tails with more latency. Warp octave positions show green/blue;
@@ -103,6 +115,8 @@ not a normal performance control.
 
 Multi-line echoes with diffusion/reverb around the repeats.
 
+### Knobs
+
 | Panel knob | Function |
 | --- | --- |
 | Warp | Echo spacing: tight → roughly 1× / 1.33× / 1.67× / 2× |
@@ -111,6 +125,8 @@ Multi-line echoes with diffusion/reverb around the repeats.
 | Reflect | Feedback, up to about 96% normally |
 | Mix | Dry/wet |
 | Atmosphere | Select 1–4 active echo lines |
+
+### Buttons, gates and lights
 
 Freeze latches a held feedback texture with new input removed; its LED is yellow.
 Reverse latches ping-pong/cross-feedback; its LED is green. **Hold Shift** for
@@ -121,6 +137,8 @@ Moving a knob shows a six-LED value meter. Parameter indications: Time blue,
 Reflect red, Mix yellow, Atmosphere green, Blur blue and Warp yellow.
 Try Time 40%, Reflect 50%, Mix 60%, one line, Blur 10%, Warp low.
 
+### Sources
+
 Source: author-supplied **EchoGarden v0.3.1 Parameter Manual**. It does not specify
 CV scaling/ranges; those remain unconfirmed here. Do not infer them from stock.
 
@@ -128,6 +146,8 @@ CV scaling/ranges; those remain unconfirmed here. Do not infer them from stock.
 
 The supplied **Cloudscape v1.6** manual describes this file's controls; the user
 identified it as the only released version. The BIN itself is named CloudscapeX.
+
+### Knobs
 
 | Panel knob | Normal / Filter Delay mode |
 | --- | --- |
@@ -137,6 +157,8 @@ identified it as the only released version. The BIN itself is named CloudscapeX.
 | Reflect | Network feedback / delay feedback |
 | Mix | Dry/wet |
 | Atmosphere | 1–4 lines / LP → BP → HP → notch filter selection |
+
+### Buttons and gates
 
 | Button | Latched effect / active LED |
 | --- | --- |
@@ -151,6 +173,8 @@ Gates temporarily invert the stored Freeze/Reverse states. Parameter LEDs:
 Time blue, Reflect red, Mix yellow, Atmosphere green, Blur cyan, Warp magenta.
 Try Time 30%, Reflect 40%, Mix 55%, Atmosphere 50%, Blur 30%, Warp 25%.
 
+### Sources
+
 Source: author-supplied **Cloudscape v1.6 One Page Parameter Manual**.
 CV scaling/ranges are not specified in that manual.
 
@@ -158,6 +182,8 @@ CV scaling/ranges are not specified in that manual.
 
 An oscillator voice, not a reverb. It produces pitch by aliasing a faster
 oscillator or using ring-modulation sidebands.
+
+### Knobs
 
 | Panel knob | Function |
 | --- | --- |
@@ -167,6 +193,8 @@ oscillator or using ring-modulation sidebands.
 | Reflect | Low-pass resonance |
 | Mix | CW: main output; CCW: blend raw modulator left / raw carrier right |
 | Atmosphere | Low-pass cutoff; minimum tracks target pitch, maximum about 10 kHz |
+
+### Buttons and gates
 
 | Button | Function / LED |
 | --- | --- |
@@ -179,6 +207,8 @@ The later author note adds Reverse/Freeze gate control of waveform/mode.
 Top-row colors indicate pitch/ratio consonance; lower LEDs react to cutoff,
 resonance and gain. Start with Blur above zero to hear it.
 
+### Sources and version caveat
+
 Source: supplied Discord author notes dated February 10–11, 2026. The later note
 changes the original ±1-octave Warp description and adds level control. Their
 exact correspondence to the supplied 0.0.2 BIN has not been independently verified;
@@ -187,6 +217,8 @@ other CV mappings and audio-input use are undocumented, not assumed unused.
 ## Flux Capacitor — Yellow, Orange or Violet
 
 Stereo tape-style processing. Common controls:
+
+### Knobs and CV
 
 | Panel knob / CV | Function |
 | --- | --- |
@@ -197,11 +229,15 @@ Stereo tape-style processing. Common controls:
 | Mix | Dry/wet |
 | Atmosphere | Tone darkening, saturation and feedback in 0.3; unused in 0.1/0.2 |
 
+### Buttons, gates and lights
+
 Freeze toggles a roughly 1.5-second tape stop/start; Freeze gate forces stop while
 high. A stopped wet signal becomes silent. Fully dry Mix temporarily becomes wet
 during stopping/starting. Reverse, its gate and Shift are unused. Active CVs add
 to their knobs and clamp. Arc LEDs indicate pitch: amber up, cyan down; Freeze
 red follows braking, with white flashes at the dry-Mix boundary.
+
+### Version differences
 
 | Version / selector color | Difference |
 | --- | --- |
@@ -217,6 +253,8 @@ and versioned `main.cpp` / `tape_delay.h` at tags 0.1.0 and 0.2.0.
 Clocked stereo VCA: **audio input + clock into Freeze gate + Mix above zero**.
 Freeze button alone does not clock it.
 
+### Knobs and buttons
+
 | Panel control | Function |
 | --- | --- |
 | Time + CV | Pattern selection |
@@ -226,10 +264,14 @@ Freeze button alone does not clock it.
 | Reverse button / gate | Reset pattern |
 | Shift + Freeze | Cycle clock ratio: /8 → /4 → /2 → ×1 → ×2 → ×4 → ×8 |
 
+### Gates and lights
+
 Other knob CVs are unused. While Shift is held, Freeze indicates ratio:
 violet /8, blue /4, light blue /2, white ×1, yellow ×2, orange ×4, red ×8.
 Otherwise Freeze flashes on ticks; Reverse flashes on reset. Arc position and
 brightness show pattern steps/envelope.
+
+### Version differences
 
 **0.1.0 (Mint):** three patterns—dotted-8th groove, slow pulse, triplet feel;
 instant attack with decay. **0.2.0 (White):** twelve patterns and Blur-controlled
@@ -244,6 +286,8 @@ and `main.cpp`, `pattern.h`, `envelope.h` at tags 0.1.0/0.2.0.
 Stereo distortion: low frequencies bypass the distortion through a crossover;
 the high band is driven, filtered and recombined. **Mix is not dry/wet.**
 
+### Knobs and CV
+
 | Panel knob / CV | Function |
 | --- | --- |
 | Warp | Drive, 1–100× |
@@ -254,6 +298,8 @@ the high band is driven, filtered and recombined. **Mix is not dry/wet.**
 | Atmosphere | Post-distortion low-pass, 20 Hz–20 kHz |
 | Shift + Mix | Output trim, 0–2× |
 
+### Buttons and gates
+
 Reverse advances algorithms; Freeze goes back. Shift + Reverse advances banks;
 Shift + Freeze cycles Standard (green), tube (orange), odd/inharmonic (purple).
 Hold Freeze **5 seconds without Shift** to toggle cabinet simulation; three
@@ -262,6 +308,8 @@ octave-up rectification. CVs add to knobs (±5 V).
 
 Reverse shows bank color; Freeze shows mode color. Arc LEDs show algorithm and
 distortion level. Settings autosave after two seconds without changes.
+
+### Algorithm banks
 
 | Bank / running color | Algorithms, in order |
 | --- | --- |
@@ -280,6 +328,8 @@ and [algorithm details](https://github.com/jfriess/Aurora-Firmwares/blob/d5504d7
 Dual wavetable synth: oscillator A left, B right; external audio can modulate or
 be waveshaped. Only the exact development RAM build is admitted, not upstream QSPI.
 
+### Knobs and CV
+
 | Panel control | Normal / hold Shift |
 | --- | --- |
 | Warp + CV | Pitch, V/oct (0 V = C0) / B offset ±24 semitones |
@@ -290,15 +340,21 @@ be waveshaped. Only the exact development RAM build is admitted, not upstream QS
 | Mix knob | Unison detune 0–5% / output trim |
 | Mix CV | VCA: 0 V unity, negative attenuates, positive boosts |
 
+### Buttons and gates
+
 Freeze toggles smooth/glitchy morphing (green/red). Reverse tap selects A/B/both
 (orange/cyan/purple); hold **5 seconds** to copy A's wave positions to B.
 Shift + Freeze toggles external waveshaping; Shift + Reverse toggles clean/degraded
 tone. Reverse gate randomizes both XYZ positions; Freeze gate is reserved.
 
+### Lights and pickup
+
 After changing oscillator selection, knobs use pickup: move to the stored position
 before editing. Warp also uses pickup after Shift. Effect colors: FM green,
 ring mod yellow, bitcrush red, wavefold magenta, overdrive orange.
 Arc pairs show X red, Y green, Z blue; shifted LEDs show subs/effect/trim.
+
+### USB tables
 
 USB tables: root `1.wav`–`8.wav`, each mono 16-bit PCM, 64 consecutive 256-sample
 waves (16,384 samples). Without tables, a generated cube is used. Loading status:

@@ -1,6 +1,6 @@
 # Documentation
 
-[Online firmware reference](https://RyanJarv.github.io/AuroraSwitch/) is a
+[Online firmware reference](https://aurora-switch.ryanjarv.sh/) is a
 mobile-friendly version of the control reference.
 
 - [User guide](user_guide.md): build, USB layout, and firmware selection.

@@ -4,748 +4,85 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="reference-sha256" content="f9b61d672fa4e38d5caa93aeca38a1bbcc749a9af189a5c95b695f59c71c0a5c">
+<meta name="reference-sha256" content="c3b9da1d4832c8d19c8a3a225f14a803bbd876cef56a5c8b82698e24cfbe72e8">
+<meta name="renderer-sha256" content="793d80dce3f7579c378c83aab9725cae9fdadb50a47ff9555b2c8d8b622dd72b">
 <meta name="description" content="AuroraSwitch firmware colors, knobs, buttons, gates and modes.">
-<title>AuroraSwitch · Firmware reference</title>
-<style>
-:root { color-scheme: light dark; --bg:#fafafa; --fg:#222; --line:#d1d5db; --accent:#175bb5; --cell:#f0f2f5; }
-@media (prefers-color-scheme: dark) { :root { --bg:#171a20; --fg:#e6e9ef; --line:#454b56; --accent:#91baff; --cell:#222731; } }
-* { box-sizing:border-box; }
-html { scroll-padding-top:4rem; }
-body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.6 system-ui,sans-serif; }
-nav { position:sticky; top:0; background:var(--bg); border-bottom:1px solid var(--line); padding:.65rem max(1rem,calc((100vw - 960px)/2)); display:flex; gap:1.2rem; flex-wrap:wrap; z-index:1; }
-main { max-width:960px; margin:auto; padding:1rem 1rem 4rem; }
-a { color:var(--accent); text-underline-offset:.15em; }
-h1 { line-height:1.2; }
-h2 { margin-top:2.5rem; border-top:1px solid var(--line); padding-top:1rem; line-height:1.3; }
-markdown-accessiblity-table { display:block; overflow-x:auto; }
-table { width:100%; border-collapse:collapse; font-size:.95rem; }
-th,td { text-align:left; vertical-align:top; padding:.55rem .7rem; border:1px solid var(--line); }
-th { background:var(--cell); }
-td:first-child { min-width:8rem; }
-code { background:var(--cell); padding:.1rem .25rem; border-radius:3px; overflow-wrap:anywhere; }
-.swatch { display:inline-block; width:.9rem; height:.9rem; border:1px solid #777; border-radius:50%; margin-right:.45rem; }
-@media print { nav { display:none; } body { font-size:11pt; } h2 { break-after:avoid; } tr { break-inside:avoid; } }
-</style>
+<title>Firmware reference · AuroraSwitch</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<nav aria-label="Reference navigation">
-<a href="#color-lookup">Colors</a>
-<a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/user_guide.md">Setup</a>
+<a class="skip-link" href="#main">Skip to controls</a>
+<header class="site-header">
+<a class="brand" href="index.html">AuroraSwitch <span>Firmware reference</span></a>
+<nav aria-label="Site navigation">
+<a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/user_guide.md">Setup guide</a>
 <a href="https://github.com/RyanJarv/AuroraSwitch">GitHub</a>
 </nav>
-<main>
-<h1 id="firmware-control-reference">Firmware control reference</h1>
-<p>Find a firmware by its <strong>Reverse LED color in the selector</strong>, then use its<br>
-section below. Colors after launch belong to that firmware, not AuroraSwitch.<br>
-Knob names always refer to the original Aurora panel, even when their function changes.<br>
-<strong>Shift + control</strong> means hold Shift while pressing the button or turning the knob.<br>
-CCW/CW mean counterclockwise/clockwise.</p>
-<p>This covers the current 12-entry development catalog. Entries marked <strong>development</strong><br>
-are not in the published seven-entry selector. Control descriptions come from<br>
-author manuals/notes or versioned source; they are not a claim that every function<br>
-has been physically tested. Only exact supported files appear in the menu.</p>
-<h2 id="color-lookup">Color lookup</h2>
-<markdown-accessiblity-table><table role="table">
-<thead>
-<tr>
-<th>Selector color</th>
-<th>Firmware</th>
-<th>What it does</th>
-<th>Availability</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><span class="swatch" style="background:#3787ff" aria-hidden="true"></span>Blue</td>
-<td><a href="#fdn-122--blue">FDN 1.2.2</a></td>
-<td>Conventional reverb</td>
-<td>Release</td>
-</tr>
-<tr>
-<td><span class="swatch" style="background:#35bf58" aria-hidden="true"></span>Green</td>
-<td><a href="#aurora-144--green">Aurora 1.4.4</a></td>
-<td>Spectral reverb</td>
-<td>Release</td>
-</tr>
-<tr>
-<td><span class="swatch" style="background:#32c9ce" aria-hidden="true"></span>Cyan</td>
-<td><a href="#echogarden-031--cyan">EchoGarden 0.3.1</a></td>
-<td>Multi-line echo and ambience</td>
-<td>Release</td>
-</tr>
-<tr>
-<td><span class="swatch" style="background:#d855d5" aria-hidden="true"></span>Magenta</td>
-<td><a href="#cloudscapex--magenta">CloudscapeX</a></td>
-<td>Modulated delay, diffusion and filter delay</td>
-<td>Release</td>
-</tr>
-<tr>
-<td><span class="swatch" style="background:#dc9a25" aria-hidden="true"></span>Amber</td>
-<td><a href="#the-oscillator-is-a-lie-002--amber">The Oscillator Is a Lie 0.0.2</a></td>
-<td>Aliasing/ring-mod oscillator</td>
-<td>Release</td>
-</tr>
-<tr>
-<td><span class="swatch" style="background:#ead342" aria-hidden="true"></span>Yellow</td>
-<td><a href="#flux-capacitor--yellow-orange-or-violet">Flux Capacitor 0.3.0</a></td>
-<td>Tape pitch, delay and coloration</td>
-<td>Release</td>
-</tr>
-<tr>
-<td><span class="swatch" style="background:#fff" aria-hidden="true"></span>White</td>
-<td><a href="#morse--white-or-mint">Morse 0.2.0</a></td>
-<td>Clocked rhythmic VCA</td>
-<td>Release</td>
-</tr>
-<tr>
-<td><span class="swatch" style="background:#ec8734" aria-hidden="true"></span>Orange</td>
-<td><a href="#flux-capacitor--yellow-orange-or-violet">Flux Capacitor 0.1.0</a></td>
-<td>Tape pitch, stop, wow/flutter</td>
-<td>Development</td>
-</tr>
-<tr>
-<td><span class="swatch" style="background:#a273e7" aria-hidden="true"></span>Violet</td>
-<td><a href="#flux-capacitor--yellow-orange-or-violet">Flux Capacitor 0.2.0</a></td>
-<td>Adds tape delay</td>
-<td>Development</td>
-</tr>
-<tr>
-<td><span class="swatch" style="background:#79dcaa" aria-hidden="true"></span>Mint</td>
-<td><a href="#morse--white-or-mint">Morse 0.1.0</a></td>
-<td>Three-pattern rhythmic VCA</td>
-<td>Development</td>
-</tr>
-<tr>
-<td><span class="swatch" style="background:#ec9292" aria-hidden="true"></span>Pale red</td>
-<td><a href="#tempest-100--pale-red">Tempest 1.0.0</a></td>
-<td>Multi-bank distortion</td>
-<td>Development</td>
-</tr>
-<tr>
-<td><span class="swatch" style="background:#3ea7dc" aria-hidden="true"></span>Azure</td>
-<td><a href="#fatamorgana-ram-experiment--azure">FataMorgana RAM experiment</a></td>
-<td>Dual wavetable synthesizer</td>
-<td>Development</td>
-</tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<p>Reverse selects → Freeze loads/verifies → <strong>wait for Freeze green</strong> → Shift launches.<br>
-Power cycle to return. See the <a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/user_guide.md">user guide</a> for files and installation.</p>
-<h2 id="fdn-122--blue">FDN 1.2.2 — Blue</h2>
-<p>Stereo feedback-delay-network reverb. The original panel labels map to the<br>
-FDN overlay as follows:</p>
-<markdown-accessiblity-table><table role="table">
-<thead>
-<tr>
-<th>Panel knob / matching CV</th>
-<th>Function</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Warp</td>
-<td><strong>Pitch:</strong> modulation amount; CCW disables modulation</td>
-</tr>
-<tr>
-<td>Time</td>
-<td>Decay; short/comb-like CCW, near-infinite CW</td>
-</tr>
-<tr>
-<td>Blur</td>
-<td><strong>Input Level:</strong> 25–150% by default</td>
-</tr>
-<tr>
-<td>Reflect</td>
-<td><strong>Highpass:</strong> wet-signal high-pass filtering, increasing CW</td>
-</tr>
-<tr>
-<td>Mix</td>
-<td>Dry/wet balance</td>
-</tr>
-<tr>
-<td>Atmosphere</td>
-<td><strong>Damp:</strong> damping increases CW</td>
-</tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<markdown-accessiblity-table><table role="table">
-<thead>
-<tr>
-<th>Button</th>
-<th>Function</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Reverse</td>
-<td>Reverse incoming audio</td>
-</tr>
-<tr>
-<td>Freeze</td>
-<td>Hold captured audio</td>
-</tr>
-<tr>
-<td>Shift + Reverse</td>
-<td>Swap DSP order: reverb last ↔ reverse last</td>
-</tr>
-<tr>
-<td>Shift + Freeze</td>
-<td>Switch input-level range: 25–150% ↔ 0–150%</td>
-</tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<p>CVs follow the remapped controls; the guide specifies ±5 V and a 0.4 V gate<br>
-threshold for Reverse/Freeze. Left input normals to both channels without a<br>
-right input cable. Running LEDs use purple/gold, unlike the blue selector color.<br>
-Start with moderate Time and raise it gradually: high settings feed back.</p>
-<p>Source: Qu-Bit's <strong>FDN getting started</strong> guide, including its front-panel overlay,<br>
-available with the <a href="https://www.qubitelectronix.com/alternate-firmware/p/fdn-verb" rel="nofollow">official FDN documentation</a>.</p>
-<h2 id="aurora-144--green">Aurora 1.4.4 — Green</h2>
-<p>Stock spectral reverb: pitch manipulation, spectral smearing and stereo delays.</p>
-<markdown-accessiblity-table><table role="table">
-<thead>
-<tr>
-<th>Panel knob / matching CV</th>
-<th>Function</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Warp</td>
-<td>Pitch shift ±3 octaves; noon is unshifted; CV tracks 1 V/oct</td>
-</tr>
-<tr>
-<td>Time</td>
-<td>Amplitude-domain smearing / spectral tail</td>
-</tr>
-<tr>
-<td>Blur</td>
-<td>Frequency-domain smearing</td>
-</tr>
-<tr>
-<td>Reflect</td>
-<td>Increasing multi-delay time zones, from no extra delay CCW</td>
-</tr>
-<tr>
-<td>Mix</td>
-<td>Dry ↔ wet</td>
-</tr>
-<tr>
-<td>Atmosphere</td>
-<td>Spectral/time filtering: underwater below noon, brighter then high-pass above noon</td>
-</tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<markdown-accessiblity-table><table role="table">
-<thead>
-<tr>
-<th>Button / shifted control</th>
-<th>Function</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Reverse</td>
-<td>Reverse audio; active LED green; state retained</td>
-</tr>
-<tr>
-<td>Freeze</td>
-<td>Sustain the current spectrum; Warp/Time/Blur/Atmosphere/Mix still work</td>
-</tr>
-<tr>
-<td>Shift + Mix</td>
-<td>Input gain, 0.5–4×; blue indicates default 1×</td>
-</tr>
-<tr>
-<td>Shift + Reflect</td>
-<td>Stereo enhancement, 0–100%; blue indicates default 75%</td>
-</tr>
-<tr>
-<td>Shift + Reverse</td>
-<td>Cycle FFT size: 4096 blue → 2048 green → 1024 cyan → 512 purple</td>
-</tr>
-<tr>
-<td>Shift + Reverse, held 2 seconds</td>
-<td>Factory reset UI/options defaults; white confirmation animation</td>
-</tr>
-<tr>
-<td>Shift + Freeze</td>
-<td>Reload USB settings; successful reload flashes white</td>
-</tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<p>Changing FFT size loses the frozen spectrum; freeze again afterward. Larger FFTs<br>
-give smoother pitch/tails with more latency. Warp octave positions show green/blue;<br>
-off-octave positions show green/purple. CV ranges are ±5 V; gates use 0.4 V threshold.</p>
-<p>USB <code class="notranslate">options.txt</code> controls DSP order, Freeze forcing full-wet, dry latency<br>
-compensation, always-on blur, Warp quantization and octave deadzones. Defaults:<br>
-<code class="notranslate">DSP_ORDER=1</code>, <code class="notranslate">FREEZE_WET=0</code>, <code class="notranslate">LATENCY_COMP=0</code>, <code class="notranslate">ALWAYS_BLUR=1</code>,<br>
-<code class="notranslate">QUANTIZE_WARP=1</code>, <code class="notranslate">WARP_DEADZONES=1</code>. Quantization also accepts <code class="notranslate">2</code> for knob + CV.<br>
-Keep existing settings files; firmware updates happen at boot, not on reload.</p>
-<p>Source: Qu-Bit's <strong>Aurora manual v1.7.4</strong>, which explicitly covers firmware 1.4.4<br>
-(supplied PDF filename <code class="notranslate">Aurora_v1.7-1.pdf</code>). See the<br>
-<a href="https://www.qubitelectronix.com/alternate-firmware/p/aurora-spectral-reverb" rel="nofollow">official Aurora page</a><br>
-for the full manual, options and calibration procedure. Calibration is maintenance,<br>
-not a normal performance control.</p>
-<h2 id="echogarden-031--cyan">EchoGarden 0.3.1 — Cyan</h2>
-<p>Multi-line echoes with diffusion/reverb around the repeats.</p>
-<markdown-accessiblity-table><table role="table">
-<thead>
-<tr>
-<th>Panel knob</th>
-<th>Function</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Warp</td>
-<td>Echo spacing: tight → roughly 1× / 1.33× / 1.67× / 2×</td>
-</tr>
-<tr>
-<td>Time</td>
-<td>Base echo time, about 15 ms–1.8 s</td>
-</tr>
-<tr>
-<td>Blur</td>
-<td>Reverb/diffusion depth</td>
-</tr>
-<tr>
-<td>Reflect</td>
-<td>Feedback, up to about 96% normally</td>
-</tr>
-<tr>
-<td>Mix</td>
-<td>Dry/wet</td>
-</tr>
-<tr>
-<td>Atmosphere</td>
-<td>Select 1–4 active echo lines</td>
-</tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<p>Freeze latches a held feedback texture with new input removed; its LED is yellow.<br>
-Reverse latches ping-pong/cross-feedback; its LED is green. <strong>Hold Shift</strong> for<br>
-Bloom: extra reverb send and a longer tail while held. Each gate temporarily<br>
-inverts its corresponding stored button state, rather than simply enabling it.</p>
-<p>Moving a knob shows a six-LED value meter. Parameter indications: Time blue,<br>
-Reflect red, Mix yellow, Atmosphere green, Blur blue and Warp yellow.<br>
-Try Time 40%, Reflect 50%, Mix 60%, one line, Blur 10%, Warp low.</p>
-<p>Source: author-supplied <strong>EchoGarden v0.3.1 Parameter Manual</strong>. It does not specify<br>
-CV scaling/ranges; those remain unconfirmed here. Do not infer them from stock.</p>
-<h2 id="cloudscapex--magenta">CloudscapeX — Magenta</h2>
-<p>The supplied <strong>Cloudscape v1.6</strong> manual describes this file's controls; the user<br>
-identified it as the only released version. The BIN itself is named CloudscapeX.</p>
-<markdown-accessiblity-table><table role="table">
-<thead>
-<tr>
-<th>Panel knob</th>
-<th>Normal / Filter Delay mode</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Warp</td>
-<td>Timing spread and modulation / resonance plus cutoff motion</td>
-</tr>
-<tr>
-<td>Time</td>
-<td>Delay about 10 ms–1.05 s / about 18–780 ms</td>
-</tr>
-<tr>
-<td>Blur</td>
-<td>Diffusion/reverb / filter cutoff about 85 Hz–18 kHz</td>
-</tr>
-<tr>
-<td>Reflect</td>
-<td>Network feedback / delay feedback</td>
-</tr>
-<tr>
-<td>Mix</td>
-<td>Dry/wet</td>
-</tr>
-<tr>
-<td>Atmosphere</td>
-<td>1–4 lines / LP → BP → HP → notch filter selection</td>
-</tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<markdown-accessiblity-table><table role="table">
-<thead>
-<tr>
-<th>Button</th>
-<th>Latched effect / active LED</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Freeze</td>
-<td>Hold cloud / white</td>
-</tr>
-<tr>
-<td>Reverse</td>
-<td>Rotate or ping-pong routing / cyan</td>
-</tr>
-<tr>
-<td>Shift + Freeze</td>
-<td>Lush Reverb / blue</td>
-</tr>
-<tr>
-<td>Shift + Reverse</td>
-<td>Filter Delay / yellow</td>
-</tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<p>All four effects latch independently. Freeze alternates white/blue when hold and<br>
-Lush are both active; Reverse alternates cyan/yellow for rotation plus Filter Delay.<br>
-Gates temporarily invert the stored Freeze/Reverse states. Parameter LEDs:<br>
-Time blue, Reflect red, Mix yellow, Atmosphere green, Blur cyan, Warp magenta.<br>
-Try Time 30%, Reflect 40%, Mix 55%, Atmosphere 50%, Blur 30%, Warp 25%.</p>
-<p>Source: author-supplied <strong>Cloudscape v1.6 One Page Parameter Manual</strong>.<br>
-CV scaling/ranges are not specified in that manual.</p>
-<h2 id="the-oscillator-is-a-lie-002--amber">The Oscillator Is a Lie 0.0.2 — Amber</h2>
-<p>An oscillator voice, not a reverb. It produces pitch by aliasing a faster<br>
-oscillator or using ring-modulation sidebands.</p>
-<markdown-accessiblity-table><table role="table">
-<thead>
-<tr>
-<th>Panel knob</th>
-<th>Function</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Warp</td>
-<td>Pitch offset; latest supplied note says ±2 octaves; CV is V/oct</td>
-</tr>
-<tr>
-<td>Time</td>
-<td>Carrier-to-target ratio, 1–8×</td>
-</tr>
-<tr>
-<td>Blur</td>
-<td>Output level without clipping; clipping drive when enabled</td>
-</tr>
-<tr>
-<td>Reflect</td>
-<td>Low-pass resonance</td>
-</tr>
-<tr>
-<td>Mix</td>
-<td>CW: main output; CCW: blend raw modulator left / raw carrier right</td>
-</tr>
-<tr>
-<td>Atmosphere</td>
-<td>Low-pass cutoff; minimum tracks target pitch, maximum about 10 kHz</td>
-</tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<markdown-accessiblity-table><table role="table">
-<thead>
-<tr>
-<th>Button</th>
-<th>Function / LED</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Reverse</td>
-<td>Carrier waveform: sine blue → triangle magenta → saw yellow → square cyan</td>
-</tr>
-<tr>
-<td>Freeze</td>
-<td>Aliasing green ↔ ring-modulation blue</td>
-</tr>
-<tr>
-<td>Shift + Reverse</td>
-<td>Clipping: off → before filter white → after filter red</td>
-</tr>
-<tr>
-<td>Shift + Freeze</td>
-<td>Mix routing: normal off → main-only left white → main-only right red</td>
-</tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<p>The later author note adds Reverse/Freeze gate control of waveform/mode.<br>
-Top-row colors indicate pitch/ratio consonance; lower LEDs react to cutoff,<br>
-resonance and gain. Start with Blur above zero to hear it.</p>
-<p>Source: supplied Discord author notes dated February 10–11, 2026. The later note<br>
-changes the original ±1-octave Warp description and adds level control. Their<br>
-exact correspondence to the supplied 0.0.2 BIN has not been independently verified;<br>
-other CV mappings and audio-input use are undocumented, not assumed unused.</p>
-<h2 id="flux-capacitor--yellow-orange-or-violet">Flux Capacitor — Yellow, Orange or Violet</h2>
-<p>Stereo tape-style processing. Common controls:</p>
-<markdown-accessiblity-table><table role="table">
-<thead>
-<tr>
-<th>Panel knob / CV</th>
-<th>Function</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Warp</td>
-<td>Smooth pitch ±12 semitones; CV 1 V/oct</td>
-</tr>
-<tr>
-<td>Time</td>
-<td>Delay 1 ms–2 s in 0.2/0.3; unused in 0.1</td>
-</tr>
-<tr>
-<td>Blur</td>
-<td>Flutter depth</td>
-</tr>
-<tr>
-<td>Reflect</td>
-<td>Wow rate, 0.1–2 Hz</td>
-</tr>
-<tr>
-<td>Mix</td>
-<td>Dry/wet</td>
-</tr>
-<tr>
-<td>Atmosphere</td>
-<td>Tone darkening, saturation and feedback in 0.3; unused in 0.1/0.2</td>
-</tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<p>Freeze toggles a roughly 1.5-second tape stop/start; Freeze gate forces stop while<br>
-high. A stopped wet signal becomes silent. Fully dry Mix temporarily becomes wet<br>
-during stopping/starting. Reverse, its gate and Shift are unused. Active CVs add<br>
-to their knobs and clamp. Arc LEDs indicate pitch: amber up, cyan down; Freeze<br>
-red follows braking, with white flashes at the dry-Mix boundary.</p>
-<markdown-accessiblity-table><table role="table">
-<thead>
-<tr>
-<th>Version / selector color</th>
-<th>Difference</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>0.1.0 / Orange</td>
-<td>Pitch, braking, wow/flutter only</td>
-</tr>
-<tr>
-<td>0.2.0 / Violet</td>
-<td>Adds delay with fixed feedback</td>
-</tr>
-<tr>
-<td>0.3.0 / Yellow</td>
-<td>Adds Atmosphere coloration/feedback</td>
-</tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<p>Sources: <a href="https://github.com/DaveParr/aurora-flux-capacitor/blob/v0.3.0/README.md">0.3.0 guide</a><br>
-and versioned <code class="notranslate">main.cpp</code> / <code class="notranslate">tape_delay.h</code> at tags 0.1.0 and 0.2.0.</p>
-<h2 id="morse--white-or-mint">Morse — White or Mint</h2>
-<p>Clocked stereo VCA: <strong>audio input + clock into Freeze gate + Mix above zero</strong>.<br>
-Freeze button alone does not clock it.</p>
-<markdown-accessiblity-table><table role="table">
-<thead>
-<tr>
-<th>Panel control</th>
-<th>Function</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Time + CV</td>
-<td>Pattern selection</td>
-</tr>
-<tr>
-<td>Mix</td>
-<td>Output level</td>
-</tr>
-<tr>
-<td>Blur</td>
-<td>Envelope attack/decay balance in 0.2; unused in 0.1</td>
-</tr>
-<tr>
-<td>Warp, Reflect, Atmosphere</td>
-<td>Unused</td>
-</tr>
-<tr>
-<td>Reverse button / gate</td>
-<td>Reset pattern</td>
-</tr>
-<tr>
-<td>Shift + Freeze</td>
-<td>Cycle clock ratio: /8 → /4 → /2 → ×1 → ×2 → ×4 → ×8</td>
-</tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<p>Other knob CVs are unused. While Shift is held, Freeze indicates ratio:<br>
-violet /8, blue /4, light blue /2, white ×1, yellow ×2, orange ×4, red ×8.<br>
-Otherwise Freeze flashes on ticks; Reverse flashes on reset. Arc position and<br>
-brightness show pattern steps/envelope.</p>
-<p><strong>0.1.0 (Mint):</strong> three patterns—dotted-8th groove, slow pulse, triplet feel;<br>
-instant attack with decay. <strong>0.2.0 (White):</strong> twelve patterns and Blur-controlled<br>
-attack/decay. Pattern changes apply at a step boundary or reset in linked source;<br>
-the README's “next Reset” wording is incomplete.</p>
-<p>Sources: <a href="https://github.com/DaveParr/Aurora-Morse/blob/v0.2.0/README.md">0.2.0 guide</a><br>
-and <code class="notranslate">main.cpp</code>, <code class="notranslate">pattern.h</code>, <code class="notranslate">envelope.h</code> at tags 0.1.0/0.2.0.</p>
-<h2 id="tempest-100--pale-red">Tempest 1.0.0 — Pale red</h2>
-<p>Stereo distortion: low frequencies bypass the distortion through a crossover;<br>
-the high band is driven, filtered and recombined. <strong>Mix is not dry/wet.</strong></p>
-<markdown-accessiblity-table><table role="table">
-<thead>
-<tr>
-<th>Panel knob / CV</th>
-<th>Function</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Warp</td>
-<td>Drive, 1–100×</td>
-</tr>
-<tr>
-<td>Time</td>
-<td>Pre-distortion high-pass, 20 Hz–2 kHz</td>
-</tr>
-<tr>
-<td>Blur</td>
-<td>Algorithm variation</td>
-</tr>
-<tr>
-<td>Reflect</td>
-<td>Bipolar bias; center deadzone; reduced range in Standard mode</td>
-</tr>
-<tr>
-<td>Mix</td>
-<td>Crossover, 20–500 Hz</td>
-</tr>
-<tr>
-<td>Atmosphere</td>
-<td>Post-distortion low-pass, 20 Hz–20 kHz</td>
-</tr>
-<tr>
-<td>Shift + Mix</td>
-<td>Output trim, 0–2×</td>
-</tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<p>Reverse advances algorithms; Freeze goes back. Shift + Reverse advances banks;<br>
-Shift + Freeze cycles Standard (green), tube (orange), odd/inharmonic (purple).<br>
-Hold Freeze <strong>5 seconds without Shift</strong> to toggle cabinet simulation; three<br>
-white blinks confirm. Freeze gate holds an input sample; Reverse gate adds<br>
-octave-up rectification. CVs add to knobs (±5 V).</p>
-<p>Reverse shows bank color; Freeze shows mode color. Arc LEDs show algorithm and<br>
-distortion level. Settings autosave after two seconds without changes.</p>
-<markdown-accessiblity-table><table role="table">
-<thead>
-<tr>
-<th>Bank / running color</th>
-<th>Algorithms, in order</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Analog / Orange</td>
-<td>SftClp, HardClp, StrgrC, Valve, Antipol, Disto</td>
-</tr>
-<tr>
-<td>Fold / Purple</td>
-<td>WavFld, Crest, Sstrgi, Fezz, Fuss, Cross</td>
-</tr>
-<tr>
-<td>Geometric / Yellow</td>
-<td>VariWS, SmartE, Vshpe, Square, Cubic, Anti+</td>
-</tr>
-<tr>
-<td>LoFi / Cyan</td>
-<td>Bitcrsh, DwnSpl, Lowfi, Lowrfi, ChastB, SuspB</td>
-</tr>
-<tr>
-<td>Chaos / Red</td>
-<td>Fractl, Zippy, Bounce, NoizE, BrwnNz, Attrac</td>
-</tr>
-<tr>
-<td>Temporal / Green</td>
-<td>Filter, TimeFr, Vinyl, Clicks, Jelly, Accum</td>
-</tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<p>Sources: <a href="https://github.com/jfriess/Aurora-Firmwares/blob/d5504d76370c370fdb40adcf755d8a4b9c07ee6b/Tempest/README.md">version-pinned controls</a><br>
-and <a href="https://github.com/jfriess/Aurora-Firmwares/blob/d5504d76370c370fdb40adcf755d8a4b9c07ee6b/Tempest/docs/algorithms.md">algorithm details</a>.</p>
-<h2 id="fatamorgana-ram-experiment--azure">FataMorgana RAM experiment — Azure</h2>
-<p>Dual wavetable synth: oscillator A left, B right; external audio can modulate or<br>
-be waveshaped. Only the exact development RAM build is admitted, not upstream QSPI.</p>
-<markdown-accessiblity-table><table role="table">
-<thead>
-<tr>
-<th>Panel control</th>
-<th>Normal / hold Shift</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Warp + CV</td>
-<td>Pitch, V/oct (0 V = C0) / B offset ±24 semitones</td>
-</tr>
-<tr>
-<td>Time + CV</td>
-<td>X wave position / sub A level</td>
-</tr>
-<tr>
-<td>Reflect + CV</td>
-<td>Y wave position / sub B level</td>
-</tr>
-<tr>
-<td>Atmosphere + CV</td>
-<td>Z wave position / no separate shifted function documented</td>
-</tr>
-<tr>
-<td>Blur + CV</td>
-<td>Effect depth / choose FM, ring mod, bitcrush, wavefold, overdrive</td>
-</tr>
-<tr>
-<td>Mix knob</td>
-<td>Unison detune 0–5% / output trim</td>
-</tr>
-<tr>
-<td>Mix CV</td>
-<td>VCA: 0 V unity, negative attenuates, positive boosts</td>
-</tr>
-</tbody>
-</table></markdown-accessiblity-table>
-<p>Freeze toggles smooth/glitchy morphing (green/red). Reverse tap selects A/B/both<br>
-(orange/cyan/purple); hold <strong>5 seconds</strong> to copy A's wave positions to B.<br>
-Shift + Freeze toggles external waveshaping; Shift + Reverse toggles clean/degraded<br>
-tone. Reverse gate randomizes both XYZ positions; Freeze gate is reserved.</p>
-<p>After changing oscillator selection, knobs use pickup: move to the stored position<br>
-before editing. Warp also uses pickup after Shift. Effect colors: FM green,<br>
-ring mod yellow, bitcrush red, wavefold magenta, overdrive orange.<br>
-Arc pairs show X red, Y green, Z blue; shifted LEDs show subs/effect/trim.</p>
-<p>USB tables: root <code class="notranslate">1.wav</code>–<code class="notranslate">8.wav</code>, each mono 16-bit PCM, 64 consecutive 256-sample<br>
-waves (16,384 samples). Without tables, a generated cube is used. Loading status:<br>
-yellow busy, green success, red missing, orange invalid WAV, magenta compressed,<br>
-blue stereo, white wrong depth, cyan too short. <strong>USB table loading remains<br>
-unverified for this RAM build.</strong> Tempest/Fata share a settings sector with different<br>
-formats; switching can change retained settings.</p>
-<p>Source: <a href="https://github.com/jfriess/Aurora-Firmwares/blob/d5504d76370c370fdb40adcf755d8a4b9c07ee6b/FataMorgana/README.md">pinned FataMorgana guide</a><br>
-and <code class="notranslate">src/FataMorgana.cpp</code> at the same commit.</p>
-<h2 id="outside-the-selector-catalog">Outside the selector catalog</h2>
-<p>These have <strong>no selector color</strong> and cannot be launched by the current selector.</p>
-<ul>
-<li><strong>Dirt Verb 1.1:</strong> Warp decay/feedback, Time overdrive, Blur damping, Reflect<br>
-chorus rate, Mix dry/wet, Atmosphere pitch-shifter mix. Reverse toggles chorus;<br>
-Freeze toggles pitch shifting. Author notes describe gold at infinite feedback,<br>
-white when overdrive bypasses and red as drive increases. Shift/CV/gate behavior<br>
-is not documented in the supplied notes. Its QSPI execution requires separate<br>
-support; do not rename it to a supported file.</li>
-<li><strong>Aurora HP-filter variant:</strong> stock behavior plus Shift + Atmosphere dry-input<br>
-high-pass and Shift + Blur wet level. Its supplied BIN exceeds staging capacity.</li>
-<li><strong>HSO, tape-delay WIP and Phazr:</strong> mentioned in community notes, but not onboarded;<br>
-controls and compatibility are not covered here.</li>
+</header>
+<div class="layout">
+<aside class="sidebar"><nav aria-label="Firmware directory"><a class="index-link" href="index.html">All firmware &amp; colors</a>
+<h2>Release firmware</h2><ul>
+<li><a href="fdn-122.html"><span>FDN 1.2.2</span><small>Blue</small></a></li>
+<li><a href="aurora-144.html"><span>Aurora 1.4.4</span><small>Green</small></a></li>
+<li><a href="echogarden-031.html"><span>EchoGarden 0.3.1</span><small>Cyan</small></a></li>
+<li><a href="cloudscapex.html"><span>CloudscapeX</span><small>Magenta</small></a></li>
+<li><a href="the-oscillator-is-a-lie-002.html"><span>The Oscillator Is a Lie 0.0.2</span><small>Amber</small></a></li>
+<li><a href="flux-capacitor.html"><span>Flux Capacitor</span><small>Yellow, Orange (dev), Violet (dev)</small></a></li>
+<li><a href="morse.html"><span>Morse</span><small>White, Mint (dev)</small></a></li>
 </ul>
-<h2 id="reference-maintenance">Reference maintenance</h2>
+<h2>Development additions</h2><ul>
+<li><a href="tempest-100.html"><span>Tempest 1.0.0</span><small>Pale red (dev)</small></a></li>
+<li><a href="fatamorgana-ram-experiment.html"><span>FataMorgana RAM experiment</span><small>Azure (dev)</small></a></li>
+</ul>
+<a class="index-link" href="outside-the-selector-catalog.html">Other firmware / limitations</a></nav></aside>
+<div class="content">
+<details class="mobile-menu"><summary>Choose firmware / color</summary>
+<nav aria-label="Mobile firmware directory"><a class="index-link" href="index.html">All firmware &amp; colors</a>
+<h2>Release firmware</h2><ul>
+<li><a href="fdn-122.html"><span>FDN 1.2.2</span><small>Blue</small></a></li>
+<li><a href="aurora-144.html"><span>Aurora 1.4.4</span><small>Green</small></a></li>
+<li><a href="echogarden-031.html"><span>EchoGarden 0.3.1</span><small>Cyan</small></a></li>
+<li><a href="cloudscapex.html"><span>CloudscapeX</span><small>Magenta</small></a></li>
+<li><a href="the-oscillator-is-a-lie-002.html"><span>The Oscillator Is a Lie 0.0.2</span><small>Amber</small></a></li>
+<li><a href="flux-capacitor.html"><span>Flux Capacitor</span><small>Yellow, Orange (dev), Violet (dev)</small></a></li>
+<li><a href="morse.html"><span>Morse</span><small>White, Mint (dev)</small></a></li>
+</ul>
+<h2>Development additions</h2><ul>
+<li><a href="tempest-100.html"><span>Tempest 1.0.0</span><small>Pale red (dev)</small></a></li>
+<li><a href="fatamorgana-ram-experiment.html"><span>FataMorgana RAM experiment</span><small>Azure (dev)</small></a></li>
+</ul>
+<a class="index-link" href="outside-the-selector-catalog.html">Other firmware / limitations</a></nav></details>
+<main id="main">
+<h1>Find your firmware</h1>
+<p class="lead">Choose by name or match the selector’s Reverse LED color.</p>
+<p class="launch-line">Reverse selects → Freeze verifies → wait for <strong>Freeze green</strong> → Shift launches.</p>
+<section aria-labelledby="color-lookup"><h2 id="color-lookup">Release firmware</h2><p>Available in the published seven-entry selector.</p><div class="cards"><a class="firmware-card" href="fdn-122.html" id="fdn-122--blue"><span class="color-label"><span class="swatch" style="background:#3787ff" aria-hidden="true"></span>Blue</span><h3>FDN 1.2.2</h3><p>Conventional reverb</p><span class="card-action">View controls →</span></a>
+<a class="firmware-card" href="aurora-144.html" id="aurora-144--green"><span class="color-label"><span class="swatch" style="background:#35bf58" aria-hidden="true"></span>Green</span><h3>Aurora 1.4.4</h3><p>Spectral reverb</p><span class="card-action">View controls →</span></a>
+<a class="firmware-card" href="echogarden-031.html" id="echogarden-031--cyan"><span class="color-label"><span class="swatch" style="background:#32c9ce" aria-hidden="true"></span>Cyan</span><h3>EchoGarden 0.3.1</h3><p>Multi-line echo and ambience</p><span class="card-action">View controls →</span></a>
+<a class="firmware-card" href="cloudscapex.html" id="cloudscapex--magenta"><span class="color-label"><span class="swatch" style="background:#d855d5" aria-hidden="true"></span>Magenta</span><h3>CloudscapeX</h3><p>Modulated delay, diffusion and filter delay</p><span class="card-action">View controls →</span></a>
+<a class="firmware-card" href="the-oscillator-is-a-lie-002.html" id="the-oscillator-is-a-lie-002--amber"><span class="color-label"><span class="swatch" style="background:#dc9a25" aria-hidden="true"></span>Amber</span><h3>The Oscillator Is a Lie 0.0.2</h3><p>Aliasing/ring-mod oscillator</p><span class="card-action">View controls →</span></a>
+<a class="firmware-card" href="flux-capacitor.html" id="flux-capacitor--yellow-orange-or-violet"><span class="color-label"><span class="swatch" style="background:#ead342" aria-hidden="true"></span>Yellow</span><h3>Flux Capacitor 0.3.0</h3><p>Tape pitch, delay and coloration</p><span class="card-action">View controls →</span></a>
+<a class="firmware-card" href="morse.html" id="morse--white-or-mint"><span class="color-label"><span class="swatch" style="background:#fff" aria-hidden="true"></span>White</span><h3>Morse 0.2.0</h3><p>Clocked rhythmic VCA</p><span class="card-action">View controls →</span></a>
+</div></section>
+<section aria-labelledby="development-builds"><h2 id="development-builds">Development builds</h2><p>Not in the published selector. Older versions share their family’s control page.</p><div class="cards"><a class="firmware-card" href="flux-capacitor.html"><span class="color-label"><span class="swatch" style="background:#ec8734" aria-hidden="true"></span>Orange</span><h3>Flux Capacitor 0.1.0</h3><p>Tape pitch, stop, wow/flutter</p><span class="card-action">View controls →</span></a>
+<a class="firmware-card" href="flux-capacitor.html"><span class="color-label"><span class="swatch" style="background:#a273e7" aria-hidden="true"></span>Violet</span><h3>Flux Capacitor 0.2.0</h3><p>Adds tape delay</p><span class="card-action">View controls →</span></a>
+<a class="firmware-card" href="morse.html"><span class="color-label"><span class="swatch" style="background:#79dcaa" aria-hidden="true"></span>Mint</span><h3>Morse 0.1.0</h3><p>Three-pattern rhythmic VCA</p><span class="card-action">View controls →</span></a>
+<a class="firmware-card" href="tempest-100.html" id="tempest-100--pale-red"><span class="color-label"><span class="swatch" style="background:#ec9292" aria-hidden="true"></span>Pale red</span><h3>Tempest 1.0.0</h3><p>Multi-bank distortion</p><span class="card-action">View controls →</span></a>
+<a class="firmware-card" href="fatamorgana-ram-experiment.html" id="fatamorgana-ram-experiment--azure"><span class="color-label"><span class="swatch" style="background:#3ea7dc" aria-hidden="true"></span>Azure</span><h3>FataMorgana RAM experiment</h3><p>Dual wavetable synthesizer</p><span class="card-action">View controls →</span></a>
+</div></section>
+<p class="other-firmware"><a href="outside-the-selector-catalog.html">Other firmware and current limitations →</a></p>
+<p class="reference-note">Control descriptions come from author notes, manuals or versioned source;
+they do not mean every function has been physically tested. Only exact supported files appear in the selector.</p>
+<details id="reference-maintenance"><summary>Reference sources and maintenance</summary>
 <p>Menu colors come from <a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/firmware/images.hpp"><code class="notranslate">firmware/images.hpp</code></a>.<br>
 Discord-only summaries use the author notes/manuals supplied during onboarding;<br>
 they are paraphrases, not bundled manuals or proof of binary behavior. Downloads<br>
 are listed <a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/alternative_firmware.md">separately</a>. Update this reference when a<br>
-catalog entry or version-specific control changes; distinguish unknown from unused.</p>
+catalog entry or version-specific control changes; distinguish unknown from unused.</p></details>
 </main>
+<footer>Selector colors identify firmware before launch. Running LED colors may differ.
+<a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/firmware_reference.md">Markdown reference</a></footer>
+</div>
+</div>
 </body>
 </html>
