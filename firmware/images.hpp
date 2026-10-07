@@ -41,6 +41,27 @@ namespace aurora_selector
         {"0:/aurora/aurora-morse-0.2.0.bin",
          "001ac1ffd668fc29f5a936b502f5235e196671caf4f21924f04aa71d99d4d9d1",
          88264U, {0x20020000U, 0x24000f4dU}, {0.4f, 0.4f, 0.4f}},
+        // Version-specific entries keep existing payload identities and indices.
+        // Older-version virtual checks pass; physical testing remains open.
+        {"0:/aurora/flux-capacitor-0.1.0.bin",
+         "23435b32ffe5f8d715fc459da9590b3b71bf44fbf28266aeddebb555b23b9a97",
+         91200U, {0x20020000U, 0x24001675U}, {0.4f, 0.1f, 0.f}},
+        {"0:/aurora/flux-capacitor-0.2.0.bin",
+         "4ea0ab917fad8bfa225e6c95551f51f6c0817c31f7b3c82e65443e0c5e189239",
+         92208U, {0x20020000U, 0x24001675U}, {0.2f, 0.f, 0.4f}},
+        {"0:/aurora/aurora-morse-0.1.0.bin",
+         "f514628388a9859334b4d9348d4e55964d46c19472152770c6afdc04bbf7269b",
+         86952U, {0x20020000U, 0x24000f4dU}, {0.1f, 0.4f, 0.2f}},
+        // Tempest's virtual handoff/audio checks pass; physical checks remain open.
+        // Its own settings initialization may write QSPI sector 0x2000.
+        {"0:/aurora/Tempest_v1_0_0.bin",
+         "6fdb962135b2784813523a70e73bd1644b1d5b1e6637bb042c714dd7830931eb",
+         109872U, {0x20020000U, 0x240033f5U}, {0.4f, 0.2f, 0.2f}},
+        // Exact experimental RAM build, not the author's QSPI configuration.
+        // Source manifest dcaecaf4...150f7; USB and handoff checks remain open.
+        {"0:/aurora/FataMorgana.bin",
+         "35bc0bebafa7736ccc61ca788e5f3c3aa2fe4168534761722768eb907743d005",
+         151420U, {0x20020000U, 0x24000a49U}, {0.f, 0.2f, 0.4f}},
     };
 
     // Size the shared buffer for the largest entry, rounded for DMA/cache alignment.

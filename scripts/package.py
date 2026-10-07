@@ -21,17 +21,7 @@ def digest(data: bytes) -> str:
 @contextmanager
 def fresh_build(commit: str, *, virtual: bool = False):
     """Build tracked source and dependency checkouts, never ambient objects."""
-    gcc = shutil.which("arm-none-eabi-gcc")
-    if gcc is None:
-        raise RuntimeError("GNU Arm 10-2020-q4-major toolchain required on PATH")
-    tool_directory = Path(gcc).resolve().parent
-    tools = {}
-    for name in ("gcc", "g++", "as", "ar", "ld", "objcopy"):
-        path = tool_directory / ("arm-none-eabi-" + name)
-        tools[name] = {"sha256": digest(path.read_bytes()), "version":
-            subprocess.check_output([str(path), "--version"], text=True).splitlines()[0]}
-    if "10-2020-q4-major" not in tools["gcc"]["version"]:
-        raise RuntimeError("release packaging requires GNU Arm 10-2020-q4-major")
+    tool_directory, tools = toolchain_identity()
     scratch = ROOT / ".deps"
     with tempfile.TemporaryDirectory(prefix="release-build-", dir=scratch) as directory:
         checkout = Path(directory) / "source"
@@ -59,6 +49,22 @@ def fresh_build(commit: str, *, virtual: bool = False):
             "DMA_ARENA_CLEANUP=1", f"VIRTUAL_TRANSPORT={int(virtual)}",
             f"BUILD_DIR={build_directory}"], check=True, env=build_environment)
         yield checkout / "firmware" / build_directory, tools, tool_directory
+
+
+def toolchain_identity() -> tuple[Path, dict]:
+    """Authenticate the supported compiler family and record each executable."""
+    gcc = shutil.which("arm-none-eabi-gcc")
+    if gcc is None:
+        raise RuntimeError("GNU Arm 10-2020-q4-major toolchain required on PATH")
+    tool_directory = Path(gcc).resolve().parent
+    tools = {}
+    for name in ("gcc", "g++", "as", "ar", "ld", "objcopy"):
+        path = tool_directory / ("arm-none-eabi-" + name)
+        tools[name] = {"sha256": digest(path.read_bytes()), "version":
+            subprocess.check_output([str(path), "--version"], text=True).splitlines()[0]}
+    if "10-2020-q4-major" not in tools["gcc"]["version"]:
+        raise RuntimeError("release packaging requires GNU Arm 10-2020-q4-major")
+    return tool_directory, tools
 
 
 def package(*, virtual: bool = False) -> Path:

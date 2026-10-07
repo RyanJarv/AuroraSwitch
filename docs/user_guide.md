@@ -78,7 +78,42 @@ Morse needs an external Freeze-gate clock and Mix above zero.
 
 ## Not supported yet
 
-- **Tempest:** QSPI settings writes need a persistence/recovery review.
+- **FataMorgana's upstream QSPI build:** unsupported. See the RAM experiment below.
 - **Dirt Verb:** runs from QSPI, outside this RAM loader's design.
 - **HP-filter Aurora:** too large for the current staging buffer.
 - **Other versions or renamed files:** need separate review and catalog entries.
+
+## Development branch additions
+
+The `codex/older-firmware-onboarding` branch adds these exact images. Virtual
+launch/control/audio checks pass; physical testing remains open. Build this
+branch from source; the published release does not include these entries yet.
+Download the named BIN from each linked release and place it in `aurora/`.
+
+| Firmware | Filename | Reverse color |
+| --- | --- | --- |
+| [Flux 0.1.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/tag/v0.1.0) | `flux-capacitor-0.1.0.bin` | Orange |
+| [Flux 0.2.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/tag/v0.2.0) | `flux-capacitor-0.2.0.bin` | Violet |
+| [Morse 0.1.0](https://github.com/DaveParr/Aurora-Morse/releases/tag/v0.1.0) | `aurora-morse-0.1.0.bin` | Mint |
+| [Tempest 1.0.0](https://github.com/jfriess/Aurora-Firmwares/releases/tag/Tempest-v1.0.0) | `Tempest_v1_0_0.bin` | Pale red |
+
+Tempest saves its settings in QSPI. This is payload behavior, not selector
+flashing; do not assume its settings are isolated from other alternative apps.
+
+### FataMorgana RAM experiment
+
+The development branch admits one exact RAM build from source commit `d5504d7`,
+not the upstream QSPI configuration. Virtual handoff/control/audio checks pass;
+USB wavetable loading and physical compatibility remain unverified.
+
+With the pinned GNU Arm 10 toolchain on PATH:
+
+```sh
+make fata-ram-probe
+```
+
+The command prints a bundle path. Its `FataMorgana.bin` belongs in `aurora/`
+on the test drive; the selector menu color is azure. Use only the development
+selector, not the published release. Do not rename another build to this filename.
+Tempest and Fata share a settings sector with different formats, so switching
+can change retained settings.
