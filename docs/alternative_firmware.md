@@ -47,6 +47,10 @@ startup success nor compatible handoff.
 
 ## Short active checklist
 
+This checklist describes the completed first batch. The additional public
+release intake below has its own status; earlier evidence is not proof for a
+changed selector catalog.
+
 - [x] Offline manual preparation using the existing compiled catalog and exact
   authentication; no binary redistribution or parallel allowlist.
 - [x] Reconfirm received hashes, sizes and startup-table structural bounds for
@@ -80,6 +84,49 @@ historical results or infer a full community-image pass.
 Dirt Verb and other QSPI-linked images remain deferred. HP-filter Aurora remains
 excluded. Official-image reliability and ordinary stock recovery remain open
 under the [single reliability checklist](reliability_campaign.md#active-checklist).
+
+## Public-release intake — 2026-10-06
+
+Morse v0.2.0 and Flux Capacitor v0.3.0 fit the existing staging allocation
+and use the same pinned Aurora SDK source revision as the selector. Their
+release BINs, not newly compiled substitutes, are the exact catalog inputs.
+Public source is useful review context; no independent source-to-release-BIN
+reproducibility claim is made. The selector/handoff/DMA mechanism is unchanged.
+Their virtual compatibility screen is **in progress**, physical testing **open**.
+
+| Image | Release URL | Bytes | SHA-256 | Stack / reset |
+| --- | --- | ---: | --- | --- |
+| Flux Capacitor v0.3.0 | [author release](https://github.com/DaveParr/aurora-flux-capacitor/releases/tag/v0.3.0) | 92936 | `383f0fbdca991d939c4b35cd1e2f68504d573c2416e2c798b8a699ea3cf990f3` | `0x20020000` / `0x24001675` |
+| Morse v0.2.0 | [author release](https://github.com/DaveParr/Aurora-Morse/releases/tag/v0.2.0) | 88264 | `001ac1ffd668fc29f5a936b502f5235e196671caf4f21924f04aa71d99d4d9d1` | `0x20020000` / `0x24000f4d` |
+
+Download those exact assets from the authors (for example with `gh release
+download v0.3.0 --repo DaveParr/aurora-flux-capacitor --pattern
+'flux-capacitor-0.3.0.bin' --dir local-firmware`). Then use the existing
+`prepare_payloads.py` with whichever supported files you own. No downloading
+inside the firmware or additional network framework is needed.
+
+Morse requires an external Freeze-gate clock; silence without that input is
+expected, not a failed loader. The virtual screen must stimulate the existing
+GPIO model rather than manufacture a host envelope. Flux requires its own
+callback/control address review, not official-image address substitution.
+
+Tempest v1.0.0 was screened, but is **not admitted**. Its 109872-byte SRAM BIN
+(`6fdb962135b2784813523a70e73bd1644b1d5b1e6637bb042c714dd7830931eb`)
+fits, with stack/reset `0x20020000` / `0x240033f5`. Unlike Morse/Flux, its
+source initializes `PersistentStorage` at QSPI offset `8192` and saves
+settings. Before onboarding, review that linked persistence path and its
+compatibility with the installed selector/updater/settings; determine whether
+existing flash modeling suffices. Do not skip initialization, fabricate a save,
+or expand the emulator merely to claim support. Source reviewed at release tag
+`Tempest-v1.0.0`, commit `1d2d9d41961bf12cbbc86637e76d4df732cd376e`.
+The newer release candidate is deliberately not substituted for that stable tag.
+TODO: bounded Tempest persistence/recovery review after the two smaller additions.
+
+Morse tag commit: `7e702fdd92c7963047f6857a122c35b8db11d22a`.
+Flux tag commit: `4e346a8a54120bd58ddbe0a35f7af0ab0d67f5ba`.
+Both pin Aurora-SDK `69b74a88b25e2fb4d722fc269bfd9395dd28edb5`.
+Locally downloaded asset sizes and SHA-256 agree with GitHub release metadata;
+that is a byte-identity check, not a signature or safety certification.
 
 ## Preparation checks
 

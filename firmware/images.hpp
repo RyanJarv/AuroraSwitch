@@ -33,6 +33,12 @@ namespace aurora_selector
         {"0:/aurora/TheOscillatorIsALie_v0_0_2.bin",
          "5279d277c61d3d3693b94171bda5d48124e7529920f4ef422f7ff2812bb5c600",
          103604U, {0x20020000U, 0x24000959U}, {0.4f, 0.2f, 0.f}},
+        {"0:/aurora/flux-capacitor-0.3.0.bin",
+         "383f0fbdca991d939c4b35cd1e2f68504d573c2416e2c798b8a699ea3cf990f3",
+         92936U, {0x20020000U, 0x24001675U}, {0.4f, 0.4f, 0.f}},
+        {"0:/aurora/aurora-morse-0.2.0.bin",
+         "001ac1ffd668fc29f5a936b502f5235e196671caf4f21924f04aa71d99d4d9d1",
+         88264U, {0x20020000U, 0x24000f4dU}, {0.4f, 0.4f, 0.4f}},
     };
 
     constexpr std::size_t StagingCapacity()

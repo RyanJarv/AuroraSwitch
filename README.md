@@ -56,6 +56,11 @@ included. Exact accepted hashes, lengths, vectors and paths are listed in
 - EchoGarden `AuroraEchoGarden_v0_3_1_STABLE.bin` (94704 bytes).
 - CloudscapeX `AuroraCloudscapeX.bin` (98968 bytes).
 - The Oscillator Is a Lie `TheOscillatorIsALie_v0_0_2.bin` (103604 bytes).
+- Flux Capacitor `flux-capacitor-0.3.0.bin` (92936 bytes).
+- Morse `aurora-morse-0.2.0.bin` (88264 bytes).
+
+Flux Capacitor and Morse are new experimental catalog additions; their virtual
+screen is in progress. Do not transfer the five-image checkpoint to these bytes.
 
 Catalog membership identifies exact accepted bytes; it is not a physical
 qualification claim. The virtual testing scope is documented above.
@@ -102,7 +107,7 @@ the offline/manual workflow. Discord-only files remain user-supplied.
 
 ## Controls
 
-At startup or drive reconnect, the selector reads and authenticates the five
+At startup or drive reconnect, the selector reads and authenticates the seven
 catalog filenames under `aurora/`. Only files with the exact supported size,
 SHA-256 and vectors enter the menu. Unknown filenames are ignored; missing or
 corrupt files are omitted. No selector rebuild is needed to add/remove these
@@ -116,7 +121,8 @@ With the selector running:
 
 1. Reverse cycles through available entries: FDN (blue), original Aurora
    (green), EchoGarden (cyan), CloudscapeX (magenta), or The Oscillator Is a Lie
-   (amber). With only one present it stays on that entry. No available image
+   (amber), Flux Capacitor (yellow), or Morse (white). With only one present it
+   stays on that entry. No available image
    leaves Reverse dark and Freeze red; no media leaves Freeze dim blue.
 2. Freeze reads and authenticates the selected file. Freeze status is dim blue
    without media, white when selectable, amber while scanning/loading, green when
@@ -126,7 +132,7 @@ With the selector running:
 3. Shift launches only a verified image; it rechecks the same staged bytes
    before irreversible teardown. It does not reopen an unchecked file.
 
-Put the two files under `aurora/` on a compatible FAT USB drive. The selector
+Put your supported payload files under `aurora/` on a compatible FAT USB drive. The selector
 uses `0:/aurora/...` internally. Loading is read-only; failures do not launch.
 After launch the buttons/knobs belong to the selected firmware. Reset returns
 through the existing bootloader; there is no automatic in-application return
