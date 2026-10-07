@@ -79,7 +79,8 @@ Morse needs an external Freeze-gate clock and Mix above zero.
 ## Not supported yet
 
 - **FataMorgana's upstream QSPI build:** unsupported. See the RAM experiment below.
-- **Dirt Verb:** runs from QSPI, outside this RAM loader's design.
+- **Dirt Verb:** excluded from default builds and releases. See the
+  [development-only QSPI experiment](development/qspi_feasibility.md).
 - **HP-filter Aurora:** too large for the current staging buffer.
 - **Other versions or renamed files:** need separate review and catalog entries.
 

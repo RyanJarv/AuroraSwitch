@@ -6,7 +6,7 @@ Fata's real USB/wavetable path remains unverified. Physical reliability and
 ordinary stock USB recovery remain open. Do not expand emulator coverage merely
 to postpone those tests.
 
-## Current build
+## Current RAM-only build
 
 Twelve-entry development candidate, source `0657550`; real-USB manifest
 `7c96a4c1fc61266dcfa78f2ff50210e6160010f7054894770f9599d0b931e2a6`;
@@ -76,8 +76,10 @@ Module installation and physical results remain unconfirmed.
 
 The [next firmware batch](firmware_onboarding.md) tracks older versions and
 Tempest's bounded persistence/control/audio review and Fata's experimental RAM
-build. Its upstream QSPI configuration remains unsupported. Dirt Verb
-and oversized HP-filter Aurora remain excluded. Onboarding must not delay
+build. Its upstream QSPI configuration remains unsupported. Dirt Verb is now
+an opt-in development experiment; see [QSPI status](qspi_feasibility.md).
+It is not part of the default release or the physical results above.
+Oversized HP-filter Aurora remains excluded. Onboarding must not delay
 official recovery testing.
 
 ## Short physical campaign

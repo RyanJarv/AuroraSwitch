@@ -44,7 +44,7 @@ Only these exact versions are supported:
 ### Not supported yet
 
 - **FataMorgana:** upstream QSPI build is unsupported; a RAM experiment is on the development branch.
-- **Dirt Verb:** runs from QSPI, outside this RAM loader's design.
+- **Dirt Verb:** opt-in QSPI experiment passes virtual checks; hardware testing remains open. Excluded from default builds.
 - **HP-filter Aurora:** too large for the current staging buffer.
 - **Other versions or renamed files:** need separate review and catalog entries.
 

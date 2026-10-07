@@ -1,7 +1,8 @@
 # Next firmware batch
 
 Requested scope: older supported-family releases, Tempest, then FataMorgana.
-Dirt Verb stays deferred. Older releases and Tempest are staged and virtually
+Dirt Verb's later opt-in experiment is tracked in [QSPI status](qspi_feasibility.md).
+Older releases and Tempest are staged and virtually
 tested on the development branch; they are not published or physically tested.
 FataMorgana has a provisional exact RAM entry; real USB and physical tests remain open.
 Keep third-party binaries outside Git and release assets.
@@ -26,7 +27,8 @@ Keep third-party binaries outside Git and release assets.
 Next manageable chunk: physical testing of the twelve-entry candidate. Keep
 ST-Link disconnected. It supersedes the older/Tempest-only candidate;
 FataMorgana needs a tested RAM/USB configuration before
-support can be claimed; do not expand the loader to write QSPI.
+support can be claimed. The separate Dirt experiment does not admit Fata's
+upstream QSPI image or change the default RAM-only release.
 
 ## Older public releases
 
