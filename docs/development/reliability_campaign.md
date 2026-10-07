@@ -1,10 +1,24 @@
 # Reliability checklist
 
-Software screening is complete for the current scope. Physical reliability and
+Software screening is complete for the original seven and four development
+additions (older Flux/Morse and Tempest). FataMorgana remains unresolved.
+Physical reliability and
 ordinary stock USB recovery remain open. Do not expand emulator coverage merely
 to postpone those tests.
 
 ## Current build
+
+Eleven-entry development candidate, source `2270613`; real-USB manifest
+`00737185bfa680f8b5e22de0677b71f6f0bf898150d8914b01b6966aad4ad4bb`;
+BIN SHA-256
+`8cd5ebd90708c8a7a4002bb2422c07dd931522a52f3fc15e3f09330fccf0a163`
+(95852 bytes). ELF `440e5592ba83a9ade6fbb95ebaf68732ac7271ebdfe3803167c5080f32957649`,
+MAP `ff0ac5f4a52421ef238d72dd26754562c4c47ed821cab6b38962c26dce9ce5a6`.
+Fresh isolated packaging completed; this candidate has not been copied to a
+drive, deployed or physically tested. Virtual screens use separately identified
+synthetic-media companions, not this USB BIN. See [onboarding](firmware_onboarding.md).
+
+### Previous seven-entry build (history)
 
 Source `e983814`; real-USB manifest
 `5a5a5c96814d526d0d3c7c249a71ebfd72d2c4eb62dc33b76999e62adc9b7fcf`;
@@ -30,7 +44,7 @@ Module installation and physical results remain unconfirmed.
 - [ ] Publish results, supported hardware scope, and remaining limitations.
 
 The [next firmware batch](firmware_onboarding.md) tracks older versions and
-Tempest's persistence review. FataMorgana is blocked on QSPI execution. Dirt Verb
+Tempest's bounded persistence/control/audio review. FataMorgana currently selects QSPI execution. Dirt Verb
 and oversized HP-filter Aurora remain excluded. Onboarding must not delay
 official recovery testing.
 
