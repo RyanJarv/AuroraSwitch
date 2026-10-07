@@ -111,6 +111,10 @@ def check(args, base):
                 && getComputedStyle(dot).backgroundColor === 'rgb(55, 135, 255)'
                 && colorBounds.left >= titleBounds.right
                 && Math.abs(colorBounds.top + colorBounds.height / 2 - titleBounds.top - titleBounds.height / 2) < 2;""")
+        assert browser.execute("""const colors = [...document.querySelectorAll('.sidebar .color-label')];
+            const dots = colors.map(color => color.querySelector('.swatch').getBoundingClientRect().left);
+            return Math.max(...dots) - Math.min(...dots) < 1
+                && colors.every(color => getComputedStyle(color).justifyContent !== 'flex-end');""")
         browser.execute("""window.referenceTestMarker = true;
             window.referenceLayout = document.querySelector('.layout');
             window.referenceMain = document.querySelector('main');
