@@ -1,5 +1,4 @@
-// Preact owns the reference view; native URLs keep direct links and no-JS access.
-import { h, render } from './vendor/preact.module.js';
+// Enhance static pages with instant navigation; ordinary links remain the fallback.
 
 const base = new URL('.', import.meta.url);
 
@@ -8,21 +7,6 @@ function pageFor(url, pages) {
     if (url.origin !== base.origin || url.search) return null;
     const filename = url.pathname === base.pathname ? 'index.html' : url.pathname.slice(base.pathname.length);
     return url.pathname.startsWith(base.pathname) && Object.hasOwn(pages, filename) ? filename : null;
-}
-
-/** Retain generated HTML and accessibility landmarks rather than duplicating GFM. */
-function ReferenceView({ page, filename, menu, footer }) {
-    const selectedMenu = menu.replaceAll(`href="${filename}"`, `href="${filename}" aria-current="page"`);
-    const directory = label => h('nav', { 'aria-label': label, dangerouslySetInnerHTML: { __html: selectedMenu } });
-    return [
-        h('aside', { class: 'sidebar' }, directory('Firmware directory')),
-        h('div', { class: 'content' },
-            h('details', { class: 'mobile-menu', key: filename },
-                h('summary', null, 'Choose firmware / color'),
-                directory('Mobile firmware directory')),
-            h('main', { id: 'main', key: filename, dangerouslySetInnerHTML: { __html: page.body } }),
-            h('footer', { dangerouslySetInnerHTML: { __html: footer } })),
-    ];
 }
 
 /** Load the complete reference once; any bootstrap failure leaves native pages intact. */
@@ -37,25 +21,30 @@ async function start() {
     }
     let current = pageFor(new URL(location.href), data.pages);
     if (!current) return;
-    const root = document.querySelector('.layout');
-    const footer = root.querySelector('footer').innerHTML;
-    const initialBody = root.querySelector('main').innerHTML.trim();
+    const main = document.querySelector('main');
+    const links = document.querySelectorAll('.sidebar a, .mobile-menu a');
+    const mobileMenu = document.querySelector('.mobile-menu');
+    const initialBody = main.innerHTML.trim();
     if (data.pages[current].body.trim() !== initialBody) throw new Error('Reference page mismatch');
-    // Clearing only after authentication avoids blank pages when data is unavailable.
-    root.replaceChildren();
     history.scrollRestoration = 'manual';
 
+    /** Replace only the content; the static layout and directory already exist. */
     function show(filename) {
         current = filename;
         const page = data.pages[filename];
-        render(h(ReferenceView, { page, filename, menu: data.menu, footer }), root);
+        main.innerHTML = page.body;
+        for (const link of links) {
+            if (link.getAttribute('href') === filename) link.setAttribute('aria-current', 'page');
+            else link.removeAttribute('aria-current');
+        }
+        mobileMenu.open = false;
         document.title = page.title;
     }
 
     /** Focus announces page changes; fragments and Back restore useful positions. */
     function position(url, saved) {
         requestAnimationFrame(() => {
-            const heading = root.querySelector('h1');
+            const heading = main.querySelector('h1');
             heading.setAttribute('tabindex', '-1');
             heading.focus({ preventScroll: true });
             let target;
@@ -67,9 +56,7 @@ async function start() {
         });
     }
 
-    show(current);
-    // Keep initial direct-link fragments after replacing the pre-rendered view.
-    if (location.hash) position(new URL(location.href));
+    // Leave the initial HTML and its native fragment handling untouched.
     document.documentElement.dataset.navigation = 'spa';
 
     document.addEventListener('click', event => {

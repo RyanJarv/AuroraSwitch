@@ -8,11 +8,12 @@ desktop sidebar/mobile menu is the firmware directory; each family has a
 control page. Release and development-only entries stay separate. Share a
 firmware page URL for direct access.
 
-Preact switches views without reloading the page. `app.js` loads the generated
-`reference.json` once and uses browser history for Back/Forward. HTML fallbacks
-keep every direct URL working on GitHub Pages, even without JavaScript or if
-SPA startup fails. No service worker, routing package or Node toolchain is needed.
-The pinned framework and its upstream notice are in `site/vendor/`.
+A small `app.js` loads `reference.json` once and replaces only the main content
+on navigation. The sidebar, mobile menu and footer stay as ordinary HTML.
+Back/Forward and direct links work; if JavaScript or the content bundle is
+unavailable, links load the static pages normally. There is no framework,
+service worker or Node toolchain. The generated bundle avoids fetching another
+page on each click; it is not a second source of content.
 
 Edit `docs/firmware_reference.md` for controls or `README.md`'s Quick start for
 installation. The home page renders that exact section, not a separate copy.
@@ -31,7 +32,7 @@ The renderer uses GitHub Markdown and writes the HTML fallbacks and
 SPA data from identical content; shared styling is in `site/style.css`. Regenerate
 after changing the reference, renderer or `app.js` (its URL is content-versioned).
 Commit source and generated files together.
-Offline tests check reference/Quick start fingerprints, links, versions, colors, pinned Preact bytes
+Offline tests check reference/Quick start fingerprints, links, versions, colors
 and equality between SPA content and fallbacks. The Pages workflow refuses stale pages.
 
 `site/aurora-panel.svg` is an original simplified drawing of the manual's panel

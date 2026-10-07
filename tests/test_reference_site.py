@@ -1,4 +1,4 @@
-"""Check SPA data, HTML fallbacks, pinned assets and links without a browser."""
+"""Check navigation data, static pages and links without a browser."""
 
 import hashlib
 from html.parser import HTMLParser
@@ -186,17 +186,7 @@ class ReferenceSiteTests(unittest.TestCase):
                 body = re.search(r'<main id="main">\n(.*?)\n</main>', page, re.S)[1]
                 self.assertEqual(data["pages"][filename]["body"], body)
                 self.assertIn("AuroraSwitch", data["pages"][filename]["title"])
-        menu = ReferenceParser()
-        menu.feed(data["menu"])
-        self.assertEqual(set(menu.links), set(data["pages"]))
-
-    def test_preact_files_match_pinned_upstream_bytes(self):
-        for file, digest in {
-            "preact.module.js": "a1cefabf06ec626adcb92731537e1e04fd09a7908e22551bab50540106dc950d",
-            "LICENSE": "1fe6958409c8c257a70c587a18b6f7f412b179b456630790d30b2ec9a8e4b7d4",
-        }.items():
-            with self.subTest(file=file):
-                self.assertEqual(hashlib.sha256((SITE / "vendor" / file).read_bytes()).hexdigest(), digest)
+        self.assertNotIn("menu", data, "Use the existing static navigation")
 
     def test_control_descriptions_and_caveats_are_preserved(self):
         self.assertIn("Mix is not dry/wet.", (SITE / "tempest-100.html").read_text())

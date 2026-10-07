@@ -102,12 +102,26 @@ def check(args, base):
         browser.open(base + "index.html")
         browser.wait("document.documentElement.dataset.navigation === 'spa'")
         browser.request("POST", "/window/rect", {"width": 1280, "height": 600})
-        browser.execute("window.referenceTestMarker = true; window.scrollTo(0, 150)")
+        browser.execute("""window.referenceTestMarker = true;
+            window.referenceLayout = document.querySelector('.layout');
+            window.referenceMain = document.querySelector('main');
+            window.referenceSidebar = document.querySelector('.sidebar');
+            window.referenceMobileMenu = document.querySelector('.mobile-menu');
+            window.referenceFooter = document.querySelector('footer');
+            window.scrollTo(0, 150);""")
         browser.wait("scrollY === 150")
         before = SiteHandler.counts.copy()
         browser.click('.sidebar a[href="fdn-122.html"]')
         browser.wait("location.pathname.endsWith('/fdn-122.html') && document.activeElement.tagName === 'H1'")
         assert browser.execute("return window.referenceTestMarker && document.title.startsWith('FDN')")
+        assert browser.execute("""return referenceLayout === document.querySelector('.layout')
+            && referenceMain === document.querySelector('main')
+            && referenceSidebar === document.querySelector('.sidebar')
+            && referenceMobileMenu === document.querySelector('.mobile-menu')
+            && referenceFooter === document.querySelector('footer')
+            && [...document.querySelectorAll('[aria-current="page"]')]
+                .every(link => link.getAttribute('href') === 'fdn-122.html')
+            && document.querySelectorAll('[aria-current="page"]').length === 2;""")
         browser.wait("document.querySelector('.panel-map img')?.complete && document.querySelector('.panel-map img').naturalWidth > 0")
         # The shared drawing may load on the first control view; no page/data reload.
         assert set((SiteHandler.counts - before)) <= {"/aurora-panel.svg"}, "SPA navigation reloaded a document or data"
@@ -130,6 +144,8 @@ def check(args, base):
             browser.click(f'.sidebar a[href="{filename}"]')
             browser.wait(f"document.title === {json.dumps(page['title'])}")
             assert browser.execute("return window.referenceTestMarker")
+            assert browser.execute(f"""const selected = [...document.querySelectorAll('[aria-current="page"]')];
+                return selected.length === 2 && selected.every(link => link.getAttribute('href') === '{filename}');""")
         assert set((SiteHandler.counts - before)) <= {"/aurora-panel.svg"}, "A firmware view caused a document/data reload"
         # Direct URLs still render their own fallback, then enhance the deep link.
         browser.open(base + "tempest-100.html#buttons-and-gates")

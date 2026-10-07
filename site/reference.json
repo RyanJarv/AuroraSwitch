@@ -1,8 +1,7 @@
 {
   "reference_sha256": "a8b896a64dae08b70e86358a7403063d7032938b760d23b47d4d96869dd7f6c3",
-  "renderer_sha256": "7570cfff4ca014ae347659adfdd4ffe00970794b6d33f0da6f1c1f372e51a7bc",
+  "renderer_sha256": "5c7640d07986e1552297f066d3a550e4130cb7ccf11ef68cfd0a0ae4a4cbb237",
   "quickstart_sha256": "5e31adec0ecb5c8b13e8a67317b50b04aeb91778290b72dfcb42395350f8e1b2",
-  "menu": "<a class=\"index-link\" href=\"index.html\">Overview</a>\n<h2>Release firmware</h2><ul>\n<li><a href=\"fdn-122.html\"><span>FDN 1.2.2</span><small>Blue</small></a></li>\n<li><a href=\"aurora-144.html\"><span>Aurora 1.4.4</span><small>Green</small></a></li>\n<li><a href=\"echogarden-031.html\"><span>EchoGarden 0.3.1</span><small>Cyan</small></a></li>\n<li><a href=\"cloudscapex.html\"><span>CloudscapeX</span><small>Magenta</small></a></li>\n<li><a href=\"the-oscillator-is-a-lie-002.html\"><span>The Oscillator Is a Lie 0.0.2</span><small>Amber</small></a></li>\n<li><a href=\"flux-capacitor.html\"><span>Flux Capacitor</span><small>Yellow</small></a></li>\n<li><a href=\"morse.html\"><span>Morse</span><small>White</small></a></li>\n</ul>\n<h2>Development additions</h2><ul>\n<li><a href=\"tempest-100.html\"><span>Tempest 1.0.0</span><small>Pale red</small></a></li>\n<li><a href=\"fatamorgana-ram-experiment.html\"><span>FataMorgana RAM experiment</span><small>Azure</small></a></li>\n</ul>\n<a class=\"index-link\" href=\"outside-the-selector-catalog.html\">Other firmware / limitations</a>",
   "pages": {
     "index.html": {
       "title": "Firmware reference · AuroraSwitch",

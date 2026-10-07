@@ -192,7 +192,7 @@ def navigation(sections: list[Section], entries: list[Entry], current: str) -> s
 
 
 def document(title: str, body: str, menu: str, digest: str) -> str:
-    """Render immediately; locally served Preact enhances navigation afterward."""
+    """Render complete static pages; a small script enhances navigation afterward."""
     renderer_digest = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
     app_digest = hashlib.sha256((ROOT / "site/app.js").read_bytes()).hexdigest()
     quickstart_digest = quick_start_digest()
@@ -285,12 +285,10 @@ def reference_data(pages: dict[str, str]) -> dict:
         title = re.search(r"<title>(.*?)</title>", page, re.S)[1]
         body = re.search(r'<main id="main">\n(.*?)\n</main>', page, re.S)[1]
         data[filename] = {"title": html.unescape(title), "body": body}
-    _, sections, entries = read_reference(SOURCE.read_text())
     return {
         "reference_sha256": hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
         "renderer_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         "quickstart_sha256": quick_start_digest(),
-        "menu": navigation(sections, entries, ""),
         "pages": data,
     }
 
