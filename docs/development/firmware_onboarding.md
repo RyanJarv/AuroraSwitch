@@ -129,3 +129,26 @@ previous seven-image ELF/BIN/MAP, catalog count, data symbols, reset PCs, and
 callback observations. New selector and per-version observation bindings are
 required; do not overwrite those historical pins or substitute current-version
 callback addresses. No new linked virtual pass is claimed yet.
+
+## Older-release handoff checkpoint
+
+The subsequent three linked executions pass discovery, verification, exact
+payload copy, DMA-arena zero checks, and reset entry for all older entries.
+Branch PC is `0x3800005a`; Flux reset entry is `0x24001674`, Morse
+`0x24000f4c`. Full logs and receipts are frozen in the development virtualizer's
+older-handoff observation archive, SHA-256
+`4c9808f915182f746cdb7d1f4a95884cad150cb7326c964406eb85515a51801a`.
+This supersedes only the earlier statement that no new linked pass exists.
+It does not prove startup, controls/audio, USB, or physical recovery.
+
+The existing runner now accepts only this separately pinned companion in its
+onboarding lane. It rejects callback continuation until each older image's
+own dispatch bindings are reviewed. Historical lanes remain unchanged and
+reject onboarding receipts. Replay checks independently compare the full raw
+handoff/DMA census; fail-closed controls reject changed identity/staging,
+missing/extra handoff rows, and missing DMA rows. These controls are verifier
+sabotages, not extra firmware runs.
+
+Next manageable chunk: derive the older binaries' actual callback registration
+and dispatch PCs, then run existing input/control/audio continuations. Do not
+merge or publish the new entries as compatibility-tested before that passes.
