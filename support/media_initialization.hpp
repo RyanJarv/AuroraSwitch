@@ -1,5 +1,6 @@
 #pragma once
 
+// Ordered media setup shared by firmware and host failure tests.
 namespace daisy_development
 {
     enum class MediaInitialization { Ready, UsbFailed, FilesystemFailed, MountFailed };

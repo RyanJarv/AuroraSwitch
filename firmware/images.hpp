@@ -1,10 +1,12 @@
 #pragma once
 
+// Shared launch catalog for firmware, host authentication, and payload preparation.
 #include "../support/sram_image_vectors.hpp"
 #include <array>
 
 namespace aurora_selector
 {
+    // Exact file contract and its panel color, not a general firmware description.
     struct Image
     {
         const char* path;
@@ -41,6 +43,7 @@ namespace aurora_selector
          88264U, {0x20020000U, 0x24000f4dU}, {0.4f, 0.4f, 0.4f}},
     };
 
+    // Size the shared buffer for the largest entry, rounded for DMA/cache alignment.
     constexpr std::size_t StagingCapacity()
     {
         std::size_t maximum = 0;
@@ -54,6 +57,7 @@ namespace aurora_selector
     static_assert(StagingCapacity() <= StagingLimit - StagingAddress,
                   "Reviewed image set exceeds internal staging SRAM");
 
+    // Match staged bytes and their caller-computed digest to one reviewed entry.
     inline bool VerifyImage(const std::uint8_t* bytes, std::size_t size,
                             const Image& image, const std::uint8_t* digest)
     {

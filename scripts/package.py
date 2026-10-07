@@ -62,6 +62,7 @@ def fresh_build(commit: str, *, virtual: bool = False):
 
 
 def package(*, virtual: bool = False) -> Path:
+    """Build and seal the current clean commit using authenticated dependencies."""
     if type(virtual) is not bool:
         raise ValueError("virtual must be a boolean")
     setup()
@@ -73,6 +74,7 @@ def package(*, virtual: bool = False) -> Path:
 
 
 def seal(build: Path, commit: str, tools: dict, tool_directory: Path, *, virtual: bool = False) -> Path:
+    """Check ELF/BIN agreement and publish or reuse an exact content-addressed bundle."""
     target = "AuroraSwitchVirtual" if virtual else "AuroraSwitch"
     payload = {f"{target}.{suffix}": (build / f"{target}.{suffix}").read_bytes()
                for suffix in ("elf", "bin", "map")}

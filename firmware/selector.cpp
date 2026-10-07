@@ -1,4 +1,4 @@
-// Development-only selector. Launch requires exact catalog authentication.
+// Panel menu and read-only loading; handoff.cpp owns irreversible launch.
 #include "aurora.h"
 #include "images.hpp"
 #include "../support/read_only_image_staging.hpp"
@@ -33,6 +33,7 @@ namespace
     daisy::FatFSInterface selector_filesystem;
     DMA_BUFFER_MEM_SECTION __attribute__((aligned(32))) FIL selector_file;
 #endif
+    // Last file attempt for inspection; this record never authorizes launch.
     struct LoadDiagnostic
     {
         std::uint32_t attempts, selection, staging_result, fatfs_result;
@@ -46,6 +47,7 @@ namespace
     unsigned selected = 0;
     daisy_development::SupportedImageMenu<
         sizeof(aurora_selector::Images) / sizeof(aurora_selector::Images[0])> menu;
+    // Discovery selects; only a successful Freeze load grants Verified state.
     enum class State { Waiting, Empty, Selected, Loading, Verified, Error };
     State state = State::Waiting;
     bool media_was_ready = false;
@@ -53,6 +55,7 @@ namespace
         daisy_development::MediaInitialization::Ready;
 
 #ifdef SELECTOR_VIRTUAL_TRANSPORT
+    // Bind synthetic media to the runner's fixed payload arena, not a guest pointer.
     daisy_development::BackedImageReader MakeReader()
     {
         return daisy_development::BackedImageReader(selector_virtual_media,
@@ -66,6 +69,7 @@ namespace
     void PumpMedia() { aurora::usb.Process(); }
 #endif
 
+    // Freeze shows load status; Reverse shows the current catalog selection.
     void SetStatus(float r, float g, float b)
     {
         // SDK LED_FREEZE wiring: channels 3, 4, 5.
@@ -82,6 +86,7 @@ namespace
     }
 
 #ifndef SELECTOR_VIRTUAL_TRANSPORT
+    // Adapt the single FatFs handle to shared staging and capture its errors.
     struct UsbFileReader
     {
         bool Ready() { return aurora::usb.GetReady(); }
@@ -117,6 +122,7 @@ namespace
     };
 #endif
 
+    // Used by discovery and Freeze; success authenticates the current RAM copy.
     bool AuthenticateFile(unsigned index)
     {
         load_diagnostic.timing.Begin(daisy::System::GetNow());

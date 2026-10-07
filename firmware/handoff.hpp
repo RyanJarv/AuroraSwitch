@@ -1,4 +1,5 @@
 #pragma once
+// Launch API; the caller supplies fully staged bytes and their catalog entry.
 #include "daisy_seed.h"
 #include "hid/usb_host.h"
 #include "images.hpp"

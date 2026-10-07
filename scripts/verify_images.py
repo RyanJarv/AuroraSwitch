@@ -56,6 +56,7 @@ def catalog(executable: Path) -> list[dict]:
 
 
 def verify(directory: Path) -> None:
+    """Require every catalog file to pass the compiled firmware authenticator."""
     with authenticator() as executable:
         for image in catalog(executable):
             name = image["filename"]

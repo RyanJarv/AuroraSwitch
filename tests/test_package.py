@@ -34,9 +34,11 @@ class PackageTests(unittest.TestCase):
 
     @contextmanager
     def fresh(self, commit, *, virtual=False):
+        """Stand in for compilation while exercising real bundle sealing."""
         yield self.build, {"gcc": {"version": "synthetic", "sha256": "b" * 64}}, Path("/synthetic-tools")
 
     def convert(self, command, **kwargs):
+        """Fake objcopy output; mismatch tests replace this adapter."""
         target = "AuroraSwitchVirtual" if "AuroraSwitchVirtual.elf" in command[-2] else "AuroraSwitch"
         Path(command[-1]).write_bytes((self.build / (target + ".bin")).read_bytes())
 

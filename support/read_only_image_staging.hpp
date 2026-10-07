@@ -1,5 +1,6 @@
 #pragma once
 
+// Transport-neutral loading; authentication remains the caller's responsibility.
 #include <cstddef>
 #include <cstdint>
 

@@ -3,6 +3,7 @@
 #include <cassert>
 #include <vector>
 
+// Records order; terminal methods return only so the host can inspect failure paths.
 struct Platform
 {
     int validations = 0;

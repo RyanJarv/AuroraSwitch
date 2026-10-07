@@ -1,4 +1,5 @@
 #pragma once
+// Inspectable operation timing; it does not enforce a storage deadline.
 #include <cstdint>
 
 namespace daisy_development
@@ -12,6 +13,7 @@ namespace daisy_development
         std::uint32_t maximum_ms = 0;
         std::uint32_t completed = 0;
 
+        // Reset this attempt while retaining the session maximum.
         void Begin(std::uint32_t now) volatile
         {
             completed = 0;

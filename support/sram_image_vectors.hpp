@@ -1,10 +1,12 @@
 #pragma once
 
+// Structural checks for the pinned SRAM application layout, not image identity.
 #include <cstddef>
 #include <cstdint>
 
 namespace daisy_development
 {
+    // First two vector words; reset retains the Cortex-M Thumb bit.
     struct SramImageVectors
     {
         std::uint32_t stack;

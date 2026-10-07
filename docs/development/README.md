@@ -1,6 +1,8 @@
 # Development
 
 Keep the loader small. Reuse the pinned SDK, libDaisy, FatFs, and SHA-256 code.
+Comment non-obvious files, types, and functions briefly: purpose, key invariants,
+and their role in the loader. Skip obvious names; explain why, not each statement.
 
 ## Build and test
 

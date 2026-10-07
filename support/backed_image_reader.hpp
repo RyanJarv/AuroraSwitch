@@ -1,5 +1,6 @@
 #pragma once
 
+// Synthetic transport for host/virtual tests; never substitutes for real USB.
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -16,6 +17,7 @@ namespace daisy_development
         std::uint32_t disconnect_after;
     };
 
+    // Freeze size/generation at Open so replacement cannot silently splice a read.
     class BackedImageReader
     {
       public:

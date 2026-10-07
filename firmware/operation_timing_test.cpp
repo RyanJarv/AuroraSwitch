@@ -1,3 +1,4 @@
+// Host timing tests cover zero duration, session maximum, and clock wrap.
 #include "../support/operation_timing.hpp"
 #include <cassert>
 

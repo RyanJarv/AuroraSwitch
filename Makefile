@@ -1,3 +1,4 @@
+# Build/test entry points only; device installation remains a manual step.
 .PHONY: all build build-virtual setup dependencies test check verify-images package package-virtual help
 all: build
 build: dependencies

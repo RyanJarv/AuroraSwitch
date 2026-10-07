@@ -43,6 +43,7 @@ class PrepareTests(unittest.TestCase):
             self.addCleanup(patcher.stop)
 
     def check(self, command, **kwargs):
+        """Verify the mock authenticator receives private copies, not source files."""
         image = next(row for row in self.images if row["filename"] == command[1])
         data = Path(command[2]).read_bytes()
         self.assertEqual(hashlib.sha256(data).hexdigest(), image["sha256"])

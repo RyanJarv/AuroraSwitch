@@ -1,5 +1,6 @@
 #pragma once
 
+// Availability and selection only; launch approval belongs to the selector.
 #include <array>
 #include <cstddef>
 
@@ -12,8 +13,10 @@ namespace daisy_development
     {
         static_assert(Count > 0, "A supported catalog must not be empty");
       public:
+        // Invalidate the menu while retaining the last index for a later rescan.
         void Clear() { available_.fill(false); }
 
+        // Preserve a still-valid choice; any media loss discards the entire scan.
         template<class Authenticate, class Ready>
         void Discover(Authenticate authenticate, Ready ready)
         {

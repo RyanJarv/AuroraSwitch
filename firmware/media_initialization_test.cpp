@@ -1,3 +1,4 @@
+// Host test of setup ordering and first-error retention; no USB execution.
 #include "../support/media_initialization.hpp"
 #include <cassert>
 

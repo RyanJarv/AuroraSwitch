@@ -1,3 +1,4 @@
+// Hardware adapter for the shared handoff sequence; no flash programming.
 #include "handoff.hpp"
 #include "handoff_sequence.hpp"
 #include "fatfs.h"
@@ -19,6 +20,7 @@ namespace aurora_selector
 {
     namespace
     {
+        // Release the selector's real filesystem and USB host before replacement.
         struct UsbTransport
         {
             daisy::USBHostHandle& usb;
@@ -27,6 +29,7 @@ namespace aurora_selector
             void Stop() { usb.Deinit(); }
         };
 #ifdef SELECTOR_VIRTUAL_TRANSPORT
+        // Test-media adapter; shares cleanup ordering without claiming USB behavior.
         struct BackedTransport
         {
             volatile daisy_development::BackedImageDescriptor& descriptor;
@@ -40,6 +43,7 @@ namespace aurora_selector
             void Stop() { descriptor.ready = 0; }
         };
 #endif
+        // Bind shared ordering to hardware while preserving bootloader-owned state.
         template<class Transport> struct Platform
         {
             daisy::DaisySeed& seed;
@@ -47,6 +51,7 @@ namespace aurora_selector
             const Image& image;
             const std::uint8_t* staged;
 
+            // Rehash the same fixed staging buffer before and after cleanup.
             bool Validate()
             {
                 std::uint8_t digest[32]{};
@@ -81,6 +86,7 @@ namespace aurora_selector
                 __HAL_RCC_SAI2_RELEASE_RESET();
                 __DSB();
             }
+            // Remove selector interrupt/cache state without rebuilding clocks or MPU.
             void DisableRuntime()
             {
                 seed.DeInit(); // upstream DMA/timer deinit + cache clean/disable
@@ -102,6 +108,7 @@ namespace aurora_selector
                 // Target BOOT_SRAM startup reinitializes runtime peripherals,
                 // but deliberately inherits clock and MPU configuration.
             }
+            // Copy and read back the stackless routine into reserved SRAM4.
             bool InstallTrampoline()
             {
                 const auto begin = reinterpret_cast<std::uintptr_t>(selector_copy_jump_blob_start);
@@ -122,6 +129,7 @@ namespace aurora_selector
                 // Irreversible teardown: never pretend that the UI can retry.
                 while(true) { __WFI(); }
             }
+            // Enter SRAM4 to replace selector code without returning to it.
             [[noreturn]] void Jump()
             {
                 using Entry = void (*)(const std::uint8_t*, std::uint8_t*, std::size_t);

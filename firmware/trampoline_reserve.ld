@@ -1,4 +1,4 @@
-/* Additional script after the upstream BOOT_SRAM layout: real reservation. */
+/* Reserve SRAM4 for code that must survive overwriting the selector in AXI SRAM. */
 SECTIONS
 {
     .selector_trampoline (NOLOAD) : ALIGN(32)

@@ -17,6 +17,7 @@ def git(path: Path, *args: str) -> str:
 
 
 def setup() -> None:
+    """Fetch missing sources; refuse changed origins, revisions, or tracked files."""
     directory = ROOT / ".deps"
     directory.mkdir(exist_ok=True)
     for name, (url, revision) in PINS.items():

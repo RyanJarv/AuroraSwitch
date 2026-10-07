@@ -7,6 +7,7 @@
 namespace
 {
     constexpr std::size_t Size = 8193;
+    // Inject transport failures and count cleanup calls without a filesystem.
     struct Reader
     {
         bool ready = true, open_ok = true, close_ok = true, read_ok = true;
