@@ -125,7 +125,8 @@ The newer release candidate is deliberately not substituted for that stable tag.
 TODO: bounded Tempest persistence/recovery review after the two smaller additions.
 
 Morse tag commit: `7e702fdd92c7963047f6857a122c35b8db11d22a`.
-Flux tag commit: `4e346a8a54120bd58ddbe0a35f7af0ab0d67f5ba`.
+Flux source commit: `eed85107f9cc1df3c9ef93d478fc45d5d9f9b882`
+(the annotated `v0.3.0` tag object is `4e346a8a54120bd58ddbe0a35f7af0ab0d67f5ba`).
 Both pin Aurora-SDK `69b74a88b25e2fb4d722fc269bfd9395dd28edb5`.
 Locally downloaded asset sizes and SHA-256 agree with GitHub release metadata;
 that is a byte-identity check, not a signature or safety certification.
