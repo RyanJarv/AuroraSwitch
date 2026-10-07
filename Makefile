@@ -1,7 +1,10 @@
 # Build/test and USB preparation; module installation remains a manual step.
-.PHONY: all build usb download-release build-virtual setup dependencies test check verify-images package package-virtual help
+.PHONY: all build usb download-release build-virtual setup dependencies test check verify-images package package-virtual help reference-html
 RELEASE_TAG ?= latest
 all: build
+reference-html:
+	python3 scripts/render_reference.py > site/index.html.tmp
+	mv site/index.html.tmp site/index.html
 build: dependencies
 	$(MAKE) -C firmware
 usb:
