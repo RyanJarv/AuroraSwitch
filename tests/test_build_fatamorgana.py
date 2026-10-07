@@ -35,6 +35,18 @@ class FataBuildTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 builder.check_vectors(data, qspi=mode)
 
+    def test_vectors_require_the_selector_minimum_image_extent(self):
+        """The build probe must reject vector-only images just as the selector does."""
+        for qspi, base in ((False, 0x24000000), (True, 0x90040000)):
+            with self.subTest(qspi=qspi):
+                builder.check_vectors(struct.pack("<II", 0x20020000, base + 15)
+                                      + bytes(8), qspi=qspi)
+                for size in range(8, 16):
+                    data = struct.pack("<II", 0x20020000, base + 1)
+                    data += bytes(size - 8)
+                    with self.assertRaises(ValueError):
+                        builder.check_vectors(data, qspi=qspi)
+
     def test_fresh_build_and_sealed_bundle_guards(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

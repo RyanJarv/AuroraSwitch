@@ -7,6 +7,13 @@ ifeq ($(filter $(QSPI_HANDOFF),0 1),)
 $(error QSPI_HANDOFF must be 0 or 1)
 endif
 QSPI_PACKAGE_OPTION = $(if $(filter 1,$(QSPI_HANDOFF)),--qspi,)
+# prepare_usb.py copies only the default RAM build; never fall back to stale RAM
+# output after building the opt-in selector in a different directory.
+ifeq ($(QSPI_HANDOFF),1)
+ifneq ($(filter usb,$(MAKECMDGOALS)),)
+$(error make usb is RAM-only; use make package QSPI_HANDOFF=1 and copy its sealed BIN)
+endif
+endif
 all: build
 reference-html:
 	python3 scripts/render_reference.py
@@ -49,5 +56,5 @@ help:
 	  'make check          Run host tests and Python syntax checks' \
 	  'make package        Rebuild clean committed source into a verified USB bundle' \
 	  'make package-virtual  Package a synthetic-media test bundle' \
-	  'QSPI_HANDOFF=1     Opt in to experimental Dirt Verb packaging/verification' \
+	  'QSPI_HANDOFF=1     Opt in to Dirt Verb and HP-filter packaging/verification (not make usb)' \
 	  'make verify-images FIRMWARE_DIR=/path/to/files  Check every catalog image'

@@ -23,15 +23,15 @@ def check_cache(path: Path, revision: str) -> None:
 
 
 def check_vectors(data: bytes, *, qspi: bool = False) -> None:
-    """Require the existing staging/RAM contract, without claiming startup safety."""
-    if not 8 <= len(data) <= 181888:
-        raise ValueError("RAM probe exceeds current staging or has no vectors")
+    """Match the selector's minimum image extent and the pinned staging contract."""
+    if not 16 <= len(data) <= 181888:
+        raise ValueError("payload probe exceeds staging bounds or is too short")
     if type(qspi) is not bool:
         raise ValueError("qspi must be a boolean")
     base = 0x90040000 if qspi else 0x24000000
     stack, reset = struct.unpack_from("<II", data)
     if stack != 0x20020000 or not reset & 1 or not base <= reset < base + len(data):
-        raise ValueError("RAM probe vector contract mismatch")
+        raise ValueError("payload probe vector contract mismatch")
 
 
 def build(*, qspi: bool = False) -> Path:
