@@ -6,6 +6,10 @@ exact supported image into separate SRAM and transfers execution to it.
 
 ## Why this approach?
 
+Works without the source code of other firmware and is stateless between power off/on.
+
+Although a cleaner way to support this would probably be to add functionality for moving files around to each firmware version. Without access to the source and modifying the firmware or doing something super clever the options are a bit limited, so this is what I went with.
+
 Supported payloads are linked to execute at `0x24000000`, the same address as
 the selector. Staging them elsewhere and copying at handoff avoids relocating
 their code or writing a new application to flash on each selection. The existing
