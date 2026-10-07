@@ -3,9 +3,10 @@
 GitHub Pages serves the checked-in files in `site/`: no Jekyll or deployment-time
 build. Firmware and evidence are not uploaded.
 
-The index has a card for each version/color. Each firmware family gets a control
+The index has one entry per family, with its color and available versions.
+Each firmware family gets a control
 view, with a desktop sidebar and a native mobile menu.
-Older index fragments still find the matching card; share a firmware page URL for
+Index fragments find the matching entry; share a firmware page URL for
 direct access. Release and development-only entries stay separate.
 
 Preact switches views without reloading the page. `app.js` loads the generated

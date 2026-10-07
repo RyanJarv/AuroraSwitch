@@ -51,9 +51,14 @@ class SiteHandler(SimpleHTTPRequestHandler):
 class Browser:
     """Use the standard WebDriver HTTP API; no additional Python packages needed."""
 
-    def __init__(self, endpoint, firefox, javascript=True):
+    def __init__(self, endpoint, firefox, javascript=True, dark=False):
         self.endpoint = endpoint.rstrip("/")
-        options = {"args": ["-headless"], "prefs": {"javascript.enabled": javascript}}
+        # Firefox's content override is 0 for dark and 1 for light. Pin it so
+        # screenshots and contrast checks do not depend on the host's theme.
+        options = {"args": ["-headless"], "prefs": {
+            "javascript.enabled": javascript,
+            "layout.css.prefers-color-scheme.content-override": 0 if dark else 1,
+        }}
         if firefox:
             options["binary"] = firefox
         value = self.request("POST", "/session", {
@@ -98,7 +103,7 @@ def check(args, base):
         browser.execute("window.referenceTestMarker = true; window.scrollTo(0, 150)")
         browser.wait("scrollY === 150")
         before = SiteHandler.counts.copy()
-        browser.click('.firmware-card[href="fdn-122.html"]')
+        browser.click('.firmware-entry[href="fdn-122.html"]')
         browser.wait("location.pathname.endsWith('/fdn-122.html') && document.activeElement.tagName === 'H1'")
         assert browser.execute("return window.referenceTestMarker && document.title.startsWith('FDN')")
         browser.wait("document.querySelector('.panel-map img')?.complete && document.querySelector('.panel-map img').naturalWidth > 0")
@@ -145,6 +150,11 @@ def check(args, base):
             assert browser.execute("""const frame = document.querySelector('iframe');
                 return frame.contentDocument.documentElement.scrollWidth <= frame.contentWindow.innerWidth;"""), width
             browser.wait("document.querySelector('iframe')?.contentDocument?.querySelector('.panel-map img')?.naturalWidth > 0")
+            for page in ('index.html', 'flux-capacitor.html'):
+                browser.execute(f"document.querySelector('iframe').src = '{page}'")
+                browser.wait(f"document.querySelector('iframe')?.contentWindow?.location.pathname.endsWith('/{page}') && document.querySelector('iframe')?.contentDocument?.documentElement?.dataset.navigation === 'spa'")
+                assert browser.execute("""const frame = document.querySelector('iframe');
+                    return frame.contentDocument.documentElement.scrollWidth <= frame.contentWindow.innerWidth;"""), (width, page)
         browser.execute("""const frame = document.querySelector('iframe'); frame.style.width = '390px';
             frame.contentDocument.querySelector('.mobile-menu summary').click();""")
         browser.wait("document.querySelector('iframe').contentDocument.querySelector('.mobile-menu').open")
@@ -156,7 +166,7 @@ def check(args, base):
             browser.open(base + "index.html")
             browser.wait("document.documentElement.dataset.navigation === 'static'")
             assert not browser.execute("return document.documentElement.dataset.navigation === 'spa'")
-            browser.click('.firmware-card[href="fdn-122.html"]')
+            browser.click('.firmware-entry[href="fdn-122.html"]')
             assert browser.execute("return document.querySelector('h1').textContent === 'FDN 1.2.2'")
             print(f"PASS {fault} SPA data falls back to ordinary pages")
     finally:
@@ -165,11 +175,23 @@ def check(args, base):
     browser = Browser(args.webdriver, args.firefox, javascript=False)
     try:
         browser.open(base + "index.html")
-        browser.click('.firmware-card[href="fdn-122.html"]')
+        browser.click('.firmware-entry[href="fdn-122.html"]')
         element = browser.request("POST", "/element", {"using": "css selector", "value": "h1"})
         heading = browser.request("GET", f'/element/{element["element-6066-11e4-a52e-4f735466cecf"]}/text')
         assert heading == "FDN 1.2.2"
         print("PASS JavaScript-disabled navigation")
+    finally:
+        browser.close()
+    browser = Browser(args.webdriver, args.firefox, dark=True)
+    try:
+        browser.open(base + "index.html")
+        browser.wait("document.documentElement.dataset.navigation === 'spa'")
+        assert browser.execute("return matchMedia('(prefers-color-scheme: dark)').matches")
+        assert browser.execute("return getComputedStyle(document.body).backgroundColor === 'rgb(19, 24, 32)'")
+        browser.click('.firmware-entry[href="flux-capacitor.html"]')
+        browser.wait("document.title.startsWith('Flux Capacitor')")
+        assert browser.execute("return document.querySelectorAll('.firmware-meta .swatch').length === 1")
+        print("PASS dark-theme directory and controls")
     finally:
         browser.close()
     print("PASS SPA clicks (no document/data reload), panel image, details, history, direct links and mobile layouts")

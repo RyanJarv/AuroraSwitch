@@ -150,6 +150,16 @@ def swatch(color: str) -> str:
     return f'<span class="swatch" style="background:{COLORS[color]}" aria-hidden="true"></span>'
 
 
+def version_list(section: Section, entries: list[Entry]) -> str:
+    """Show version differences without repeating the family name or color."""
+    if len(entries) < 2:
+        return ""
+    versions = [html.escape(entry.name.removeprefix(section.title).strip())
+                + (" (development)" if entry.availability == "Development" else "")
+                for entry in entries]
+    return '<span class="version-list">' + " · ".join(versions) + '</span>'
+
+
 def navigation(sections: list[Section], entries: list[Entry], current: str) -> str:
     """Share the same directory between the desktop sidebar and mobile menu."""
     parts = ['<a class="index-link" href="index.html">All firmware &amp; colors</a>']
@@ -220,9 +230,7 @@ def render_pages() -> dict[str, str]:
     if len(parts) != 1 + 2 * len(sections):
         raise ValueError("Rendered sections do not match Markdown sections")
     bodies = {section.anchor: parts[2 * i + 2] for i, section in enumerate(sections)}
-    by_anchor = {section.anchor: section for section in sections}
-    home = '''<h1>Find your firmware</h1>
-<p class="lead">Choose by name or match the selector’s Reverse LED color.</p>
+    home = '''<h1>Firmware</h1>
 <p class="launch-line">Reverse selects → Freeze verifies → wait for <strong>Freeze green</strong> → Shift launches.</p>
 '''
     for availability, label, note in (
@@ -230,27 +238,23 @@ def render_pages() -> dict[str, str]:
         ("Development", "Development builds", "Not in the published selector."),
     ):
         anchor = "color-lookup" if availability == "Release" else "development-builds"
-        home += f'<section aria-labelledby="{anchor}"><h2 id="{anchor}">{label}</h2><p>{note}</p><div class="cards">'
-        for entry in entries:
-            if entry.availability != availability:
+        home += f'<section aria-labelledby="{anchor}"><h2 id="{anchor}">{label}</h2><p class="availability">{note}</p><div class="firmware-list">'
+        for section in sections:
+            versions = [entry for entry in entries if entry.anchor == section.anchor]
+            if not versions or ("Release" if any(entry.availability == "Release" for entry in versions) else "Development") != availability:
                 continue
-            section = by_anchor[entry.anchor]
-            # Preserve old index fragments at the first card for each firmware family.
-            legacy = f' id="{entry.anchor}"' if entry == next(e for e in entries if e.anchor == entry.anchor) else ""
-            home += (f'<a class="firmware-card" href="{section.filename}"{legacy}>'
-                     f'<span class="color-label">{swatch(entry.color)}{entry.color}</span>'
-                     f'<h3>{html.escape(entry.name)}</h3><p>{html.escape(entry.description)}</p>'
-                     '<span class="card-action">View controls →</span></a>\n')
+            entry = versions[0]
+            # One row per family, retaining its index fragment and all versions.
+            home += (f'<a class="firmware-entry" href="{section.filename}" id="{entry.anchor}">'
+                     f'<div><h3>{html.escape(section.title)}</h3><p>{html.escape(entry.description)}</p>'
+                     f'{version_list(section, versions)}</div>'
+                     f'<span class="color-label">{swatch(entry.color)}{entry.color}</span></a>\n')
         home += '</div></section>\n'
-    home += '''<p class="other-firmware"><a href="outside-the-selector-catalog.html">Other firmware and current limitations →</a></p>
-'''
     pages = {"index.html": document("Firmware reference", home, navigation(sections, entries, "index.html"), digest)}
     for section in sections:
         if section.filename == "index.html":
             continue
         versions = [entry for entry in entries if entry.anchor == section.anchor]
-        badges = "".join(f'<span class="version-label">{swatch(entry.color)}{html.escape(entry.name)} · {entry.color}'
-                         f'{" · development" if entry.availability == "Development" else ""}</span>' for entry in versions)
         content = bodies[section.anchor]
         # Each page starts at h1; source h3 control groups become its h2 landmarks.
         content = re.sub(r'<(/?)h3\b', r'<\1h2', content)
@@ -261,9 +265,9 @@ def render_pages() -> dict[str, str]:
             content += '</details>'
         content = label_controls(content)
         body = f'<h1 id="{section.anchor}">{html.escape(section.title)}</h1>'
-        if badges:
-            body += f'<div class="version-labels" aria-label="Versions and selector colors">{badges}</div>'
-        if badges:
+        if versions:
+            color = versions[0].color
+            body += f'<p class="firmware-meta"><span class="color-label">{swatch(color)}{color}</span>{version_list(section, versions)}</p>'
             # The original drawing maps physical positions; all functions remain in Markdown.
             intro, separator, controls = content.partition('<h2 ')
             body += intro

@@ -24,7 +24,7 @@ class ReferenceParser(HTMLParser):
         self.links = []
         self.metadata = {}
         self.swatches = 0
-        self.cards = []
+        self.families = []
         self.current = []
         self.h1_count = 0
         self.nav_labels = []
@@ -39,8 +39,8 @@ class ReferenceParser(HTMLParser):
             self.ids.append(attrs["id"])
         if tag == "a":
             self.links.append(attrs.get("href", ""))
-            if "firmware-card" in classes:
-                self.cards.append(attrs["href"])
+            if "firmware-entry" in classes:
+                self.families.append(attrs["href"])
             if attrs.get("aria-current") == "page":
                 self.current.append(attrs["href"])
         if tag == "link" and attrs.get("rel") == "stylesheet":
@@ -105,18 +105,22 @@ class ReferenceSiteTests(unittest.TestCase):
     def test_index_covers_every_version_and_color(self):
         parser = self.pages["index.html"]
         by_anchor = {section.anchor: section for section in self.sections}
-        self.assertEqual(parser.cards, [by_anchor[entry.anchor].filename for entry in self.entries])
-        self.assertEqual(parser.swatches, len(self.entries))
+        self.assertEqual(parser.families, list(dict.fromkeys(by_anchor[entry.anchor].filename for entry in self.entries)))
+        self.assertEqual(parser.swatches, 9)
         self.assertEqual(len(self.entries), 12)
         self.assertIn("development-builds", parser.ids)
         page = (SITE / "index.html").read_text()
         self.assertNotIn("Reference sources and maintenance", page)
         self.assertNotIn('id="reference-maintenance"', page)
         for entry in self.entries:
-            self.assertIn(entry.name, page)
+            section = by_anchor[entry.anchor]
+            self.assertIn(section.title, page)
+            if entry.name != section.title:
+                version = entry.name.removeprefix(section.title).strip()
+                self.assertIn(version + (" (development)" if entry.availability == "Development" else ""), page)
             self.assertIn(entry.color, page)
 
-    def test_legacy_firmware_fragments_still_find_the_index_card(self):
+    def test_legacy_firmware_fragments_still_find_the_index_entry(self):
         for entry in self.entries:
             self.assertIn(entry.anchor, self.pages["index.html"].ids)
 
@@ -133,13 +137,15 @@ class ReferenceSiteTests(unittest.TestCase):
                 self.assertNotIn("On this page", parser.nav_labels)
                 self.assertNotIn('class="page-links"', page)
                 self.assertNotIn('class="back-link"', page)
-                self.assertEqual(parser.swatches, len(entries))
+                self.assertEqual(parser.swatches, 1)
                 for heading in re.findall(r"^### (.+)$", section.markdown, re.M):
                     self.assertIn(slug(heading), parser.ids)
+                self.assertIn(entries[0].color, page)
+                self.assertNotIn('class="version-label"', page)
                 for entry in entries:
-                    self.assertIn(f"{entry.name} · {entry.color}", page)
-                    if entry.availability == "Development":
-                        self.assertIn(f"{entry.name} · {entry.color} · development", page)
+                    if len(entries) > 1:
+                        version = entry.name.removeprefix(section.title).strip()
+                        self.assertIn(version + (" (development)" if entry.availability == "Development" else ""), page)
 
     def test_html_fallbacks_have_accessible_navigation_and_local_spa(self):
         for filename, parser in self.pages.items():
