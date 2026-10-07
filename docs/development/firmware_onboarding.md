@@ -71,6 +71,12 @@ persistence pass. Next: check sector contents/retention and settings reload,
 then bind the actual control/audio route. Do not bypass initialization or add
 substantial flash infrastructure to manufacture a pass.
 
+Full 8-MiB before/after captures now confirm only sectors 1 and 2 change on
+erased synthetic flash. The settings record matches source defaults. A fresh
+process seeded with that complete array performs zero erase/program operations
+and leaves every byte unchanged. Non-default runtime settings, later saves,
+selector handoff and control/audio behavior are still unverified.
+
 Cross-image concern: FataMorgana also uses offset `8192`, but its
 `PistonSettings` layout differs from Tempest's `DistortionSettings`. The pinned
 `PersistentStorage::Init` recognizes only the common FACTORY/USER marker, not
