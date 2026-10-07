@@ -24,7 +24,6 @@ class ReferenceParser(HTMLParser):
         self.links = []
         self.metadata = {}
         self.swatches = 0
-        self.families = []
         self.current = []
         self.h1_count = 0
         self.nav_labels = []
@@ -39,8 +38,6 @@ class ReferenceParser(HTMLParser):
             self.ids.append(attrs["id"])
         if tag == "a":
             self.links.append(attrs.get("href", ""))
-            if "firmware-entry" in classes:
-                self.families.append(attrs["href"])
             if attrs.get("aria-current") == "page":
                 self.current.append(attrs["href"])
         if tag == "link" and attrs.get("rel") == "stylesheet":
@@ -102,27 +99,25 @@ class ReferenceSiteTests(unittest.TestCase):
                         self.assertIn(destination, self.pages, link)
                         self.assertIn(target.fragment, self.pages[destination].ids, link)
 
-    def test_index_covers_every_version_and_color(self):
+    def test_index_has_summary_and_install_directions_not_a_second_directory(self):
         parser = self.pages["index.html"]
-        by_anchor = {section.anchor: section for section in self.sections}
-        self.assertEqual(parser.families, list(dict.fromkeys(by_anchor[entry.anchor].filename for entry in self.entries)))
-        self.assertEqual(parser.swatches, 9)
+        self.assertEqual(parser.swatches, 0)
         self.assertEqual(len(self.entries), 12)
-        self.assertIn("development-builds", parser.ids)
         page = (SITE / "index.html").read_text()
+        body = re.search(r'<main id="main">\n(.*?)\n</main>', page, re.S)[1]
+        self.assertIn('id="quick-install"', body)
+        self.assertIn('id="select-firmware"', body)
+        self.assertIn("git clone https://github.com/RyanJarv/AuroraSwitch.git", body)
+        self.assertIn('make download-release USB_DIR="/Volumes/AURORA"', body)
+        self.assertIn("wait for green", body)
+        self.assertNotIn('class="firmware-entry"', page)
+        self.assertNotIn('class="firmware-list"', page)
         self.assertNotIn("Reference sources and maintenance", page)
         self.assertNotIn('id="reference-maintenance"', page)
-        for entry in self.entries:
-            section = by_anchor[entry.anchor]
-            self.assertIn(section.title, page)
-            if entry.name != section.title:
-                version = entry.name.removeprefix(section.title).strip()
-                self.assertIn(version + (" (development)" if entry.availability == "Development" else ""), page)
-            self.assertIn(entry.color, page)
-
-    def test_legacy_firmware_fragments_still_find_the_index_entry(self):
-        for entry in self.entries:
-            self.assertIn(entry.anchor, self.pages["index.html"].ids)
+        for section in self.sections:
+            if any(entry.anchor == section.anchor for entry in self.entries):
+                self.assertEqual(page.count(f'href="{section.filename}"'), 2)
+                self.assertNotIn(section.title, body)
 
     def test_firmware_pages_have_control_headings_and_version_labels(self):
         for section in self.sections:
@@ -200,7 +195,7 @@ class ReferenceSiteTests(unittest.TestCase):
         self.assertIn("step boundary or reset", (SITE / "morse.html").read_text())
         self.assertIn("Without tables, a generated cube", (SITE / "fatamorgana-ram-experiment.html").read_text())
 
-    def test_control_views_show_panel_and_one_collapsed_details_section(self):
+    def test_control_views_show_panel_and_visible_details_section(self):
         for section in self.sections:
             if not any(entry.anchor == section.anchor for entry in self.entries):
                 continue
@@ -212,9 +207,9 @@ class ReferenceSiteTests(unittest.TestCase):
                 for number, name in enumerate(PANEL_CONTROLS, 1):
                     self.assertIn(f"{number} {name}", parser.images[0]["alt"])
                 details = [item for item in parser.details if item.get("id") == "details-and-sources"]
-                self.assertEqual(len(details), 1)
-                self.assertNotIn("open", details[0])
-                self.assertIn('<summary>Details &amp; sources</summary>', page)
+                self.assertEqual(details, [])
+                self.assertIn('<h2 id="details-and-sources">Details &amp; sources</h2>', page)
+                self.assertNotIn('class="reference-details"', page)
                 self.assertNotIn('class="conventions"', page)
                 self.assertNotIn('class="control-key"', page)
                 self.assertNotIn('How to read the controls', page)

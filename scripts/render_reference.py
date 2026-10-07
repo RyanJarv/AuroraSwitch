@@ -162,7 +162,7 @@ def version_list(section: Section, entries: list[Entry]) -> str:
 
 def navigation(sections: list[Section], entries: list[Entry], current: str) -> str:
     """Share the same directory between the desktop sidebar and mobile menu."""
-    parts = ['<a class="index-link" href="index.html">All firmware &amp; colors</a>']
+    parts = ['<a class="index-link" href="index.html">Overview</a>']
     for availability, label in (("Release", "Release firmware"), ("Development", "Development additions")):
         parts.append(f'<h2>{label}</h2><ul>')
         for section in sections:
@@ -230,26 +230,25 @@ def render_pages() -> dict[str, str]:
     if len(parts) != 1 + 2 * len(sections):
         raise ValueError("Rendered sections do not match Markdown sections")
     bodies = {section.anchor: parts[2 * i + 2] for i, section in enumerate(sections)}
-    home = '''<h1>Firmware</h1>
-<p class="launch-line">Reverse selects → Freeze verifies → wait for <strong>Freeze green</strong> → Shift launches.</p>
+    home = '''<h1>AuroraSwitch</h1>
+<p>Choose a supported firmware from a USB drive and launch it on your Aurora.</p>
+<h2 id="quick-install">Quick install</h2>
+<p>Requires Git, GitHub CLI (<code>gh</code>), GNU Make, Python 3 and C/C++ compilers.</p>
+<p>Back up a FAT USB drive. Replace <code>/Volumes/AURORA</code> with its mounted path.</p>
+<pre><code>git clone https://github.com/RyanJarv/AuroraSwitch.git &amp;&amp; cd AuroraSwitch
+make download-release USB_DIR="/Volumes/AURORA"</code></pre>
+<p>This downloads the latest release and supported public firmware. Add other
+supported BINs to the drive's <code>aurora/</code> folder.</p>
+<p>Safely eject, insert the drive into Aurora, then power cycle to install.</p>
+<h2 id="select-firmware">Select firmware</h2>
+<ol>
+<li><strong>Reverse</strong> selects by color.</li>
+<li><strong>Freeze</strong> loads and verifies; wait for green.</li>
+<li><strong>Shift</strong> launches.</li>
+</ol>
+<p>Power cycle to return to the selector.</p>
+<p class="beta-status">Beta software: keep the original Aurora firmware for recovery.</p>
 '''
-    for availability, label, note in (
-        ("Release", "Release firmware", "Published selector."),
-        ("Development", "Development builds", "Not in the published selector."),
-    ):
-        anchor = "color-lookup" if availability == "Release" else "development-builds"
-        home += f'<section aria-labelledby="{anchor}"><h2 id="{anchor}">{label}</h2><p class="availability">{note}</p><div class="firmware-list">'
-        for section in sections:
-            versions = [entry for entry in entries if entry.anchor == section.anchor]
-            if not versions or ("Release" if any(entry.availability == "Release" for entry in versions) else "Development") != availability:
-                continue
-            entry = versions[0]
-            # One row per family, retaining its index fragment and all versions.
-            home += (f'<a class="firmware-entry" href="{section.filename}" id="{entry.anchor}">'
-                     f'<div><h3>{html.escape(section.title)}</h3><p>{html.escape(entry.description)}</p>'
-                     f'{version_list(section, versions)}</div>'
-                     f'<span class="color-label">{swatch(entry.color)}{entry.color}</span></a>\n')
-        home += '</div></section>\n'
     pages = {"index.html": document("Firmware reference", home, navigation(sections, entries, "index.html"), digest)}
     for section in sections:
         if section.filename == "index.html":
@@ -258,11 +257,8 @@ def render_pages() -> dict[str, str]:
         content = bodies[section.anchor]
         # Each page starts at h1; source h3 control groups become its h2 landmarks.
         content = re.sub(r'<(/?)h3\b', r'<\1h2', content)
-        # Keep lookup controls visible; secondary details stay one click away.
         content = content.replace('<h2 id="details-and-sources">Details and sources</h2>',
-                                  '<details class="reference-details" id="details-and-sources"><summary>Details &amp; sources</summary>')
-        if 'class="reference-details"' in content:
-            content += '</details>'
+                                  '<h2 id="details-and-sources">Details &amp; sources</h2>')
         content = label_controls(content)
         body = f'<h1 id="{section.anchor}">{html.escape(section.title)}</h1>'
         if versions:
