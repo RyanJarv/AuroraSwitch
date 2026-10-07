@@ -17,7 +17,8 @@ override BUILD_DIR := $(BUILD_DIR)
 ifneq ($(BUILD_DIR),$(EXPECTED_BUILD_DIR))
 $(error Use BUILD_DIR=$(EXPECTED_BUILD_DIR) for this transport)
 endif
-CPP_SOURCES = selector.cpp handoff.cpp
+# Preserve link order for stable exact-image diagnostic bindings.
+CPP_SOURCES = handoff.cpp selector.cpp
 ASM_SOURCES = copy_jump.s
 override APP_TYPE := BOOT_SRAM
 USE_FATFS = 1
