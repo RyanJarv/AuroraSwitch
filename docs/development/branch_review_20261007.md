@@ -12,7 +12,23 @@ are also removed. Only real USB and synthetic-media test builds remain.
 Authentication, flash bounds, staged-byte revalidation, DMA cleanup, and the
 recovery gate are retained. They enforce the loader's launch contract.
 
-## Fixed
+## Simplified-build checks
+
+Source `8370f86` passes 61 host tests and Python compilation. Fresh pinned
+builds (`make package` and `make package-virtual`) match the complete BIN hashes
+of independently rebuilt `541fcb4` with its former QSPI option enabled:
+
+| Build | Bytes | BIN SHA-256 | Manifest SHA-256 |
+| --- | ---: | --- | --- |
+| USB | 103372 | `93f1fbb2289b7f69b058f7b3246a7ee34f4915ac54fc178b6d085a26e0625e11` | `f29d4a4c1f16ca00fdf9a1d3fbcfec803ea786714ad66fd2a89296bd27b688cd` |
+| Synthetic media | 73112 | `c14b2623ccc72a01e7d387fcb32189b012afacee52edb55ad640fc25619ed5ff` | `11889ee8b5d337e53e4acf388d8bf72a5fa74ca08ba9695ec24aac88b3c2e535` |
+
+The initial Makefile cleanup changed link order; restoring it recovered exact
+BIN equality. ELF/MAP identities change with source/debug metadata and are
+recorded in each sealed manifest. This checks compiled equivalence, not new
+live emulation or physical recovery. Earlier virtual evidence retains its scope.
+
+## Original review fixes (history)
 
 - `make usb QSPI_HANDOFF=1` built in the QSPI directory but copied the default
   RAM BIN. A dry run confirmed the mismatch. It now rejects before building or
