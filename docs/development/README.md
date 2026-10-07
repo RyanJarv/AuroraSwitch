@@ -39,6 +39,7 @@ Do not create a new emulator for a difficult image; defer it.
 - [Builds and releases](releases.md): tag workflow and build-only CI.
 - [Verification status](verification.md) and [active checklist](reliability_campaign.md#active-checklist).
 - [Recovery checks](recovery_release_gate.md) and [optional timing diagnostics](load_timing.md).
+- [QSPI feasibility](qspi_feasibility.md): Dirt Verb investigation; no implemented support.
 - [Current checkpoint](checkpoints/public_releases_20261006.md) and [machine-readable evidence](evidence/public_releases_20261006.json).
 
 Historical records stay in `history/`. Do not transfer their results to changed
