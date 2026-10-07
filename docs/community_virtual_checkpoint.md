@@ -1,5 +1,9 @@
 # Community-image virtual checkpoint
 
+Historical five-image checkpoint. The newer seven-image candidate and bounded
+Morse/Flux observations are in [the public-release checkpoint](public_release_checkpoint.md).
+Preserve the results and identities below; they are not a live pass on that new build.
+
 Status: **bounded virtual checks complete; stop before physical testing**, 2026-10-06.
 No new emulator subsystem or loader feature was required for this intake.
 Nothing has been installed on hardware in this tranche.

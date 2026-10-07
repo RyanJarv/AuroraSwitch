@@ -6,11 +6,11 @@ from SRAM without replacing the recovery bootloader or writing the selected
 image into flash. A reset returns to the installed selector through the
 existing bootloader.
 
-**Development status:** official Aurora, FDN, EchoGarden, Cloudscape and The
-Oscillator Is a Lie pass bounded virtual launch/control/audio checks.
-All images in the new catalog
-still need physical testing and ordinary stock recovery remains unproven.
-See [the current checkpoint](docs/community_virtual_checkpoint.md).
+**Development status:** seven exact images are in the catalog. Official Aurora,
+FDN, Morse and Flux pass bounded virtual launch/control/audio checks on the new
+selector. EchoGarden, Cloudscape and The Oscillator Is a Lie retain their earlier
+five-image results. Exact-build physical testing and ordinary stock recovery
+remain open. See [the current checkpoint](docs/public_release_checkpoint.md).
 
 AuroraSwitch is beta software with limited testing. Switching restarts the
 selected firmware. Keep the original Aurora firmware available for restoration
@@ -59,8 +59,8 @@ included. Exact accepted hashes, lengths, vectors and paths are listed in
 - Flux Capacitor `flux-capacitor-0.3.0.bin` (92936 bytes).
 - Morse `aurora-morse-0.2.0.bin` (88264 bytes).
 
-Flux Capacitor and Morse are new experimental catalog additions; their virtual
-screen is in progress. Do not transfer the five-image checkpoint to these bytes.
+Flux Capacitor and Morse pass the current bounded virtual screen, not physical
+qualification. Morse requires an external Freeze-gate clock and nonzero Mix level.
 
 Catalog membership identifies exact accepted bytes; it is not a physical
 qualification claim. The virtual testing scope is documented above.
@@ -98,8 +98,8 @@ command does not install a selector, access hardware or overwrite recovery files
 The receipt proves bytes, not working controls/audio or physical recovery.
 
 Community-image onboarding is tracked in
-[alternative firmware](docs/alternative_firmware.md). The three supplied SRAM
-images have exact catalog entries; see that document for their testing status.
+[alternative firmware](docs/alternative_firmware.md); see that document for
+exact releases, public download locations and testing status.
 Older versions will be admitted as
 separate exact images after review; never replace a supported hash with “latest.”
 Optional fetching from pinned public releases is a follow-up, not required for

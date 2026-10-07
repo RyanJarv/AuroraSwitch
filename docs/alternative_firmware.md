@@ -30,8 +30,9 @@ must pass the same checks as a future automatically fetched file.
 
 ## First batch — 2026-10-06
 
-Initial intake inspected the received files offline. The subsequent linked
-catalog build is being validated virtually; nothing has been installed on a module.
+Historical first batch: offline intake and bounded linked virtual checks are
+complete. The exact five-image results remain at their original identities;
+they do not qualify physical use or the newer selector build.
 
 | Image | Bytes | SHA-256 | Stack / reset |
 | --- | ---: | --- | --- |
@@ -92,7 +93,8 @@ and use the same pinned Aurora SDK source revision as the selector. Their
 release BINs, not newly compiled substitutes, are the exact catalog inputs.
 Public source is useful review context; no independent source-to-release-BIN
 reproducibility claim is made. The selector/handoff/DMA mechanism is unchanged.
-Their virtual compatibility screen is **in progress**, physical testing **open**.
+Their repeated virtual compatibility screen **passes**, physical testing **open**.
+See [the exact-build checkpoint](public_release_checkpoint.md) for limits and hashes.
 
 | Image | Release URL | Bytes | SHA-256 | Stack / reset |
 | --- | --- | ---: | --- | --- |

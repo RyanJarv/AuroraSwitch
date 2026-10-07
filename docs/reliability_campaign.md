@@ -1,7 +1,7 @@
 # Reliability campaign and alternative-image onboarding
 
 Status: **bounded virtual checks complete; stop before hardware**; physical campaign
-**NOT RUN**. See [the changed-build checkpoint](community_virtual_checkpoint.md).
+**NOT RUN**. See [the current seven-image checkpoint](public_release_checkpoint.md).
 The hard gate in [recovery_release_gate.md](recovery_release_gate.md) remains
 OPEN. Catalog admission and bounded virtual results do not waive that gate for beta.
 
@@ -14,8 +14,11 @@ The earlier official-only timing candidate is source `63d27a5`, manifest
 `f8ea8d874781642b29e244cb7cce302657b80d2aeaab8cdd804b70804c45571e`.
 Its evidence remains historical. The changed real-USB candidate is source
 `25c393e`, manifest `e1daea377e4067f2efe96e1f426b088deb160a80e6173fe5eafa897acadd3908`.
-Use its exact package for the next physical screen; identities and limitations
-are in [the checkpoint](community_virtual_checkpoint.md).
+That five-image build was staged to USB, but remains historical and unqualified.
+The newest real-USB candidate is source `e983814`, manifest
+`5a5a5c96814d526d0d3c7c249a71ebfd72d2c4eb62dc33b76999e62adc9b7fcf`.
+Use the [public-release checkpoint](public_release_checkpoint.md) for its exact
+identities; it has not yet been staged to USB or installed on a module.
 
 ## Active checklist
 
@@ -30,6 +33,11 @@ are in [the checkpoint](community_virtual_checkpoint.md).
   official/EchoGarden/Oscillator launch/control/audio checks, not new reset cycles.
 - [x] Resolve Cloudscape's control/audio comparison with an existing late-impulse
   stimulus. All three custom images pass the bounded screen; no new model.
+- [x] Add exact public Morse/Flux releases without changing staging/handoff.
+  Pass repeated bounded official/Morse/Flux launch/control/audio checks on the
+  new candidate; retain the earlier three-image results at their original identities.
+- [ ] Tempest: defer until a bounded QSPI settings/persistence/recovery review.
+  Dirt Verb remains excluded. This must not delay official physical recovery testing.
 - [ ] Run the short exact-build physical campaign below, with ST-Link
   disconnected. Stop and ask for user participation before physical actions.
 - [ ] Demonstrate ordinary stock USB recovery and resolve the scoped release
@@ -75,7 +83,7 @@ attenuated. Debugger halts can perturb timing; label them separately.
 ## Short physical campaign — next user-assisted chunk
 
 Use the changed frozen package above (BIN
-`e79ed1ec20a5187f8e770a9cd77d41041f03d9deef79920f53fd5bf43782d6e7`)
+`7eeeba55132482037a3dc7aefe67cb625605fbdf30575607c8750d7e2d625155`)
 and the exact official payloads in verification.md. No new build is needed for
 documentation or host-test changes. Authenticate the prepared files before
 installation; the currently reported responsive FDN is not exact-build evidence.
@@ -92,8 +100,8 @@ installation; the currently reported responsive FDN is not exact-build evidence.
    calibrated behavior against baseline. This is a required observation, not
    an assumption that copying a file guarantees recovery.
 
-A small EchoGarden/Cloudscape/Oscillator launch and controls/audio screen may be
-included before restoring stock. Bounded virtual passes do not physically
+A small community launch and controls/audio screen may be included before
+restoring stock; Morse needs a clock and nonzero Mix level. Bounded virtual passes do not physically
 qualify any image. No physical action is authorized
 by this document alone.
 
