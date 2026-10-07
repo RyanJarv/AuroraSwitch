@@ -5,11 +5,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="reference-sha256" content="a8b896a64dae08b70e86358a7403063d7032938b760d23b47d4d96869dd7f6c3">
-<meta name="renderer-sha256" content="0d15c351bcfe172e2141a8822989cd83f0927d6088214f243c56105d6f295e45">
+<meta name="renderer-sha256" content="7570cfff4ca014ae347659adfdd4ffe00970794b6d33f0da6f1c1f372e51a7bc">
+<meta name="quickstart-sha256" content="5e31adec0ecb5c8b13e8a67317b50b04aeb91778290b72dfcb42395350f8e1b2">
 <meta name="description" content="AuroraSwitch firmware colors, knobs, buttons, gates and modes.">
 <title>Firmware reference · AuroraSwitch</title>
 <link rel="stylesheet" href="style.css">
-<script type="module" src="app.js?v=30c48a50c9d8163084c1cb584d39e8010fb652c33c126a0e7e657ab7acd070a0" data-reference="reference.json?v=a8b896a64dae08b70e86358a7403063d7032938b760d23b47d4d96869dd7f6c3-0d15c351bcfe172e2141a8822989cd83f0927d6088214f243c56105d6f295e45"></script>
+<script type="module" src="app.js?v=4863c55c00fd7eec941c86027fe441247284952b705f77383fb2d4bb83a4e2ed" data-reference="reference.json?v=a8b896a64dae08b70e86358a7403063d7032938b760d23b47d4d96869dd7f6c3-7570cfff4ca014ae347659adfdd4ffe00970794b6d33f0da6f1c1f372e51a7bc-5e31adec0ecb5c8b13e8a67317b50b04aeb91778290b72dfcb42395350f8e1b2"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to controls</a>
@@ -56,23 +57,25 @@
 <main id="main">
 <h1>AuroraSwitch</h1>
 <p>Choose a supported firmware from a USB drive and launch it on your Aurora.</p>
-<h2 id="quick-install">Quick install</h2>
-<p>Requires Git, GitHub CLI (<code>gh</code>), GNU Make, Python 3 and C/C++ compilers.</p>
-<p>Back up a FAT USB drive. Replace <code>/Volumes/AURORA</code> with its mounted path.</p>
-<pre><code>git clone https://github.com/RyanJarv/AuroraSwitch.git &amp;&amp; cd AuroraSwitch
-make download-release USB_DIR="/Volumes/AURORA"</code></pre>
-<p>This downloads the latest release and supported public firmware. Add other
-supported BINs to the drive's <code>aurora/</code> folder.</p>
-<p>Safely eject, insert the drive into Aurora, then power cycle to install.</p>
-<h2 id="select-firmware">Select firmware</h2>
+<p class="beta-status">Beta software: keep the original Aurora firmware for recovery.</p>
+<h2 id="quick-start">Quick start</h2>
+<p>Back up a FAT USB drive. No repository checkout or build tools are needed.</p>
+<ol>
+<li><a href="https://github.com/RyanJarv/AuroraSwitch/releases/latest/download/AuroraSwitch.bin">Download AuroraSwitch.bin</a><br>
+to the drive's root. Keep it as the only BIN there.</li>
+<li>Create an <code class="notranslate">aurora/</code> folder. Add <a href="https://www.qubitelectronix.com/s/Aurora_v1_4_4.zip" rel="nofollow">Aurora 1.4.4</a><br>
+(unzip first), <a href="https://www.qubitelectronix.com/s/AR_FDN_v1_2_2.bin" rel="nofollow">FDN 1.2.2</a>, or both.</li>
+<li>Safely eject, insert the drive into Aurora, and power cycle to install.</li>
+</ol>
+<h3 id="select-firmware">Select firmware</h3>
 <ol>
 <li><strong>Reverse</strong> selects by color.</li>
 <li><strong>Freeze</strong> loads and verifies; wait for green.</li>
 <li><strong>Shift</strong> launches.</li>
 </ol>
 <p>Power cycle to return to the selector.</p>
-<p class="beta-status">Beta software: keep the original Aurora firmware for recovery.</p>
-
+<p>Other supported firmware BINs go in the same <code class="notranslate">aurora/</code> folder. Files shared on<br>
+Discord must be added manually. See the <a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/user_guide.md">user guide</a>.</p>
 </main>
 <footer><a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/firmware_reference.md">Markdown reference</a></footer>
 </div>

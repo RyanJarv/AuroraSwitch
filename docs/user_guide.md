@@ -2,28 +2,11 @@
 
 Beta software: keep the original Aurora firmware and a backup of your USB drive.
 
-For the single-command release download and USB copy, use the
+For release downloads and USB setup without a checkout, use the
 [README quick start](../README.md#quick-start).
 
 For selector colors and each firmware's knobs, buttons, gates and modes, use the
 [firmware control reference](firmware_reference.md).
-
-## Build
-
-Requires Git, GNU Make, Python 3, a C/C++ compiler, and GNU Arm Embedded
-**10-2020-q4-major** on PATH.
-
-```sh
-git clone https://github.com/RyanJarv/AuroraSwitch.git
-cd AuroraSwitch
-make check
-make package
-```
-
-Use `AuroraSwitch.bin` from the printed `dist/<manifest-sha256>/` folder.
-Packaging fetches dependencies and requires a clean committed checkout.
-For a faster incremental build, use `make -j2 build`; its BIN is at
-`firmware/build-experimental-dma/AuroraSwitch.bin`. Never install a virtual build.
 
 ## Supported firmware
 
@@ -41,15 +24,8 @@ Only the exact supported versions work. Public download commands are in
 | Flux Capacitor 0.3.0 | `flux-capacitor-0.3.0.bin` | Yellow |
 | Morse 0.2.0 | `aurora-morse-0.2.0.bin` | White |
 
-Check and prepare whichever supported files you have:
-
-```sh
-python3 scripts/prepare_payloads.py --output prepared-payloads \
-  local-firmware/AR_FDN_v1_2_2.bin local-firmware/Aurora_v1_4_4.bin
-```
-
-Use a new output folder each time. Copy its `aurora/` folder to a compatible FAT
-USB drive, alongside the selector BIN:
+Copy the supported BINs into an `aurora/` folder on a FAT USB drive,
+alongside the downloaded selector BIN:
 
 ```text
 USB root/
@@ -64,6 +40,10 @@ Safely eject, insert into Aurora, and power cycle to install using
 [Qu-Bit's normal updater](https://www.qubitelectronix.com/faq).
 Do not interrupt the update. To restore stock, replace the root BIN with the
 original Aurora BIN and repeat; this still needs testing with AuroraSwitch.
+
+Building and optional host-side file verification are covered in the
+[development guide](development/README.md). They are not required to install
+a published release. Never install a virtual build.
 
 ## Select firmware
 

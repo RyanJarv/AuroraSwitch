@@ -6,7 +6,11 @@ and their role in the loader. Skip obvious names; explain why, not each statemen
 
 ## Build and test
 
+Requires Git, GNU Make, Python 3, C/C++ compilers and GNU Arm Embedded
+**10-2020-q4-major** on PATH. Published releases need none of these tools.
+
 ```sh
+git clone https://github.com/RyanJarv/AuroraSwitch.git && cd AuroraSwitch
 make -j2 build
 make check
 make package
@@ -15,6 +19,12 @@ make package
 See `make help` for virtual build targets. Never install virtual firmware.
 Packaging requires clean committed source; it records inputs and checks ELF/BIN
 agreement. It does not prove runtime behavior.
+
+From a checkout, `make download-release USB_DIR="/Volumes/AURORA"` automates
+checked release/public-firmware downloads and copying; it needs `gh` and host
+compilers, but no Arm compiler. `scripts/prepare_payloads.py --output prepared
+local-firmware/AR_FDN_v1_2_2.bin` optionally verifies a user-supplied file before
+copying. Use a new output folder each time.
 
 ## Add firmware
 

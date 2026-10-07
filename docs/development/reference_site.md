@@ -3,7 +3,7 @@
 GitHub Pages serves the checked-in files in `site/`: no Jekyll or deployment-time
 build. Firmware and evidence are not uploaded.
 
-The home page has a brief overview and release-install commands. The shared
+The home page has a brief overview and direct release/firmware downloads. The shared
 desktop sidebar/mobile menu is the firmware directory; each family has a
 control page. Release and development-only entries stay separate. Share a
 firmware page URL for direct access.
@@ -14,7 +14,9 @@ keep every direct URL working on GitHub Pages, even without JavaScript or if
 SPA startup fails. No service worker, routing package or Node toolchain is needed.
 The pinned framework and its upstream notice are in `site/vendor/`.
 
-Edit `docs/firmware_reference.md`, then refresh the HTML using GitHub's Markdown
+Edit `docs/firmware_reference.md` for controls or `README.md`'s Quick start for
+installation. The home page renders that exact section, not a separate copy.
+Refresh the HTML using GitHub's Markdown
 renderer (requires authenticated `gh` and network):
 
 ```sh
@@ -25,11 +27,11 @@ make test
 The color table drives navigation, so there is no second firmware catalog to edit.
 Versions on the same family page share one color, matching `menu_colors` in
 `firmware/images.hpp`; different families must use distinct colors.
-The renderer uses one GitHub Markdown request and writes the HTML fallbacks and
+The renderer uses GitHub Markdown and writes the HTML fallbacks and
 SPA data from identical content; shared styling is in `site/style.css`. Regenerate
 after changing the reference, renderer or `app.js` (its URL is content-versioned).
 Commit source and generated files together.
-Offline tests check fingerprints, links, versions, colors, pinned Preact bytes
+Offline tests check reference/Quick start fingerprints, links, versions, colors, pinned Preact bytes
 and equality between SPA content and fallbacks. The Pages workflow refuses stale pages.
 
 `site/aurora-panel.svg` is an original simplified drawing of the manual's panel

@@ -37,7 +37,8 @@ class SiteHandler(SimpleHTTPRequestHandler):
                 self.send_error(503)
                 return
             data = json.loads((SITE / "reference.json").read_text())
-            data["renderer_sha256"] = "stale"
+            field = "quickstart_sha256" if self.fault == "stale-quickstart" else "renderer_sha256"
+            data[field] = "stale"
             body = json.dumps(data).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
@@ -160,7 +161,7 @@ def check(args, base):
         browser.execute("document.querySelector('iframe').contentDocument.querySelector('.mobile-menu a[href=\"morse.html\"]').click()")
         browser.wait("document.querySelector('iframe').contentDocument.title.startsWith('Morse')")
         assert browser.execute("return !document.querySelector('iframe').contentDocument.querySelector('.mobile-menu').open")
-        for fault in ("unavailable", "stale"):
+        for fault in ("unavailable", "stale", "stale-quickstart"):
             SiteHandler.fault = fault
             browser.open(base + "index.html")
             browser.wait("document.documentElement.dataset.navigation === 'static'")

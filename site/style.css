@@ -76,8 +76,6 @@ th, td { text-align: left; vertical-align: top; padding: .6rem .65rem; border-bo
 th { font-weight: 600; color: var(--muted); }
 td:first-child { min-width: 8rem; }
 code { background: var(--surface); padding: .1rem .25rem; border-radius: 3px; overflow-wrap: anywhere; }
-pre { margin: 1rem 0; padding: .8rem 1rem; background: var(--selected); border-radius: .2rem; overflow-x: auto; font-size: .85rem; }
-pre code { background: none; padding: 0; overflow-wrap: normal; }
 footer { color: var(--muted); font-size: .8rem; }
 footer { padding: 1rem 0 2rem; border-top: 1px solid var(--line); }
 footer a { display: inline-block; }

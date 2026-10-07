@@ -9,7 +9,7 @@ import unittest
 from urllib.parse import urlsplit
 import xml.etree.ElementTree as ET
 
-from scripts.render_reference import PANEL_CONTROLS, label_controls, read_reference, slug
+from scripts.render_reference import PANEL_CONTROLS, label_controls, read_quick_start, read_reference, slug
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "site"
@@ -77,6 +77,7 @@ class ReferenceSiteTests(unittest.TestCase):
         fingerprints = {
             "reference-sha256": hashlib.sha256((ROOT / "docs/firmware_reference.md").read_bytes()).hexdigest(),
             "renderer-sha256": hashlib.sha256((ROOT / "scripts/render_reference.py").read_bytes()).hexdigest(),
+            "quickstart-sha256": hashlib.sha256(read_quick_start((ROOT / "README.md").read_text()).encode()).hexdigest(),
         }
         for filename, parser in self.pages.items():
             with self.subTest(page=filename):
@@ -105,10 +106,18 @@ class ReferenceSiteTests(unittest.TestCase):
         self.assertEqual(len(self.entries), 12)
         page = (SITE / "index.html").read_text()
         body = re.search(r'<main id="main">\n(.*?)\n</main>', page, re.S)[1]
-        self.assertIn('id="quick-install"', body)
+        self.assertIn('id="quick-start"', body)
         self.assertIn('id="select-firmware"', body)
-        self.assertIn("git clone https://github.com/RyanJarv/AuroraSwitch.git", body)
-        self.assertIn('make download-release USB_DIR="/Volumes/AURORA"', body)
+        for url in (
+            "https://github.com/RyanJarv/AuroraSwitch/releases/latest/download/AuroraSwitch.bin",
+            "https://www.qubitelectronix.com/s/Aurora_v1_4_4.zip",
+            "https://www.qubitelectronix.com/s/AR_FDN_v1_2_2.bin",
+        ):
+            self.assertIn(f'href="{url}"', body)
+        self.assertNotIn("git clone", body)
+        self.assertNotIn("make download-release", body)
+        self.assertIn("only BIN there", body)
+        self.assertIn("unzip first", body)
         self.assertIn("wait for green", body)
         self.assertNotIn('class="firmware-entry"', page)
         self.assertNotIn('class="firmware-list"', page)
@@ -117,7 +126,7 @@ class ReferenceSiteTests(unittest.TestCase):
         for section in self.sections:
             if any(entry.anchor == section.anchor for entry in self.entries):
                 self.assertEqual(page.count(f'href="{section.filename}"'), 2)
-                self.assertNotIn(section.title, body)
+                self.assertNotIn(f'href="{section.filename}"', body)
 
     def test_firmware_pages_have_control_headings_and_version_labels(self):
         for section in self.sections:
@@ -157,7 +166,8 @@ class ReferenceSiteTests(unittest.TestCase):
                 self.assertEqual(urlsplit(script["data-reference"]).path, "reference.json")
                 reference = parser.metadata["reference-sha256"]
                 renderer = parser.metadata["renderer-sha256"]
-                self.assertEqual(urlsplit(script["data-reference"]).query, f"v={reference}-{renderer}")
+                quickstart = parser.metadata["quickstart-sha256"]
+                self.assertEqual(urlsplit(script["data-reference"]).query, f"v={reference}-{renderer}-{quickstart}")
                 digest = hashlib.sha256((SITE / "app.js").read_bytes()).hexdigest()
                 self.assertEqual(urlsplit(script["src"]).query, f"v={digest}")
                 self.assertIn('name="viewport"', page)
@@ -171,7 +181,7 @@ class ReferenceSiteTests(unittest.TestCase):
         for filename, parser in self.pages.items():
             page = (SITE / filename).read_text()
             with self.subTest(page=filename):
-                for field in ("reference", "renderer"):
+                for field in ("reference", "renderer", "quickstart"):
                     self.assertEqual(data[f"{field}_sha256"], parser.metadata[f"{field}-sha256"])
                 body = re.search(r'<main id="main">\n(.*?)\n</main>', page, re.S)[1]
                 self.assertEqual(data["pages"][filename]["body"], body)
@@ -246,6 +256,13 @@ class ReferenceSiteTests(unittest.TestCase):
         for old, new in (("| Blue |", "| Invisible |"), ("| Release |", "| Available maybe |")):
             with self.subTest(replacement=new), self.assertRaises(ValueError):
                 read_reference(self.source.replace(old, new, 1))
+
+    def test_quick_start_extraction_is_exact_and_fail_closed(self):
+        source = "# Project\n\n## Quick start\n\nInstall.\n\n### Select\nUse.\n\n## Other\nIgnore.\n"
+        self.assertEqual(read_quick_start(source), "## Quick start\nInstall.\n\n### Select\nUse.\n")
+        for invalid in ("# No quick start\n", "## Quick start\n\n", source + "\n## Quick start\nDuplicate.\n"):
+            with self.assertRaisesRegex(ValueError, "one README Quick start"):
+                read_quick_start(invalid)
 
     def test_navigation_rejects_missing_link_targets(self):
         with self.assertRaisesRegex(ValueError, "Missing firmware section"):

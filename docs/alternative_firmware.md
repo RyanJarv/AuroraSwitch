@@ -6,9 +6,8 @@ Files shared only on Discord must be supplied manually.
 
 ## Obtain files
 
-The [README quick start](../README.md#quick-start) downloads the selector release
-and verifies Aurora 1.4.4, FDN 1.2.2, Flux Capacitor 0.3.0, and Morse 0.2.0,
-then copies them to your USB drive. No Discord login is needed.
+The [README quick start](../README.md#quick-start) links directly to the selector
+release, Aurora 1.4.4 and FDN 1.2.2. No checkout or Discord login is needed.
 
 For Flux Capacitor and Morse's public GitHub releases, use GitHub CLI:
 
@@ -20,7 +19,8 @@ gh release download v0.2.0 --repo DaveParr/Aurora-Morse \
   --pattern aurora-morse-0.2.0.bin --dir local-firmware
 ```
 
-Use `scripts/prepare_payloads.py` as shown in the guide to check and prepare files.
+Copy supported BINs into the drive's `aurora/` folder. From a source checkout,
+`scripts/prepare_payloads.py` can check and prepare files before copying.
 A matching filename is not enough: their bytes must match the supported version.
 Other versions, including newer releases, need separate support.
 

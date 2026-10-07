@@ -31,7 +31,7 @@ async function start() {
     const response = await fetch(new URL(script.dataset.reference, base));
     if (!response.ok) throw new Error(`Reference HTTP ${response.status}`);
     const data = await response.json();
-    for (const field of ['reference', 'renderer']) {
+    for (const field of ['reference', 'renderer', 'quickstart']) {
         const expected = document.querySelector(`meta[name="${field}-sha256"]`).content;
         if (data[`${field}_sha256`] !== expected) throw new Error('Stale reference data');
     }
