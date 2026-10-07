@@ -1,5 +1,5 @@
 # Build/test and USB preparation; module installation remains a manual step.
-.PHONY: all build usb usb-release build-virtual setup dependencies test check verify-images package package-virtual help
+.PHONY: all build usb download-release build-virtual setup dependencies test check verify-images package package-virtual help
 RELEASE_TAG ?= latest
 all: build
 build: dependencies
@@ -8,8 +8,8 @@ usb:
 	@test -n "$(USB_DIR)" -a -d "$(USB_DIR)" || { echo 'Use make usb USB_DIR=/path/to/mounted/drive'; exit 1; }
 	$(MAKE) build check
 	python3 scripts/prepare_usb.py --usb "$(USB_DIR)"
-usb-release:
-	@test -n "$(USB_DIR)" -a -d "$(USB_DIR)" || { echo 'Use make usb-release USB_DIR=/path/to/mounted/drive'; exit 1; }
+download-release:
+	@test -n "$(USB_DIR)" -a -d "$(USB_DIR)" || { echo 'Use make download-release USB_DIR=/path/to/mounted/drive'; exit 1; }
 	python3 scripts/prepare_usb.py --usb "$(USB_DIR)" --release-tag "$(RELEASE_TAG)"
 build-virtual: dependencies
 	$(MAKE) -C firmware VIRTUAL_TRANSPORT=1 EXPERIMENTAL_HANDOFF=1 DMA_ARENA_CLEANUP=1 BUILD_DIR=build-virtual-experimental-dma
@@ -31,7 +31,7 @@ help:
 	@printf '%s\n' \
 	  'make build          Fetch dependencies and build USB firmware (default)' \
 	  'make usb USB_DIR=/path/to/drive  Build, fetch four supported images and copy to USB' \
-	  'make usb-release USB_DIR=/path/to/drive  Download release and prepare USB (no Arm compiler)' \
+	  'make download-release USB_DIR=/path/to/drive  Download latest release and prepare USB (no Arm compiler)' \
 	  'make build-virtual  Build synthetic-media test firmware; never install it' \
 	  'make check          Run host tests and Python syntax checks' \
 	  'make package        Rebuild clean committed source into a verified USB bundle' \

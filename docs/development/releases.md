@@ -6,7 +6,7 @@ release, preserving its notes and status. If none exists, it creates a
 **draft prerelease**. Existing assets are never overwritten; payload firmware is excluded.
 
 The build and artifact upload passed in [CI](https://github.com/RyanJarv/AuroraSwitch/actions/runs/37555710183).
-The quickstart uses `make usb-release` to download the latest published release, check its
+The quickstart uses `make download-release` to download the latest published release, check its
 manifest hashes, tag/source identity, and real-USB configuration, then reuse the
 existing payload authentication and copying code. These are consistency checks,
 not signatures or proof of physical reliability.

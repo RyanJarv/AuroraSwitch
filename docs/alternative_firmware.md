@@ -6,8 +6,8 @@ Files shared only on Discord must be supplied manually.
 
 ## Obtain files
 
-The [README quick start](../README.md#quick-start) downloads the selector release and
-and checks Aurora 1.4.4, FDN 1.2.2, Flux Capacitor 0.3.0, and Morse 0.2.0,
+The [README quick start](../README.md#quick-start) downloads the selector release
+and verifies Aurora 1.4.4, FDN 1.2.2, Flux Capacitor 0.3.0, and Morse 0.2.0,
 then copies them to your USB drive. No Discord login is needed.
 
 For Flux Capacitor and Morse's public GitHub releases, use GitHub CLI:
