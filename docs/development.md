@@ -7,15 +7,16 @@ small; do not add a second emulator or general firmware manager.
 ## Commands
 
 ```sh
-make dependencies -j2   # fetch pinned sources and build libDaisy
-make -j2               # incremental USB build
-make test              # portable host tests; no device access
-make package           # clean committed source; isolated authenticated build
+make -j2 build       # fetch dependencies and build USB firmware
+make check           # host tests and Python syntax checks
+make package         # isolated USB build from clean committed source
+make build-virtual   # synthetic-media build; never install
+make package-virtual # isolated synthetic-media package
 ```
 
-The [user guide](user_guide.md) lists prerequisites and outputs. Packaging records
-source/tool/dependency identities and verifies ELF/BIN agreement. It does not
-prove behavior or fully reproducible ELF/MAP bytes across build paths.
+The [user guide](user_guide.md) lists prerequisites and outputs.
+Packaging records source and tool identities and checks ELF/BIN agreement.
+It does not prove behavior or byte-identical ELF/MAP across build paths.
 
 ## Add firmware support
 
@@ -45,8 +46,8 @@ Never transfer old evidence to a changed BIN. Use the
 
 ## Tag builds and releases
 
-Pushing a tag runs host tests and an isolated real-USB build with the pinned,
-SHA-256-checked Arm toolchain. The workflow creates a **draft prerelease** with
+Pushing a tag tests and builds USB firmware with the pinned Arm toolchain.
+The workflow creates a **draft prerelease** with
 `AuroraSwitch.bin`, ELF, MAP, `manifest.json`, and `SHA256SUMS`. Third-party
 payloads are excluded. Existing releases are not overwritten.
 
@@ -55,9 +56,8 @@ git tag -a v0.1.0-beta.1 -m "AuroraSwitch beta test build"
 git push origin v0.1.0-beta.1
 ```
 
-Drafts stay unpublished while the [recovery release gate](recovery_release_gate.md)
-is open; a tag/build does not qualify firmware. Tag names never change the
-manifest's development-only status. Do not move an existing release tag.
+Keep drafts unpublished until the [recovery checks](recovery_release_gate.md)
+pass. A successful build is not a hardware test. Do not move a release tag.
 
 To test the workflow without a tag or release:
 

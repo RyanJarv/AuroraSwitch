@@ -4,8 +4,8 @@ Choose a supported Aurora firmware from a USB drive and launch it from RAM.
 Reverse selects, Freeze verifies, and Shift starts it. Reset or power cycling
 returns to the selector through Aurora's existing bootloader.
 
-Beta software with limited testing. Keep the original Aurora firmware available.
-Physical reliability and ordinary stock USB recovery still need testing.
+Beta software with limited testing. Keep the original Aurora firmware and a
+backup of your USB drive. More hardware testing is needed.
 
 ## Get started
 
@@ -17,23 +17,28 @@ The catalog accepts seven exact images: Aurora 1.4.4, FDN 1.2.2, EchoGarden
 0.3.1, CloudscapeX, The Oscillator Is a Lie 0.0.2, Flux Capacitor 0.3.0, and
 Morse 0.2.0. Other versions are not automatically supported.
 
-## Build
+## Quick start
 
-Requires Git, GNU Make, Python 3, a host C/C++ compiler, and GNU Arm Embedded
-**10-2020-q4-major** on PATH.
+Install Git, GNU Make, Python 3, a C/C++ compiler, and GNU Arm Embedded
+**10-2020-q4-major**. Put the Arm toolchain's `bin` directory on PATH, then run:
 
 ```sh
+#!/bin/sh
+set -eu
 git clone https://github.com/RyanJarv/AuroraSwitch.git
 cd AuroraSwitch
-make dependencies -j2
-make -j2
-make test
+make -j2 build
+make check
 ```
 
-The USB build is `firmware/build-experimental-dma/AuroraSwitch.bin`.
-For an isolated build with recorded source, toolchain, and artifact identities,
-run `make package` from a clean committed checkout. Output goes to
-`dist/<manifest-sha256>/`. No command here programs a device.
+Output: `firmware/build-experimental-dma/AuroraSwitch.bin`.
+The build fetches its source dependencies. It does not download payload firmware
+or program a device. Follow the [user guide](docs/user_guide.md) to prepare the
+USB drive and install it.
+
+Use `make package` for a fresh build with a manifest, ELF, and MAP under
+`dist/<manifest-sha256>/`. It requires a clean committed checkout.
+Run `make help` for other targets.
 
 ## Read more
 

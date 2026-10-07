@@ -23,7 +23,7 @@ jobs:
           persist-credentials: false
 
       - name: Test
-        run: make test
+        run: make check
 
       - name: Install pinned Arm toolchain
         env:
