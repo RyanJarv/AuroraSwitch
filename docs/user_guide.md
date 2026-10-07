@@ -5,6 +5,9 @@ Beta software: keep the original Aurora firmware and a backup of your USB drive.
 For the single-command release download and USB copy, use the
 [README quick start](../README.md#quick-start).
 
+For selector colors and each firmware's knobs, buttons, gates and modes, use the
+[firmware control reference](firmware_reference.md).
+
 ## Build
 
 Requires Git, GNU Make, Python 3, a C/C++ compiler, and GNU Arm Embedded
