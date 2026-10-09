@@ -1,6 +1,6 @@
 # AuroraSwitch
 
-Choose a supported Aurora firmware from a USB drive. Reverse selects, Freeze verifies, and Shift starts it. RAM images launch without flashing; Dirt Verb runs from QSPI.
+Choose a supported Aurora firmware from a USB drive. Shift changes category, Reverse selects, and Freeze verifies and starts it. RAM images launch without flashing; Dirt Verb runs from QSPI.
 
 Dirt Verb launch replaces the installed application, so menu re-entry needs ready USB media containing the selector firmware. Everything will work fine if you just leave it plugged in.
 
@@ -18,9 +18,13 @@ Back up a FAT USB drive. No repository checkout or build tools are needed.
 
 ### Select firmware
 
-1. **Reverse** selects by color.
-2. **Freeze** loads and verifies; wait for green.
-3. **Shift** launches.
+For the current source build:
+
+1. **Shift** changes category: blue reverbs, green delays, amber synths/other.
+2. **Reverse** selects firmware, keeping its original color. One arc shows its position and category color.
+3. **Freeze** verifies and launches. Red means loading failed; choose or retry.
+
+The older published release uses Reverse → Freeze → Shift instead.
 
 Power cycle to return to the selector.
 

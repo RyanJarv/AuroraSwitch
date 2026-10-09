@@ -20,7 +20,7 @@ namespace
 {
     daisy::DaisySeed seed;
     daisy::Switch next_button, load_button;
-    daisy::Switch launch_button;
+    daisy::Switch category_button;
     daisy::LedDriverPca9685<2, true> leds;
     // BOOT_SRAM puts ordinary globals/stack in DTCM, inaccessible to USB DMA.
     // FatFs reads sectors into both FATFS::win and FIL::buf, not just staging.
@@ -42,9 +42,10 @@ namespace
     std::uint8_t staged[aurora_selector::StagingCapacity()];
     unsigned selected = 0;
     daisy_development::SupportedImageMenu<
-        sizeof(aurora_selector::Images) / sizeof(aurora_selector::Images[0])> menu;
-    // Discovery selects; only a successful Freeze load grants Verified state.
-    enum class State { Waiting, Empty, Selected, Loading, Verified, Error };
+        sizeof(aurora_selector::Images) / sizeof(aurora_selector::Images[0])>
+        menu(aurora_selector::Categories);
+    // Freeze authenticates and launches in the same iteration; no stale approval.
+    enum class State { Waiting, Empty, Selected, Loading, Error };
     State state = State::Waiting;
     bool media_was_ready = false;
     volatile daisy_development::MediaInitialization media_initialization =
@@ -78,6 +79,15 @@ namespace
             : std::array<float, 3>{0.f, 0.f, 0.f};
         for(unsigned component = 0; component < color.size(); ++component)
             leds.SetLed(component, color[component]);
+        // SDK arc wiring is non-sequential. One lit arc shows the group's position.
+        constexpr unsigned arcs[6][3] = {
+            {6, 7, 8}, {9, 10, 11}, {16, 17, 18},
+            {12, 13, 14}, {22, 23, 24}, {28, 29, 30}};
+        for(unsigned position = 0; position < 6; ++position)
+            for(unsigned component = 0; component < 3; ++component)
+                leds.SetLed(arcs[position][component],
+                    menu.HasSelection() && position == menu.Position()
+                    ? aurora_selector::CategoryColors[menu.Category()][component] : 0.f);
         leds.SwapBuffersAndTransmit();
     }
 
@@ -178,7 +188,7 @@ int main()
     __HAL_RCC_D2SRAM2_CLK_ENABLE();
     next_button.Init(seed.GetPin(10), 1000.f); // Reverse
     load_button.Init(seed.GetPin(1), 1000.f);  // Freeze
-    launch_button.Init(seed.GetPin(13), 1000.f); // Shift confirms launch
+    category_button.Init(seed.GetPin(13), 1000.f); // Shift changes category
 
     daisy::I2CHandle i2c;
     daisy::I2CHandle::Config led_config;
@@ -223,7 +233,7 @@ int main()
         last_control = now;
         next_button.Debounce();
         load_button.Debounce();
-        launch_button.Debounce();
+        category_button.Debounce();
         const bool media_ready = MediaReady();
         if(!media_ready)
         {
@@ -246,32 +256,36 @@ int main()
                 : menu.HasSelection() ? State::Selected : State::Empty;
         }
         media_was_ready = MediaReady();
-        if(next_button.FallingEdge())
+        const bool category_changed = category_button.FallingEdge();
+        const bool selection_changed = next_button.FallingEdge();
+        if(category_changed || selection_changed)
         {
-            menu.Next();
+            if(category_changed) menu.NextCategory();
+            else menu.Next();
             selected = static_cast<unsigned>(menu.Selected());
             state = !MediaReady() ? State::Waiting
                 : menu.HasSelection() ? State::Selected : State::Empty;
         }
-        if(load_button.FallingEdge() && MediaReady() && menu.HasSelection())
+        if(load_button.FallingEdge() && !category_changed && !selection_changed
+           && MediaReady() && menu.HasSelection())
         {
             state = State::Loading;
             SetStatus(0.4f, 0.2f, 0.f);
-            state = AuthenticateFile(selected) ? State::Verified : State::Error;
-        }
-        if(launch_button.FallingEdge() && state == State::Verified
-           && MediaReady() && menu.HasSelection()
-           && !load_button.FallingEdge() && !next_button.FallingEdge())
-        {
-#ifdef SELECTOR_VIRTUAL_TRANSPORT
-            if(!aurora_selector::VirtualLaunch(seed, selector_virtual_media,
-                   aurora_selector::Images[selected], staged))
-#else
-            if(!aurora_selector::ExperimentalLaunch(
-                   seed, aurora::usb, selector_filesystem.GetUSBPath(),
-                   aurora_selector::Images[selected], staged))
-#endif
+            // Handoff independently revalidates these same staged bytes.
+            if(!AuthenticateFile(selected) || !MediaReady())
                 state = State::Error;
+            else
+            {
+#ifdef SELECTOR_VIRTUAL_TRANSPORT
+                if(!aurora_selector::VirtualLaunch(seed, selector_virtual_media,
+                       aurora_selector::Images[selected], staged))
+#else
+                if(!aurora_selector::ExperimentalLaunch(
+                       seed, aurora::usb, selector_filesystem.GetUSBPath(),
+                       aurora_selector::Images[selected], staged))
+#endif
+                    state = State::Error;
+            }
         }
         if(now % 20U == 0U)
         {
@@ -281,7 +295,6 @@ int main()
                 case State::Empty: SetStatus(0.4f, 0.f, 0.f); break;
                 case State::Selected: SetStatus(0.15f, 0.15f, 0.15f); break;
                 case State::Loading: SetStatus(0.4f, 0.2f, 0.f); break;
-                case State::Verified: SetStatus(0.f, 0.4f, 0.f); break;
                 case State::Error: SetStatus(0.4f, 0.f, 0.f); break;
             }
         }

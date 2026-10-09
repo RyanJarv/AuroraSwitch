@@ -9,7 +9,7 @@ import unittest
 from urllib.parse import urlsplit
 import xml.etree.ElementTree as ET
 
-from scripts.render_reference import PANEL_CONTROLS, label_controls, navigation, read_quick_start, read_reference, slug, swatch
+from scripts.render_reference import CATEGORIES, PANEL_CONTROLS, label_controls, navigation, read_quick_start, read_reference, slug, swatch
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "site"
@@ -65,7 +65,7 @@ class ReferenceSiteTests(unittest.TestCase):
     def setUpClass(cls):
         cls.source = (ROOT / "docs/firmware_reference.md").read_text()
         _, cls.sections, cls.entries = read_reference(cls.source)
-        cls.navigation_swatches = 2 * len({entry.anchor for entry in cls.entries})
+        cls.navigation_swatches = 2 * (len({entry.anchor for entry in cls.entries}) + len(CATEGORIES))
         cls.pages = {}
         for file in SITE.glob("*.html"):
             parser = ReferenceParser()
@@ -100,6 +100,8 @@ class ReferenceSiteTests(unittest.TestCase):
             with self.subTest(page=filename):
                 for key, digest in fingerprints.items():
                     self.assertEqual(parser.metadata.get(key), digest, "Run make reference-html")
+                style_digest = hashlib.sha256((SITE / "style.css").read_bytes()).hexdigest()
+                self.assertIn(f"style.css?v={style_digest}", parser.links, "Run make reference-html")
 
     def test_links_and_fragments_resolve_on_every_page(self):
         for filename, parser in self.pages.items():
@@ -117,9 +119,9 @@ class ReferenceSiteTests(unittest.TestCase):
                         self.assertIn(destination, self.pages, link)
                         self.assertIn(target.fragment, self.pages[destination].ids, link)
 
-    def test_index_has_summary_and_install_directions_not_a_second_directory(self):
+    def test_index_has_grouped_firmware_and_compact_install_directions(self):
         parser = self.pages["index.html"]
-        self.assertEqual(parser.swatches, self.navigation_swatches)
+        self.assertEqual(parser.swatches, self.navigation_swatches * 3 // 2)
         self.assertEqual(len(self.entries), 14)
         page = (SITE / "index.html").read_text()
         body = re.search(r'<main id="main">\n(.*?)\n</main>', page, re.S)[1]
@@ -135,15 +137,21 @@ class ReferenceSiteTests(unittest.TestCase):
         self.assertNotIn("make download-release", body)
         self.assertIn("only BIN there", body)
         self.assertIn("unzip first", body)
-        self.assertIn("wait for green", body)
+        self.assertIn("changes category", body)
+        self.assertIn("verifies and launches", body)
+        self.assertIn("older published release", body)
+        self.assertIn('class="category-overview"', body)
+        self.assertIn('<details class="setup-guide"><summary>Install AuroraSwitch</summary>', body)
+        for category in CATEGORIES:
+            self.assertIn(category, body)
         self.assertNotIn('class="firmware-entry"', page)
         self.assertNotIn('class="firmware-list"', page)
         self.assertNotIn("Reference sources and maintenance", page)
         self.assertNotIn('id="reference-maintenance"', page)
         for section in self.sections:
             if any(entry.anchor == section.anchor for entry in self.entries):
-                self.assertEqual(page.count(f'href="{section.filename}"'), 2)
-                self.assertNotIn(f'href="{section.filename}"', body)
+                self.assertEqual(page.count(f'href="{section.filename}"'), 3)
+                self.assertEqual(body.count(f'href="{section.filename}"'), 1)
 
     def test_additional_images_are_development_only_and_ram_fata_is_unique(self):
         for name, color in (("Dirt Verb 1.1", "Red-pink"),
@@ -170,7 +178,8 @@ class ReferenceSiteTests(unittest.TestCase):
                 self.assertNotIn("On this page", parser.nav_labels)
                 self.assertNotIn('class="page-links"', page)
                 self.assertNotIn('class="back-link"', page)
-                self.assertEqual(parser.swatches, self.navigation_swatches + 1)
+                self.assertEqual(parser.swatches, self.navigation_swatches + 2)
+                self.assertIn(f'{swatch(CATEGORIES[entries[0].category])}{entries[0].category}</span>', page)
                 for heading in re.findall(r"^### (.+)$", section.markdown, re.M):
                     self.assertIn(slug(heading), parser.ids)
                 self.assertIn(entries[0].color, page)
@@ -185,7 +194,7 @@ class ReferenceSiteTests(unittest.TestCase):
             page = (SITE / filename).read_text()
             with self.subTest(page=filename):
                 self.assertEqual(parser.h1_count, 1)
-                self.assertEqual(parser.current, [filename, filename])
+                self.assertEqual(parser.current, [filename] * (3 if filename == "index.html" else 2))
                 self.assertIn("main", parser.ids)
                 self.assertIn("Firmware directory", parser.nav_labels)
                 self.assertIn("Mobile firmware directory", parser.nav_labels)
@@ -204,6 +213,11 @@ class ReferenceSiteTests(unittest.TestCase):
                 self.assertIn('lang="en"', page)
                 self.assertIn('class="mobile-menu"', page)
                 self.assertIn('class="skip-link"', page)
+                self.assertIn(f'<body data-page="{filename}">', page)
+                for control, action in (("Shift", "Next category"), ("Reverse", "Next firmware"),
+                                        ("Freeze", "Verify &amp; launch")):
+                    self.assertIn(f'<kbd>{control}</kbd></dt><dd>{action}</dd>', page)
+                self.assertIn("Current source build", page)
 
     def test_spa_data_matches_every_fallback(self):
         data = json.loads((SITE / "reference.json").read_text())
@@ -284,14 +298,15 @@ class ReferenceSiteTests(unittest.TestCase):
             if not entries:
                 continue
             name = re.sub(r" \d+(?:\.\d+)+$", "", section.title)
+            name = name.removesuffix(" RAM experiment").replace("Aurora HP-filter variant", "Aurora HP-filter")
             self.assertIn(f'<span>{name}</span><small class="color-label">'
                           f'{swatch(entries[0].color)}{entries[0].color}</small>', menu)
             if name != section.title:
                 self.assertNotIn(f'<span>{section.title}</span>', menu)
         self.assertEqual(menu.count('class="swatch"'), self.navigation_swatches // 2)
 
-    def test_menu_is_one_list_in_selector_family_order(self):
-        # Bind web ordering to the real catalog, not Markdown section placement.
+    def test_menu_groups_match_selector_membership_and_family_order(self):
+        # Bind every row to the catalog, including versions hidden on family pages.
         family_pages = {
             "Fdn": "fdn-122.html", "Aurora": "aurora-144.html",
             "EchoGarden": "echogarden-031.html", "Cloudscape": "cloudscapex.html",
@@ -301,13 +316,26 @@ class ReferenceSiteTests(unittest.TestCase):
             "DirtVerb": "dirt-verb-11.html", "HpFilter": "aurora-hp-filter-variant.html",
         }
         catalog = (ROOT / "firmware/images.hpp").read_text()
-        families = list(dict.fromkeys(re.findall(r"menu_colors::(\w+)", catalog)))
+        rows = re.findall(r"menu_colors::(\w+)", catalog)
+        families = list(dict.fromkeys(rows))
         self.assertEqual(set(families), set(family_pages))
+        category_block = re.search(r"Categories\{([^}]+)\}", catalog)[1]
+        categories = [int(value) for value in re.findall(r"\d+", category_block)]
+        self.assertEqual(len(categories), len(self.entries))
+        self.assertEqual([entry.category for entry in self.entries],
+                         [list(CATEGORIES)[value] for value in categories])
+        self.assertEqual([next(section.filename for section in self.sections if section.anchor == entry.anchor)
+                          for entry in self.entries], [family_pages[family] for family in rows])
+        self.assertIn('{0.f, 0.f, 0.4f}, {0.f, 0.4f, 0.f}, {0.4f, 0.2f, 0.f}', catalog)
         menu = navigation(list(reversed(self.sections)), self.entries, "index.html")
         parser = ReferenceParser()
         parser.feed(menu)
-        self.assertEqual(parser.links, ["index.html"] + [family_pages[family] for family in families])
-        self.assertEqual(menu.count("<h2>"), 1)
+        ordered = ["index.html"]
+        for category in range(len(CATEGORIES)):
+            ordered += list(dict.fromkeys(family_pages[family] for family, group in zip(rows, categories)
+                                         if group == category))
+        self.assertEqual(parser.links, ordered)
+        self.assertEqual(menu.count('<section class="category-group"'), 3)
         self.assertNotIn("Release firmware", menu)
         self.assertNotIn("Development additions", menu)
         self.assertNotIn("outside-the-selector-catalog.html", menu)
@@ -338,6 +366,13 @@ class ReferenceSiteTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Inconsistent family"):
             read_reference(self.source.replace(
                 "| Yellow | [Flux Capacitor 0.1.0]", "| Azure | [Flux Capacitor 0.1.0]"))
+
+    def test_categories_reject_unknown_values_or_split_versions(self):
+        with self.assertRaisesRegex(ValueError, "Invalid color row"):
+            read_reference(self.source.replace("| Reverbs |", "| Unknown |", 1))
+        with self.assertRaisesRegex(ValueError, "Inconsistent family category"):
+            read_reference(self.source.replace("| Delays | Yellow | [Flux Capacitor 0.1.0]",
+                                                "| Reverbs | Yellow | [Flux Capacitor 0.1.0]"))
 
     def test_navigation_rejects_sections_without_a_color_entry(self):
         with self.assertRaisesRegex(ValueError, "Unlinked firmware sections"):

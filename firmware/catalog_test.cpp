@@ -9,6 +9,15 @@ int main()
     constexpr auto count = sizeof(Images) / sizeof(Images[0]);
     static_assert(count == 14);
     static_assert(StagingCapacity() == 182240);
+    constexpr std::array<unsigned, count> groups{0, 0, 1, 1, 2, 1, 2, 1, 1, 2, 2, 2, 0, 0};
+    assert(Categories == groups);
+    // Six arcs must represent every available entry even with old versions present.
+    for(unsigned category = 0; category < CategoryColors.size(); ++category)
+    {
+        unsigned members = 0;
+        for(const auto group : Categories) members += group == category;
+        assert(members <= 6);
+    }
     assert(Images[0].menu_color == (std::array<float, 3>{0.f, 0.f, .4f}));
     assert(Images[1].menu_color == (std::array<float, 3>{0.f, .4f, 0.f}));
     // Freeze the public mapping independently of the shared constants. Versions

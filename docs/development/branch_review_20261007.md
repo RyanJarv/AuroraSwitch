@@ -28,6 +28,21 @@ BIN equality. ELF/MAP identities change with source/debug metadata and are
 recorded in each sealed manifest. This checks compiled equivalence, not new
 live emulation or physical recovery. Earlier virtual evidence retains its scope.
 
+## Logical-review build fixes
+
+Review of `4564480` found missing incremental link dependencies and inherited
+hardware-access Make targets. Regression tests failed before the fixes:
+
+- Changed libDaisy archives and linker scripts now trigger relinking; changed
+  upstream build rules also trigger recompilation, for both transports.
+- `debug`, `openocd`, and `debug_client` are blocked alongside programming
+  targets. Tests use dry runs only, never hardware.
+
+`make check` passes 62 tests and Python compilation. Both local builds with
+GNU Arm 10-2020-q4-major pass and match the complete BIN hashes in the table
+above. No firmware source, release behavior, or menu-return instructions changed.
+This is build-system evidence, not new physical qualification.
+
 ## Original review fixes (history)
 
 - `make usb QSPI_HANDOFF=1` built in the QSPI directory but copied the default

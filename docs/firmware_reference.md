@@ -2,28 +2,31 @@
 
 ## Color lookup
 
-| Selector color | Firmware | What it does | Availability |
-| --- | --- | --- | --- |
-| Blue | [FDN 1.2.2](#fdn-122--blue) | Conventional reverb | Release |
-| Green | [Aurora 1.4.4](#aurora-144--green) | Spectral reverb | Release |
-| Cyan | [EchoGarden 0.3.1](#echogarden-031--cyan) | Multi-line echo and ambience | Release |
-| Magenta | [CloudscapeX](#cloudscapex--magenta) | Modulated delay, diffusion and filter delay | Release |
-| Amber | [The Oscillator Is a Lie 0.0.2](#the-oscillator-is-a-lie-002--amber) | Aliasing/ring-mod oscillator | Release |
-| Yellow | [Flux Capacitor 0.3.0](#flux-capacitor--yellow) | Tape pitch, delay and coloration | Release |
-| White | [Morse 0.2.0](#morse--white) | Clocked rhythmic VCA | Release |
-| Yellow | [Flux Capacitor 0.1.0](#flux-capacitor--yellow) | Tape pitch, stop, wow/flutter | Development |
-| Yellow | [Flux Capacitor 0.2.0](#flux-capacitor--yellow) | Adds tape delay | Development |
-| White | [Morse 0.1.0](#morse--white) | Three-pattern rhythmic VCA | Development |
-| Pale red | [Tempest 1.0.0](#tempest-100--pale-red) | Multi-bank distortion | Development |
-| Azure | [FataMorgana RAM experiment](#fatamorgana-ram-experiment--azure) | Dual wavetable synthesizer | Development |
-| Red-pink | [Dirt Verb 1.1](#dirt-verb-11--red-pink) | Driven reverb with chorus and pitch shifting | Development |
-| Lime | [Aurora HP-filter variant](#aurora-hp-filter-variant--lime) | Spectral reverb with dry-input high-pass | Development |
+| Category | Selector color | Firmware | What it does | Availability |
+| --- | --- | --- | --- | --- |
+| Reverbs | Blue | [FDN 1.2.2](#fdn-122--blue) | Conventional reverb | Release |
+| Reverbs | Green | [Aurora 1.4.4](#aurora-144--green) | Spectral reverb | Release |
+| Delays | Cyan | [EchoGarden 0.3.1](#echogarden-031--cyan) | Multi-line echo and ambience | Release |
+| Delays | Magenta | [CloudscapeX](#cloudscapex--magenta) | Modulated delay, diffusion and filter delay | Release |
+| Synths / Other | Amber | [The Oscillator Is a Lie 0.0.2](#the-oscillator-is-a-lie-002--amber) | Aliasing/ring-mod oscillator | Release |
+| Delays | Yellow | [Flux Capacitor 0.3.0](#flux-capacitor--yellow) | Tape pitch, delay and coloration | Release |
+| Synths / Other | White | [Morse 0.2.0](#morse--white) | Clocked rhythmic VCA | Release |
+| Delays | Yellow | [Flux Capacitor 0.1.0](#flux-capacitor--yellow) | Tape pitch, stop, wow/flutter | Development |
+| Delays | Yellow | [Flux Capacitor 0.2.0](#flux-capacitor--yellow) | Adds tape delay | Development |
+| Synths / Other | White | [Morse 0.1.0](#morse--white) | Three-pattern rhythmic VCA | Development |
+| Synths / Other | Pale red | [Tempest 1.0.0](#tempest-100--pale-red) | Multi-bank distortion | Development |
+| Synths / Other | Azure | [FataMorgana RAM experiment](#fatamorgana-ram-experiment--azure) | Dual wavetable synthesizer | Development |
+| Reverbs | Red-pink | [Dirt Verb 1.1](#dirt-verb-11--red-pink) | Driven reverb with chorus and pitch shifting | Development |
+| Reverbs | Lime | [Aurora HP-filter variant](#aurora-hp-filter-variant--lime) | Spectral reverb with dry-input high-pass | Development |
 
-Reverse selects → Freeze verifies → **wait for Freeze green** → Shift launches.
-Power cycle to return. [Setup guide](user_guide.md).
+Current source build: **Shift** → category, **Reverse** → firmware,
+**Freeze** → verify and launch. Category colors: blue reverbs, green delays,
+amber synths/other. Firmware colors are unchanged.
+The older published release uses Reverse → Freeze → Shift.
+Power cycle with the selector USB attached to return. [Setup guide](user_guide.md).
 
-Dirt Verb and HP-filter are included in every `codex/qspi-dirt-verb` build, not
-the published release. Virtual screening is not physical compatibility or
+Dirt Verb and HP-filter are included in current source builds, not
+the older published release. Virtual screening is not physical compatibility or
 recovery testing. FataMorgana uses our RAM build; its duplicate QSPI option is retired.
 
 ## FDN 1.2.2 — Blue
@@ -419,7 +422,7 @@ No selector color; these cannot launch with the published RAM selector.
 [Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
 
 Driven reverb with optional chorus and pitch shifting. Only the exact
-`DirtVerb 1.1.bin` is admitted by this branch's selector.
+`DirtVerb 1.1.bin` is supported by the current source build.
 
 ### Knobs
 
@@ -454,7 +457,7 @@ Driven reverb with optional chorus and pitch shifting. Only the exact
 [Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
 
 Stock Aurora controls with two shifted changes. Place the exact supplied
-`Aurora_v1-4-6_hpfilt.bin` in `aurora/`; only this development branch's selector
+`Aurora_v1-4-6_hpfilt.bin` in `aurora/`; the current source build's selector
 has enough reviewed staging capacity for this image.
 
 ### Shifted controls

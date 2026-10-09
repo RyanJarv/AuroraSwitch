@@ -83,6 +83,11 @@ class Browser:
         element = self.request("POST", "/element", {"using": "css selector", "value": selector})
         self.request("POST", f'/element/{element["element-6066-11e4-a52e-4f735466cecf"]}/click', {})
 
+    def choose(self, filename):
+        """Use the visible directory: home cards or a firmware-page sidebar."""
+        home = self.execute("return document.body.dataset.page === 'index.html'")
+        self.click(f'{".category-overview" if home else ".sidebar"} a[href="{filename}"]')
+
     def wait(self, expression):
         deadline = time.monotonic() + 10
         while time.monotonic() < deadline:
@@ -102,7 +107,7 @@ def check(args, base):
         browser.open(base + "index.html")
         browser.wait("document.documentElement.dataset.navigation === 'spa'")
         browser.request("POST", "/window/rect", {"width": 1280, "height": 600})
-        assert browser.execute("""const link = document.querySelector('.sidebar a[href="fdn-122.html"]');
+        assert browser.execute("""const link = document.querySelector('.category-overview a[href="fdn-122.html"]');
             const name = link.firstElementChild;
             const color = link.querySelector('.color-label');
             const dot = color.querySelector('.swatch');
@@ -111,10 +116,17 @@ def check(args, base):
                 && getComputedStyle(dot).backgroundColor === 'rgb(55, 135, 255)'
                 && colorBounds.left >= titleBounds.right
                 && Math.abs(colorBounds.top + colorBounds.height / 2 - titleBounds.top - titleBounds.height / 2) < 2;""")
-        assert browser.execute("""const colors = [...document.querySelectorAll('.sidebar .color-label')];
-            const dots = colors.map(color => color.querySelector('.swatch').getBoundingClientRect().left);
-            return Math.max(...dots) - Math.min(...dots) < 1
-                && colors.every(color => getComputedStyle(color).justifyContent !== 'flex-end');""")
+        assert browser.execute("""const groups = [...document.querySelectorAll('.category-overview .category-group')];
+            return groups.map(group => group.querySelector('h2').textContent).join('|')
+                === 'ReverbsBlue|DelaysGreen|Synths / OtherAmber'
+                && groups.map(group => getComputedStyle(group).borderTopColor).join('|')
+                === 'rgb(55, 135, 255)|rgb(53, 191, 88)|rgb(220, 154, 37)'
+                && groups.map(group => group.querySelectorAll('li').length).join(',') === '4,3,4'
+                && [...document.querySelectorAll('.selector-controls kbd')].map(key => key.textContent).join(',')
+                === 'Shift,Reverse,Freeze'
+                && [...document.querySelectorAll('.selector-controls dd')].map(action => action.textContent).join('|')
+                === 'Next category|Next firmware|Verify & launch'
+                && groups.every(group => group.getBoundingClientRect().width > 250);""")
         browser.execute("""window.referenceTestMarker = true;
             window.referenceLayout = document.querySelector('.layout');
             window.referenceMain = document.querySelector('main');
@@ -124,7 +136,7 @@ def check(args, base):
             window.scrollTo(0, 150);""")
         browser.wait("scrollY === 150")
         before = SiteHandler.counts.copy()
-        browser.click('.sidebar a[href="fdn-122.html"]')
+        browser.choose('fdn-122.html')
         browser.wait("location.pathname.endsWith('/fdn-122.html') && document.activeElement.tagName === 'H1'")
         assert browser.execute("return window.referenceTestMarker && document.title.startsWith('FDN')")
         assert browser.execute("""return referenceLayout === document.querySelector('.layout')
@@ -154,11 +166,13 @@ def check(args, base):
         data = json.loads((SITE / "reference.json").read_text())
         before = SiteHandler.counts.copy()
         for filename, page in data["pages"].items():
-            browser.click(f'.sidebar a[href="{filename}"]')
+            browser.choose(filename)
             browser.wait(f"document.title === {json.dumps(page['title'])}")
             assert browser.execute("return window.referenceTestMarker")
             assert browser.execute(f"""const selected = [...document.querySelectorAll('[aria-current="page"]')];
-                return selected.length === 2 && selected.every(link => link.getAttribute('href') === '{filename}');""")
+                return selected.length === {3 if filename == 'index.html' else 2}
+                    && selected.every(link => link.getAttribute('href') === '{filename}')
+                    && document.body.dataset.page === '{filename}';""")
         assert set((SiteHandler.counts - before)) <= {"/aurora-panel.svg"}, "A firmware view caused a document/data reload"
         # Direct URLs still render their own fallback, then enhance the deep link.
         browser.open(base + "tempest-100.html#buttons-and-gates")
@@ -184,18 +198,30 @@ def check(args, base):
                 browser.wait(f"document.querySelector('iframe')?.contentWindow?.location.pathname.endsWith('/{page}') && document.querySelector('iframe')?.contentDocument?.documentElement?.dataset.navigation === 'spa'")
                 assert browser.execute("""const frame = document.querySelector('iframe');
                     return frame.contentDocument.documentElement.scrollWidth <= frame.contentWindow.innerWidth;"""), (width, page)
+                if page == 'index.html':
+                    assert browser.execute("""const frame = document.querySelector('iframe');
+                        const cards = [...frame.contentDocument.querySelectorAll('.category-overview .category-group')];
+                        return cards.length === 3 && cards.every(card => card.getBoundingClientRect().width > 0)
+                            && getComputedStyle(frame.contentDocument.querySelector('.sidebar')).display === 'none';"""), width
         browser.execute("""const frame = document.querySelector('iframe'); frame.style.width = '390px';
             frame.contentDocument.querySelector('.mobile-menu summary').click();""")
         browser.wait("document.querySelector('iframe').contentDocument.querySelector('.mobile-menu').open")
         browser.execute("document.querySelector('iframe').contentDocument.querySelector('.mobile-menu a[href=\"morse.html\"]').click()")
         browser.wait("document.querySelector('iframe').contentDocument.title.startsWith('Morse')")
         assert browser.execute("return !document.querySelector('iframe').contentDocument.querySelector('.mobile-menu').open")
+        browser.open(base + "index.html")
+        browser.wait("document.documentElement.dataset.navigation === 'spa'")
+        # A physical keyboard can activate the same real link, without a custom widget.
+        browser.execute("document.querySelector('.category-overview a[href=\"fdn-122.html\"]').focus()")
+        browser.request("POST", "/actions", {"actions": [{"type": "key", "id": "keyboard", "actions": [
+            {"type": "keyDown", "value": "\ue007"}, {"type": "keyUp", "value": "\ue007"}]}]})
+        browser.wait("document.title.startsWith('FDN') && document.activeElement.tagName === 'H1'")
         for fault in ("unavailable", "stale", "stale-quickstart"):
             SiteHandler.fault = fault
             browser.open(base + "index.html")
             browser.wait("document.documentElement.dataset.navigation === 'static'")
             assert not browser.execute("return document.documentElement.dataset.navigation === 'spa'")
-            browser.click('.sidebar a[href="fdn-122.html"]')
+            browser.choose('fdn-122.html')
             assert browser.execute("return document.querySelector('h1').textContent === 'FDN 1.2.2'")
             print(f"PASS {fault} SPA data falls back to ordinary pages")
     finally:
@@ -204,7 +230,8 @@ def check(args, base):
     browser = Browser(args.webdriver, args.firefox, javascript=False)
     try:
         browser.open(base + "index.html")
-        browser.click('.sidebar a[href="fdn-122.html"]')
+        # JS is disabled, so query only native WebDriver elements.
+        browser.click('.category-overview a[href="fdn-122.html"]')
         element = browser.request("POST", "/element", {"using": "css selector", "value": "h1"})
         heading = browser.request("GET", f'/element/{element["element-6066-11e4-a52e-4f735466cecf"]}/text')
         assert heading == "FDN 1.2.2"
@@ -217,9 +244,11 @@ def check(args, base):
         browser.wait("document.documentElement.dataset.navigation === 'spa'")
         assert browser.execute("return matchMedia('(prefers-color-scheme: dark)').matches")
         assert browser.execute("return getComputedStyle(document.body).backgroundColor === 'rgb(19, 24, 32)'")
-        browser.click('.sidebar a[href="flux-capacitor.html"]')
+        browser.choose('flux-capacitor.html')
         browser.wait("document.title.startsWith('Flux Capacitor')")
-        assert browser.execute("return document.querySelectorAll('.firmware-meta .swatch').length === 1")
+        assert browser.execute("""return document.querySelectorAll('.firmware-meta .swatch').length === 2
+            && document.querySelector('.firmware-meta .category-label').textContent === 'Delays'
+            && document.querySelector('.firmware-meta .color-label').textContent === 'Yellow';""")
         print("PASS dark-theme directory and controls")
     finally:
         browser.close()
