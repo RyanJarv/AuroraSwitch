@@ -231,7 +231,6 @@ def document(title: str, body: str, menu: str, digest: str, filename: str) -> st
 </nav>
 </header>
 <section class="selector-controls" aria-label="Aurora startup menu controls">
-<span class="selector-title">Aurora startup menu <small>Current source build</small></span>
 <dl>
 <div><dt><kbd>Shift</kbd></dt><dd>Next category</dd></div>
 <div><dt><kbd>Reverse</kbd></dt><dd>Next firmware</dd></div>
@@ -241,8 +240,7 @@ def document(title: str, body: str, menu: str, digest: str, filename: str) -> st
 <div class="layout">
 <aside class="sidebar"><nav aria-label="Firmware directory">{menu}</nav></aside>
 <div class="content">
-<details class="mobile-menu"><summary>Firmware categories</summary>
-<nav aria-label="Mobile firmware directory">{menu}</nav></details>
+<div class="mobile-menu"><nav aria-label="Mobile firmware directory">{menu}</nav></div>
 <main id="main">
 {body}
 </main>
@@ -264,13 +262,12 @@ def render_pages() -> dict[str, str]:
     if len(parts) != 1 + 2 * len(sections):
         raise ValueError("Rendered sections do not match Markdown sections")
     bodies = {section.anchor: parts[2 * i + 2] for i, section in enumerate(sections)}
-    home = '''<div class="home-heading"><h1>Choose your sound.</h1>
-<p>AuroraSwitch · Firmware for your Aurora</p></div>
+    home = '''<p class="home-intro">AuroraSwitch · Firmware for your Aurora</p>
 '''
     home += '<nav class="category-overview" aria-label="Firmware categories">'
     home += navigation(sections, entries, "index.html") + '</nav>'
-    home += '<details class="setup-guide"><summary>Install AuroraSwitch</summary>'
-    home += render_markdown(read_quick_start((ROOT / "README.md").read_text()), [], ROOT) + '</details>'
+    home += '<section class="setup-guide">'
+    home += render_markdown(read_quick_start((ROOT / "README.md").read_text()), [], ROOT) + '</section>'
     home += '<p class="beta-status">Beta · Limited testing. Keep original Aurora firmware for recovery.</p>'
     pages = {"index.html": document("Firmware reference", home, navigation(sections, entries, "index.html"), digest, "index.html")}
     for section in sections:

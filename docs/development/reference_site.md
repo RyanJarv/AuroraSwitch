@@ -7,11 +7,11 @@ The home page groups firmware into blue Reverbs, green Delays, and amber
 Synths / Other. Firmware pages share the same grouped sidebar/mobile directory.
 The startup strip labels Shift, Reverse, and Freeze directly; firmware colors
 stay unchanged. Family order within each group matches the selector catalog.
-Installation stays in a short expandable section. Unsupported-firmware notes
+Installation stays visible below the categories. Unsupported-firmware notes
 stay in the Markdown reference, not a separate website page.
 
 A small `navigation.js` loads `reference.json` once and replaces only the main content
-on navigation. The sidebar, mobile menu and footer stay as ordinary HTML.
+on navigation. The sidebar, mobile directory and footer stay as ordinary HTML.
 Back/Forward and direct links work; if JavaScript or the content bundle is
 unavailable, links load the static pages normally. There is no framework,
 service worker or Node toolchain. The generated bundle avoids fetching another

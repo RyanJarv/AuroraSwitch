@@ -12,6 +12,8 @@ GitHub operations. Preserve unrelated local changes.
   are useful; prose teaching people how website elements work is not.
 - Do not add sentences such as “click this button to change the view,” legends
   explaining website widgets, or a “how to use this website” section.
+- Do not use collapsible sections, accordions, or minimize/expand controls.
+  Keep content visible; use ordinary page links for navigation.
 - Hardware instructions are different: show the actual module actions briefly,
   such as **Shift — next category**, **Reverse — next firmware**, and
   **Freeze — verify & launch**. Keep install/recovery steps easy to find.

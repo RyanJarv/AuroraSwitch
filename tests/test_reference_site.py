@@ -141,7 +141,8 @@ class ReferenceSiteTests(unittest.TestCase):
         self.assertIn("verifies and launches", body)
         self.assertIn("older published release", body)
         self.assertIn('class="category-overview"', body)
-        self.assertIn('<details class="setup-guide"><summary>Install AuroraSwitch</summary>', body)
+        self.assertIn('<section class="setup-guide">', body)
+        self.assertNotIn("Choose your sound", body)
         for category in CATEGORIES:
             self.assertIn(category, body)
         self.assertNotIn('class="firmware-entry"', page)
@@ -193,7 +194,7 @@ class ReferenceSiteTests(unittest.TestCase):
         for filename, parser in self.pages.items():
             page = (SITE / filename).read_text()
             with self.subTest(page=filename):
-                self.assertEqual(parser.h1_count, 1)
+                self.assertEqual(parser.h1_count, 0 if filename == "index.html" else 1)
                 self.assertEqual(parser.current, [filename] * (3 if filename == "index.html" else 2))
                 self.assertIn("main", parser.ids)
                 self.assertIn("Firmware directory", parser.nav_labels)
@@ -217,7 +218,9 @@ class ReferenceSiteTests(unittest.TestCase):
                 for control, action in (("Shift", "Next category"), ("Reverse", "Next firmware"),
                                         ("Freeze", "Verify &amp; launch")):
                     self.assertIn(f'<kbd>{control}</kbd></dt><dd>{action}</dd>', page)
-                self.assertIn("Current source build", page)
+                self.assertNotIn("Current source build", page)
+                self.assertNotIn('class="selector-title"', page)
+                self.assertEqual(parser.details, [], "Keep site content visible, not collapsible")
 
     def test_spa_data_matches_every_fallback(self):
         data = json.loads((SITE / "reference.json").read_text())

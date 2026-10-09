@@ -126,6 +126,10 @@ def check(args, base):
                 === 'Shift,Reverse,Freeze'
                 && [...document.querySelectorAll('.selector-controls dd')].map(action => action.textContent).join('|')
                 === 'Next category|Next firmware|Verify & launch'
+                && !document.querySelector('details, summary')
+                && document.querySelector('.setup-guide h2').getClientRects().length > 0
+                && getComputedStyle(document.querySelector('.selector-controls')).borderBottomWidth === '0px'
+                && getComputedStyle(document.querySelector('.site-header')).borderBottomWidth === '1px'
                 && groups.every(group => group.getBoundingClientRect().width > 250);""")
         browser.execute("""window.referenceTestMarker = true;
             window.referenceLayout = document.querySelector('.layout');
@@ -133,8 +137,9 @@ def check(args, base):
             window.referenceSidebar = document.querySelector('.sidebar');
             window.referenceMobileMenu = document.querySelector('.mobile-menu');
             window.referenceFooter = document.querySelector('footer');
-            window.scrollTo(0, 150);""")
-        browser.wait("scrollY === 150")
+            window.referenceHomeScroll = Math.min(150, document.documentElement.scrollHeight - innerHeight);
+            window.scrollTo(0, referenceHomeScroll);""")
+        browser.wait("scrollY === referenceHomeScroll")
         before = SiteHandler.counts.copy()
         browser.choose('fdn-122.html')
         browser.wait("location.pathname.endsWith('/fdn-122.html') && document.activeElement.tagName === 'H1'")
@@ -153,7 +158,7 @@ def check(args, base):
         assert browser.execute("""const heading = document.querySelector('#details-and-sources');
             return heading.tagName === 'H2' && heading.nextElementSibling.getClientRects().length > 0;""")
         browser.request("POST", "/back", {})
-        browser.wait("document.title.startsWith('Firmware reference') && scrollY === 150")
+        browser.wait("document.title.startsWith('Firmware reference') && scrollY === referenceHomeScroll && document.activeElement.tagName === 'H2'")
         browser.request("POST", "/forward", {})
         browser.wait("document.title.startsWith('FDN')")
         assert browser.execute("return !document.querySelector('.page-links')")
@@ -203,12 +208,13 @@ def check(args, base):
                         const cards = [...frame.contentDocument.querySelectorAll('.category-overview .category-group')];
                         return cards.length === 3 && cards.every(card => card.getBoundingClientRect().width > 0)
                             && getComputedStyle(frame.contentDocument.querySelector('.sidebar')).display === 'none';"""), width
-        browser.execute("""const frame = document.querySelector('iframe'); frame.style.width = '390px';
-            frame.contentDocument.querySelector('.mobile-menu summary').click();""")
-        browser.wait("document.querySelector('iframe').contentDocument.querySelector('.mobile-menu').open")
+        browser.execute("document.querySelector('iframe').style.width = '390px'")
+        assert browser.execute("""const doc = document.querySelector('iframe').contentDocument;
+            return doc.querySelector('.mobile-menu').getClientRects().length > 0
+                && !doc.querySelector('details, summary');""")
         browser.execute("document.querySelector('iframe').contentDocument.querySelector('.mobile-menu a[href=\"morse.html\"]').click()")
         browser.wait("document.querySelector('iframe').contentDocument.title.startsWith('Morse')")
-        assert browser.execute("return !document.querySelector('iframe').contentDocument.querySelector('.mobile-menu').open")
+        assert browser.execute("return !document.querySelector('iframe').contentDocument.querySelector('details, summary')")
         browser.open(base + "index.html")
         browser.wait("document.documentElement.dataset.navigation === 'spa'")
         # A physical keyboard can activate the same real link, without a custom widget.

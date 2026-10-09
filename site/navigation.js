@@ -23,7 +23,6 @@ async function start() {
     if (!current) return;
     const main = document.querySelector('main');
     const links = document.querySelectorAll('.sidebar a, .mobile-menu a');
-    const mobileMenu = document.querySelector('.mobile-menu');
     const initialBody = main.innerHTML.trim();
     if (data.pages[current].body.trim() !== initialBody) throw new Error('Reference page mismatch');
     history.scrollRestoration = 'manual';
@@ -38,14 +37,13 @@ async function start() {
             if (link.getAttribute('href') === filename) link.setAttribute('aria-current', 'page');
             else link.removeAttribute('aria-current');
         }
-        mobileMenu.open = false;
         document.title = page.title;
     }
 
     /** Focus announces page changes; fragments and Back restore useful positions. */
     function position(url, saved) {
         requestAnimationFrame(() => {
-            const heading = main.querySelector('h1');
+            const heading = main.querySelector('h1, h2') || main;
             heading.setAttribute('tabindex', '-1');
             heading.focus({ preventScroll: true });
             let target;
