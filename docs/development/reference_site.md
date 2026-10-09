@@ -5,8 +5,9 @@ build. Firmware and evidence are not uploaded.
 
 The home page has a brief overview and direct release/firmware downloads. The shared
 desktop sidebar/mobile menu is the firmware directory; each family has a
-control page. Release and development-only entries stay separate. Share a
-firmware page URL for direct access.
+control page. One list follows each family's first appearance in the selector
+catalog, regardless of release status. Unsupported-firmware notes stay in the
+Markdown reference, not a separate website page. Share a firmware page URL for direct access.
 
 A small `navigation.js` loads `reference.json` once and replaces only the main content
 on navigation. The sidebar, mobile menu and footer stay as ordinary HTML.

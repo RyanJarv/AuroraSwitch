@@ -178,21 +178,17 @@ def navigation(sections: list[Section], entries: list[Entry], current: str) -> s
     """Share the same directory between the desktop sidebar and mobile menu."""
     active = ' aria-current="page"' if current == "index.html" else ""
     parts = [f'<a class="index-link" href="index.html"{active}>Overview</a>']
-    for availability, label in (("Release", "Release firmware"), ("Development", "Development additions")):
-        parts.append(f'<h2>{label}</h2><ul>')
-        for section in sections:
-            versions = [entry for entry in entries if entry.anchor == section.anchor]
-            if not versions or ("Release" if any(entry.availability == "Release" for entry in versions) else "Development") != availability:
-                continue
-            active = ' aria-current="page"' if current == section.filename else ""
-            color = versions[0].color
-            # Versions stay on the control page; the directory identifies the family.
-            name = re.sub(r" \d+(?:\.\d+)+$", "", section.title)
-            parts.append(f'<li><a href="{section.filename}"{active}><span>{html.escape(name)}</span>'
-                         f'<small class="color-label">{swatch(color)}{html.escape(color)}</small></a></li>')
-        parts.append('</ul>')
-    active = ' aria-current="page"' if current == "outside-the-selector-catalog.html" else ""
-    parts.append(f'<a class="index-link" href="outside-the-selector-catalog.html"{active}>Other firmware / limitations</a>')
+    parts.append('<h2>Firmware</h2><ul>')
+    by_anchor = {section.anchor: section for section in sections}
+    # The color table follows catalog order; show each family at its first entry.
+    for anchor in dict.fromkeys(entry.anchor for entry in entries):
+        section = by_anchor[anchor]
+        color = next(entry.color for entry in entries if entry.anchor == anchor)
+        active = ' aria-current="page"' if current == section.filename else ""
+        name = re.sub(r" \d+(?:\.\d+)+$", "", section.title)
+        parts.append(f'<li><a href="{section.filename}"{active}><span>{html.escape(name)}</span>'
+                     f'<small class="color-label">{swatch(color)}{html.escape(color)}</small></a></li>')
+    parts.append('</ul>')
     return "\n".join(parts)
 
 
@@ -257,28 +253,32 @@ def render_pages() -> dict[str, str]:
     home += render_markdown(read_quick_start((ROOT / "README.md").read_text()), [], ROOT)
     pages = {"index.html": document("Firmware reference", home, navigation(sections, entries, "index.html"), digest)}
     for section in sections:
-        if section.filename == "index.html":
-            continue
         versions = [entry for entry in entries if entry.anchor == section.anchor]
+        if not versions:
+            continue
         content = bodies[section.anchor]
         # Each page starts at h1; source h3 control groups become its h2 landmarks.
         content = re.sub(r'<(/?)h3\b', r'<\1h2', content)
         content = content.replace('<h2 id="details-and-sources">Details and sources</h2>',
                                   '<h2 id="details-and-sources">Details &amp; sources</h2>')
         content = label_controls(content)
-        body = f'<h1 id="{section.anchor}">{html.escape(section.title)}</h1>'
-        if versions:
-            color = versions[0].color
-            body += f'<p class="firmware-meta"><span class="color-label">{swatch(color)}{color}</span>{version_list(section, versions)}</p>'
-            # The original drawing maps physical positions; all functions remain in Markdown.
-            intro, separator, controls = content.partition('<h2 ')
-            body += intro
-            body += '''<div class="control-layout"><figure class="panel-map">
+        # The leading link-only paragraph supplies page actions without a second catalog.
+        actions, content = content.lstrip().split('</p>', 1)
+        actions = actions.replace('<br>', '')
+        if not re.fullmatch(r'<p>(?:<a\b[^>]*>[^<]+</a>\s*)+', actions):
+            raise ValueError(f"Expected leading download links: {section.filename}")
+        actions = actions.removeprefix('<p>').replace('<a ', '<a class="download-button" ')
+        body = f'<div class="firmware-heading"><h1 id="{section.anchor}">{html.escape(section.title)}</h1>'
+        body += f'<div class="firmware-downloads">{actions}</div></div>'
+        color = versions[0].color
+        body += f'<p class="firmware-meta"><span class="color-label">{swatch(color)}{color}</span>{version_list(section, versions)}</p>'
+        # The original drawing maps physical positions; all functions remain in Markdown.
+        intro, separator, controls = content.partition('<h2 ')
+        body += intro
+        body += '''<div class="control-layout"><figure class="panel-map">
 <img src="aurora-panel.svg" width="280" height="580" alt="Aurora panel: knobs 1 Warp, 2 Time, 3 Blur, 4 Reflect, 5 Mix, 6 Atmosphere; buttons 7 Reverse, 8 Freeze, 9 Shift.">
 </figure><div class="control-tables">'''
-            body += separator + controls + '</div></div>'
-        else:
-            body += content
+        body += separator + controls + '</div></div>'
         pages[section.filename] = document(section.title, body, navigation(sections, entries, section.filename), digest)
     return pages
 
