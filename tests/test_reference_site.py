@@ -72,6 +72,19 @@ class ReferenceSiteTests(unittest.TestCase):
             parser.feed(file.read_text())
             cls.pages[file.name] = parser
 
+    def test_each_firmware_page_explains_how_to_obtain_its_image(self):
+        """Keep download guidance on direct pages, not only the setup guide."""
+        for section in self.sections:
+            if section.filename == "index.html" or section.filename not in self.pages:
+                continue
+            with self.subTest(page=section.filename):
+                self.assertIn("`aurora/`", section.markdown)
+                self.assertRegex(section.markdown, r"Download|Get firmware|No compatible prebuilt download")
+        for name, version in (("flux-capacitor", "0.1.0"), ("flux-capacitor", "0.2.0"),
+                              ("flux-capacitor", "0.3.0"), ("aurora-morse", "0.1.0"),
+                              ("aurora-morse", "0.2.0")):
+            self.assertIn(f"/releases/download/v{version}/{name}-{version}.bin", self.source)
+
     def test_static_pages_match_source_and_renderer(self):
         expected = {"index.html"} | {section.filename for section in self.sections
                                     if any(entry.anchor == section.anchor for entry in self.entries)}
