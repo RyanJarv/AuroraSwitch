@@ -48,12 +48,26 @@ a published release. Never install a virtual build.
 ## Select firmware
 
 1. Wait for scanning to finish.
-2. Press **Reverse** to choose by color.
-3. Press **Freeze** to load it; wait for green.
-4. Press **Shift** to start it.
+2. Press **Shift** to change category; empty categories are skipped.
+3. Press **Reverse** to choose by its existing firmware color.
+4. Press **Freeze** to verify and start it. Red means failure; choose or retry.
+
+These controls apply to the current source build. The older published release
+uses Reverse to choose, Freeze to verify, and Shift to start.
+
+The lit arc shows the position within the category:
+
+| Arc color | Category | Firmware |
+| --- | --- | --- |
+| Blue | Reverbs | FDN, Aurora, Dirt Verb, HP-filter Aurora |
+| Green | Delays | EchoGarden, Cloudscape, Flux Capacitor |
+| Amber | Synths / Other | Oscillator Is a Lie, Morse, Tempest, FataMorgana |
+
+Only available files appear. Selection changes take priority over simultaneous
+Freeze presses; no separate verification approval is retained.
 
 Power cycle to return to the menu. After changing files, reconnect the drive
-to rescan. Changing selection or disconnecting requires verification again.
+to rescan. Every launch rereads and verifies the selected file.
 Morse needs an external Freeze-gate clock and Mix above zero.
 
 Colors are fixed per firmware family across versions and installs. Keep one

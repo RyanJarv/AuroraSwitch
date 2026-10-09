@@ -92,6 +92,13 @@ namespace aurora_selector
          182212U, {0x20020000U, 0x2400070dU}, menu_colors::HpFilter},
     };
 
+    // Sound-based groups in catalog order: reverbs, delays, synths/other.
+    // Separate presentation data keeps the exact launch contract unchanged.
+    constexpr std::array<unsigned, sizeof(Images) / sizeof(Images[0])> Categories{
+        0, 0, 1, 1, 2, 1, 2, 1, 1, 2, 2, 2, 0, 0};
+    constexpr std::array<std::array<float, 3>, 3> CategoryColors{{
+        {0.f, 0.f, 0.4f}, {0.f, 0.4f, 0.f}, {0.4f, 0.2f, 0.f}}};
+
     // Size the shared buffer for the largest entry, rounded for DMA/cache alignment.
     constexpr std::size_t StagingCapacity()
     {

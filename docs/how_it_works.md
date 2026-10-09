@@ -49,8 +49,10 @@ not authorize execution.
 
 An explicit load must read the complete file and close it successfully before
 authentication. Launch rehashes that same RAM buffer; it never reopens the file
-and runs a different, unchecked copy. Selection changes or media withdrawal
-invalidate approval. Upstream USB/FatFs calls have no overall load deadline.
+and runs a different, unchecked copy. Freeze performs loading and handoff in one
+iteration, without retaining approval for a later button press. Simultaneous
+selection/category changes block launch. Upstream USB/FatFs calls have no
+overall load deadline.
 
 ## Irreversible handoff
 

@@ -13,6 +13,9 @@ namespace daisy_development
     {
         static_assert(Count > 0, "A supported catalog must not be empty");
       public:
+        // Optional small category IDs; the default retains a single flat menu.
+        explicit SupportedImageMenu(std::array<unsigned, Count> categories = {})
+            : categories_(categories) {}
         // Invalidate the menu while retaining the last index for a later rescan.
         void Clear() { available_.fill(false); }
 
@@ -40,12 +43,40 @@ namespace daisy_development
             for(std::size_t distance = 1; distance <= Count; ++distance)
             {
                 const auto index = (selected_ + distance) % Count;
-                if(available_[index]) { selected_ = index; return; }
+                if(available_[index] && categories_[index] == Category())
+                    { selected_ = index; return; }
             }
+        }
+
+        unsigned Category() const { return categories_[selected_]; }
+        // Skip empty categories, preserving catalog order within each group.
+        void NextCategory()
+        {
+            if(!HasSelection()) return;
+            const unsigned current = Category();
+            std::size_t choice = selected_;
+            unsigned best = ~0U;
+            for(std::size_t index = 0; index < Count; ++index)
+                if(available_[index] && categories_[index] != current)
+                {
+                    const unsigned rank = categories_[index] > current
+                        ? categories_[index] - current
+                        : categories_[index] + Count - current;
+                    if(rank < best) { best = rank; choice = index; }
+                }
+            selected_ = choice;
+        }
+        std::size_t Position() const
+        {
+            std::size_t position = 0;
+            for(std::size_t index = 0; index < selected_; ++index)
+                if(available_[index] && categories_[index] == Category()) ++position;
+            return position;
         }
 
       private:
         std::array<bool, Count> available_{};
+        std::array<unsigned, Count> categories_{};
         std::size_t selected_ = 0;
     };
 }
