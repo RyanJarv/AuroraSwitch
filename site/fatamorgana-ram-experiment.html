@@ -4,15 +4,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="reference-sha256" content="ef83227e9269609c4bf4f7eada7d79dc901af902811f659e3c7a6fa16d5b624e">
-<meta name="renderer-sha256" content="6d71e76987775b8b4f2a88c09bd453d3c169dd389be0bbdfd6b2d35a67efe3c5">
+<meta name="reference-sha256" content="0e1c32837f0d962d5648518e8aebdde6c856c044587ad0d0087adc3e5b7b7cfe">
+<meta name="renderer-sha256" content="043af2e2f1bb1f4bfd6e4eceb6599956e5fc7a5d6b42198ec256e2f60a28563b">
 <meta name="quickstart-sha256" content="4578ad246f9fbe8fddc6c81a435126b72a598b697eac4eea00f29dbf4eada475">
-<meta name="description" content="AuroraSwitch firmware colors, knobs, buttons, gates and modes.">
+<meta name="description" content="AuroraSwitch startup categories, firmware colors and controls.">
 <title>FataMorgana RAM experiment · AuroraSwitch</title>
-<link rel="stylesheet" href="style.css">
-<script type="module" src="navigation.js?v=8ac25046a093895c60afd6d4816de9d0e984f22ddacd5501cd1cd489de38a1ab" data-reference="reference.json?v=ef83227e9269609c4bf4f7eada7d79dc901af902811f659e3c7a6fa16d5b624e-6d71e76987775b8b4f2a88c09bd453d3c169dd389be0bbdfd6b2d35a67efe3c5-4578ad246f9fbe8fddc6c81a435126b72a598b697eac4eea00f29dbf4eada475"></script>
+<link rel="stylesheet" href="style.css?v=7f0a5fa294e2d86b6ddd79e4016a7cbd05e2f863ff6c2e5412fe1c4b3d16d2a3">
+<script type="module" src="navigation.js?v=cb1a9cee5993c5eab556a2c99157a47865133ebbcf785d4aa42fe3e60f64523a" data-reference="reference.json?v=0e1c32837f0d962d5648518e8aebdde6c856c044587ad0d0087adc3e5b7b7cfe-043af2e2f1bb1f4bfd6e4eceb6599956e5fc7a5d6b42198ec256e2f60a28563b-4578ad246f9fbe8fddc6c81a435126b72a598b697eac4eea00f29dbf4eada475"></script>
 </head>
-<body>
+<body data-page="fatamorgana-ram-experiment.html">
 <a class="skip-link" href="#main">Skip to controls</a>
 <header class="site-header">
 <a class="brand" href="index.html">AuroraSwitch <span>Firmware reference</span></a>
@@ -21,39 +21,55 @@
 <a href="https://github.com/RyanJarv/AuroraSwitch">GitHub</a>
 </nav>
 </header>
+<section class="selector-controls" aria-label="Aurora startup menu controls">
+<span class="selector-title">Aurora startup menu <small>Current source build</small></span>
+<dl>
+<div><dt><kbd>Shift</kbd></dt><dd>Next category</dd></div>
+<div><dt><kbd>Reverse</kbd></dt><dd>Next firmware</dd></div>
+<div><dt><kbd>Freeze</kbd></dt><dd>Verify &amp; launch</dd></div>
+</dl>
+</section>
 <div class="layout">
 <aside class="sidebar"><nav aria-label="Firmware directory"><a class="index-link" href="index.html">Overview</a>
-<h2>Firmware</h2><ul>
+<section class="category-group" style="--category-color:#3787ff"><h2><span class="swatch" style="background:#3787ff" aria-hidden="true"></span>Reverbs<small>Blue</small></h2><ul>
 <li><a href="fdn-122.html"><span>FDN</span><small class="color-label"><span class="swatch" style="background:#3787ff" aria-hidden="true"></span>Blue</small></a></li>
 <li><a href="aurora-144.html"><span>Aurora</span><small class="color-label"><span class="swatch" style="background:#35bf58" aria-hidden="true"></span>Green</small></a></li>
+<li><a href="dirt-verb-11.html"><span>Dirt Verb</span><small class="color-label"><span class="swatch" style="background:#e84b78" aria-hidden="true"></span>Red-pink</small></a></li>
+<li><a href="aurora-hp-filter-variant.html"><span>Aurora HP-filter</span><small class="color-label"><span class="swatch" style="background:#81d43b" aria-hidden="true"></span>Lime</small></a></li>
+</ul></section>
+<section class="category-group" style="--category-color:#35bf58"><h2><span class="swatch" style="background:#35bf58" aria-hidden="true"></span>Delays<small>Green</small></h2><ul>
 <li><a href="echogarden-031.html"><span>EchoGarden</span><small class="color-label"><span class="swatch" style="background:#32c9ce" aria-hidden="true"></span>Cyan</small></a></li>
 <li><a href="cloudscapex.html"><span>CloudscapeX</span><small class="color-label"><span class="swatch" style="background:#d855d5" aria-hidden="true"></span>Magenta</small></a></li>
-<li><a href="the-oscillator-is-a-lie-002.html"><span>The Oscillator Is a Lie</span><small class="color-label"><span class="swatch" style="background:#dc9a25" aria-hidden="true"></span>Amber</small></a></li>
 <li><a href="flux-capacitor.html"><span>Flux Capacitor</span><small class="color-label"><span class="swatch" style="background:#ead342" aria-hidden="true"></span>Yellow</small></a></li>
+</ul></section>
+<section class="category-group" style="--category-color:#dc9a25"><h2><span class="swatch" style="background:#dc9a25" aria-hidden="true"></span>Synths / Other<small>Amber</small></h2><ul>
+<li><a href="the-oscillator-is-a-lie-002.html"><span>The Oscillator Is a Lie</span><small class="color-label"><span class="swatch" style="background:#dc9a25" aria-hidden="true"></span>Amber</small></a></li>
 <li><a href="morse.html"><span>Morse</span><small class="color-label"><span class="swatch" style="background:#fff" aria-hidden="true"></span>White</small></a></li>
 <li><a href="tempest-100.html"><span>Tempest</span><small class="color-label"><span class="swatch" style="background:#ec9292" aria-hidden="true"></span>Pale red</small></a></li>
-<li><a href="fatamorgana-ram-experiment.html" aria-current="page"><span>FataMorgana RAM experiment</span><small class="color-label"><span class="swatch" style="background:#3ea7dc" aria-hidden="true"></span>Azure</small></a></li>
-<li><a href="dirt-verb-11.html"><span>Dirt Verb</span><small class="color-label"><span class="swatch" style="background:#e84b78" aria-hidden="true"></span>Red-pink</small></a></li>
-<li><a href="aurora-hp-filter-variant.html"><span>Aurora HP-filter variant</span><small class="color-label"><span class="swatch" style="background:#81d43b" aria-hidden="true"></span>Lime</small></a></li>
-</ul></nav></aside>
+<li><a href="fatamorgana-ram-experiment.html" aria-current="page"><span>FataMorgana</span><small class="color-label"><span class="swatch" style="background:#3ea7dc" aria-hidden="true"></span>Azure</small></a></li>
+</ul></section></nav></aside>
 <div class="content">
-<details class="mobile-menu"><summary>Choose firmware / color</summary>
+<details class="mobile-menu"><summary>Firmware categories</summary>
 <nav aria-label="Mobile firmware directory"><a class="index-link" href="index.html">Overview</a>
-<h2>Firmware</h2><ul>
+<section class="category-group" style="--category-color:#3787ff"><h2><span class="swatch" style="background:#3787ff" aria-hidden="true"></span>Reverbs<small>Blue</small></h2><ul>
 <li><a href="fdn-122.html"><span>FDN</span><small class="color-label"><span class="swatch" style="background:#3787ff" aria-hidden="true"></span>Blue</small></a></li>
 <li><a href="aurora-144.html"><span>Aurora</span><small class="color-label"><span class="swatch" style="background:#35bf58" aria-hidden="true"></span>Green</small></a></li>
+<li><a href="dirt-verb-11.html"><span>Dirt Verb</span><small class="color-label"><span class="swatch" style="background:#e84b78" aria-hidden="true"></span>Red-pink</small></a></li>
+<li><a href="aurora-hp-filter-variant.html"><span>Aurora HP-filter</span><small class="color-label"><span class="swatch" style="background:#81d43b" aria-hidden="true"></span>Lime</small></a></li>
+</ul></section>
+<section class="category-group" style="--category-color:#35bf58"><h2><span class="swatch" style="background:#35bf58" aria-hidden="true"></span>Delays<small>Green</small></h2><ul>
 <li><a href="echogarden-031.html"><span>EchoGarden</span><small class="color-label"><span class="swatch" style="background:#32c9ce" aria-hidden="true"></span>Cyan</small></a></li>
 <li><a href="cloudscapex.html"><span>CloudscapeX</span><small class="color-label"><span class="swatch" style="background:#d855d5" aria-hidden="true"></span>Magenta</small></a></li>
-<li><a href="the-oscillator-is-a-lie-002.html"><span>The Oscillator Is a Lie</span><small class="color-label"><span class="swatch" style="background:#dc9a25" aria-hidden="true"></span>Amber</small></a></li>
 <li><a href="flux-capacitor.html"><span>Flux Capacitor</span><small class="color-label"><span class="swatch" style="background:#ead342" aria-hidden="true"></span>Yellow</small></a></li>
+</ul></section>
+<section class="category-group" style="--category-color:#dc9a25"><h2><span class="swatch" style="background:#dc9a25" aria-hidden="true"></span>Synths / Other<small>Amber</small></h2><ul>
+<li><a href="the-oscillator-is-a-lie-002.html"><span>The Oscillator Is a Lie</span><small class="color-label"><span class="swatch" style="background:#dc9a25" aria-hidden="true"></span>Amber</small></a></li>
 <li><a href="morse.html"><span>Morse</span><small class="color-label"><span class="swatch" style="background:#fff" aria-hidden="true"></span>White</small></a></li>
 <li><a href="tempest-100.html"><span>Tempest</span><small class="color-label"><span class="swatch" style="background:#ec9292" aria-hidden="true"></span>Pale red</small></a></li>
-<li><a href="fatamorgana-ram-experiment.html" aria-current="page"><span>FataMorgana RAM experiment</span><small class="color-label"><span class="swatch" style="background:#3ea7dc" aria-hidden="true"></span>Azure</small></a></li>
-<li><a href="dirt-verb-11.html"><span>Dirt Verb</span><small class="color-label"><span class="swatch" style="background:#e84b78" aria-hidden="true"></span>Red-pink</small></a></li>
-<li><a href="aurora-hp-filter-variant.html"><span>Aurora HP-filter variant</span><small class="color-label"><span class="swatch" style="background:#81d43b" aria-hidden="true"></span>Lime</small></a></li>
-</ul></nav></details>
+<li><a href="fatamorgana-ram-experiment.html" aria-current="page"><span>FataMorgana</span><small class="color-label"><span class="swatch" style="background:#3ea7dc" aria-hidden="true"></span>Azure</small></a></li>
+</ul></section></nav></details>
 <main id="main">
-<div class="firmware-heading"><h1 id="fatamorgana-ram-experiment--azure">FataMorgana RAM experiment</h1><div class="firmware-downloads"><a class="download-button" href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/user_guide.md#fatamorgana">Build RAM firmware</a></div></div><p class="firmware-meta"><span class="color-label"><span class="swatch" style="background:#3ea7dc" aria-hidden="true"></span>Azure</span></p>
+<div class="firmware-heading"><h1 id="fatamorgana-ram-experiment--azure">FataMorgana RAM experiment</h1><div class="firmware-downloads"><a class="download-button" href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/user_guide.md#fatamorgana">Build RAM firmware</a></div></div><p class="firmware-meta"><span class="category-label"><span class="swatch" style="background:#dc9a25" aria-hidden="true"></span>Synths / Other</span><span class="color-label"><span class="swatch" style="background:#3ea7dc" aria-hidden="true"></span>Azure</span></p>
 <p>Dual wavetable synth: A left, B right. External audio can modulate or be waveshaped.<br>
 Only the exact development RAM build is supported, not upstream QSPI.</p>
 <div class="control-layout"><figure class="panel-map">

@@ -33,6 +33,7 @@ async function start() {
         current = filename;
         const page = data.pages[filename];
         main.innerHTML = page.body;
+        document.body.dataset.page = filename;
         for (const link of links) {
             if (link.getAttribute('href') === filename) link.setAttribute('aria-current', 'page');
             else link.removeAttribute('aria-current');

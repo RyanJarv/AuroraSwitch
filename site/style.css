@@ -1,4 +1,4 @@
-/* Shared SPA / no-JS layout: a color directory and firmware controls. */
+/* Shared SPA / no-JS layout: selector categories and firmware controls. */
 :root {
     color-scheme: light dark;
     --bg: #fff;
@@ -44,12 +44,37 @@ a:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outli
 .brand span { display: block; color: var(--muted); font-size: .8rem; font-weight: 400; }
 .layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 2.5rem; max-width: 1300px; margin: auto; padding: 1.6rem 1rem; }
 .sidebar { position: sticky; top: 6rem; align-self: start; max-height: calc(100dvh - 7rem); overflow-y: auto; padding-right: .5rem; }
-.sidebar h2, .mobile-menu h2 { font-size: .75rem; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; margin: 1.5rem 0 .5rem; border: 0; padding: 0; }
+.category-group h2 { display: flex; align-items: center; gap: .5rem; font-size: .95rem; margin: 0 0 .6rem; }
+.category-group h2 small { margin-left: auto; color: var(--muted); font-size: .75rem; font-weight: 400; }
+.sidebar .category-group, .mobile-menu .category-group { border-top: 2px solid var(--category-color); padding-top: .65rem; margin-top: 1.25rem; }
 .sidebar ul, .mobile-menu ul { list-style: none; padding: 0; margin: 0 0 1rem; }
 .sidebar li a, .mobile-menu li a { display: grid; grid-template-columns: minmax(0, 1fr) 5rem; align-items: baseline; gap: .5rem; padding: .45rem .65rem; border-radius: .2rem; text-decoration: none; color: var(--fg); }
 .sidebar .color-label, .mobile-menu .color-label { color: var(--muted); font-size: .75rem; gap: .35rem; }
 .sidebar a:hover, .mobile-menu li a:hover, a[aria-current="page"] { background: var(--selected); }
 .index-link { display: block; font-size: .9rem; margin: .5rem 0; }
+.selector-controls { display: flex; align-items: center; gap: 2rem; max-width: 1300px; padding: 1rem; margin: 0 auto; border-bottom: 1px solid var(--line); }
+.selector-title { flex-shrink: 0; font-size: .85rem; font-weight: 650; }
+.selector-title small { display: block; color: var(--muted); font-weight: 400; font-size: .75rem; }
+.selector-controls dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; flex: 1; margin: 0; }
+.selector-controls dl > div { display: flex; align-items: center; gap: .75rem; }
+.selector-controls dd { margin: 0; font-size: .85rem; }
+kbd { display: inline-block; padding: .35rem .65rem; border: 1px solid var(--line); border-bottom-width: 3px; border-radius: .5rem; font: 650 .8rem/1.2 system-ui, sans-serif; background: var(--surface); }
+body[data-page="index.html"] .layout { display: block; max-width: 1120px; }
+body[data-page="index.html"] .sidebar, body[data-page="index.html"] .mobile-menu { display: none; }
+.home-heading { margin: 1rem 0 2rem; }
+.home-heading h1 { font-size: clamp(2rem, 5vw, 3rem); }
+.home-heading p { color: var(--muted); }
+.category-overview { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
+.category-overview > .index-link { display: none; }
+.category-overview .category-group { border: 1px solid var(--line); border-top: 4px solid var(--category-color); border-radius: .6rem; padding: 1.15rem .9rem .6rem; background: var(--surface); }
+.category-overview .category-group h2 { padding: 0 .35rem; font-size: 1.1rem; }
+.category-overview ul { list-style: none; padding: 0; margin: 0; }
+.category-overview li a { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .35rem .5rem; padding: .7rem .35rem; border-top: 1px solid var(--line); color: var(--fg); text-decoration: none; }
+.category-overview li a:hover { background: var(--selected); }
+.category-overview .color-label { font-size: .75rem; color: var(--muted); }
+.setup-guide { margin-top: 2rem; border-top: 1px solid var(--line); padding-top: .7rem; }
+.setup-guide > summary { color: var(--accent); font-weight: 600; }
+.setup-guide h2:first-of-type { display: none; }
 .content { min-width: 0; }
 .mobile-menu { display: none; }
 main { padding: 0 0 2rem; }
@@ -61,6 +86,7 @@ p { margin: .7rem 0 1rem; }
 .color-label { display: inline-flex; align-items: center; gap: .5rem; font-size: .9rem; white-space: nowrap; }
 .swatch { display: inline-block; flex-shrink: 0; width: .85rem; height: .85rem; border: 1px solid #777; border-radius: 50%; vertical-align: -.05rem; }
 .firmware-meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem 1.2rem; margin: -.25rem 0 1.2rem; }
+.category-label { display: inline-flex; align-items: center; gap: .5rem; border-right: 1px solid var(--line); padding-right: 1.2rem; font-size: .9rem; font-weight: 600; }
 .firmware-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: .5rem 1rem; margin-bottom: 1rem; }
 .firmware-heading h1 { margin-bottom: 0; }
 .firmware-downloads { display: flex; flex-wrap: wrap; gap: .5rem; margin-left: auto; }
@@ -86,6 +112,8 @@ footer { padding: 1rem 0 2rem; border-top: 1px solid var(--line); }
 footer a { display: inline-block; }
 @media (max-width: 1100px) and (min-width: 761px) {
     .control-layout { grid-template-columns: 160px minmax(0, 1fr); gap: 1rem; }
+    .selector-controls dl > div { display: block; }
+    .selector-controls dd { margin-top: .35rem; }
 }
 @media (max-width: 760px) {
     .layout { display: block; padding-top: .8rem; }
@@ -96,9 +124,16 @@ footer a { display: inline-block; }
     .site-header { padding: .7rem 1rem; }
     .control-layout { display: block; }
     .panel-map { position: static; width: 210px; margin: 1rem auto 1.5rem; }
+    .selector-controls { display: block; }
+    .selector-title { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: .75rem; }
+    .selector-controls dl { gap: .5rem; }
+    .selector-controls dl > div { display: block; }
+    .selector-controls dd { font-size: .75rem; margin-top: .4rem; }
+    .category-overview { grid-template-columns: 1fr; gap: 1rem; }
+    .home-heading { margin: .5rem 0 1.5rem; }
 }
 @media print {
-    .site-header, .sidebar, .mobile-menu, .skip-link { display: none; }
+    .site-header, .sidebar, .mobile-menu, .skip-link, .selector-controls { display: none; }
     .panel-map { position: static; }
     .layout { display: block; padding: 0; }
     body { color: #000; background: #fff; font-size: 11pt; }

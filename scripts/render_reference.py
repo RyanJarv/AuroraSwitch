@@ -19,6 +19,7 @@ COLORS = {
     "White": "#fff", "Pale red": "#ec9292", "Azure": "#3ea7dc",
     "Red-pink": "#e84b78", "Lime": "#81d43b",
 }
+CATEGORIES = {"Reverbs": "Blue", "Delays": "Green", "Synths / Other": "Amber"}
 PANEL_CONTROLS = ("Warp", "Time", "Blur", "Reflect", "Mix", "Atmosphere", "Reverse", "Freeze", "Shift")
 
 
@@ -86,10 +87,11 @@ class Entry:
     anchor: str
     description: str
     availability: str
+    category: str
 
 
 def read_reference(source: str) -> tuple[str, list[Section], list[Entry]]:
-    """Use the color table as the only navigation catalog; reject stale links."""
+    """Use the category/color table as the navigation catalog; reject stale links."""
     parts = re.split(r"^## (.+)\n", source, flags=re.M)
     sections = [Section(parts[i], parts[i + 1]) for i in range(1, len(parts), 2)]
     by_anchor = {section.anchor: section for section in sections}
@@ -103,17 +105,17 @@ def read_reference(source: str) -> tuple[str, list[Section], list[Entry]]:
     entries = []
     for line in by_anchor["color-lookup"].markdown.splitlines():
         cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
-        if not line.startswith("|") or cells[0] in ("Selector color", "---"):
+        if not line.startswith("|") or cells[0] in ("Category", "---"):
             continue
-        if len(cells) != 4:
+        if len(cells) != 5:
             raise ValueError(f"Malformed color row: {line}")
-        color, link, description, availability = cells
+        category, color, link, description, availability = cells
         match = re.fullmatch(r"\[([^]]+)\]\(#([\w-]+)\)", link)
-        if color not in COLORS or availability not in ("Release", "Development") or not match:
+        if category not in CATEGORIES or color not in COLORS or availability not in ("Release", "Development") or not match:
             raise ValueError(f"Invalid color row: {line}")
         if match[2] not in by_anchor or by_anchor[match[2]].filename == "index.html":
             raise ValueError(f"Missing firmware section: {link}")
-        entries.append(Entry(color, match[1], match[2], description, availability))
+        entries.append(Entry(color, match[1], match[2], description, availability, category))
     if not entries:
         raise ValueError("Missing selector colors")
     # Versions share one family page/color; unrelated families cannot share it.
@@ -121,6 +123,8 @@ def read_reference(source: str) -> tuple[str, list[Section], list[Entry]]:
         for other in entries:
             if (entry.anchor == other.anchor) != (entry.color == other.color):
                 raise ValueError("Inconsistent family or duplicate selector colors")
+            if entry.anchor == other.anchor and entry.category != other.category:
+                raise ValueError("Inconsistent family category")
     if len({entry.name for entry in entries}) != len(entries):
         raise ValueError("Duplicate firmware version")
     unused = set(by_anchor) - {entry.anchor for entry in entries} - {
@@ -175,27 +179,33 @@ def version_list(section: Section, entries: list[Entry]) -> str:
 
 
 def navigation(sections: list[Section], entries: list[Entry], current: str) -> str:
-    """Share the same directory between the desktop sidebar and mobile menu."""
+    """Group families in selector order, shared by home, sidebar and mobile views."""
     active = ' aria-current="page"' if current == "index.html" else ""
     parts = [f'<a class="index-link" href="index.html"{active}>Overview</a>']
-    parts.append('<h2>Firmware</h2><ul>')
     by_anchor = {section.anchor: section for section in sections}
-    # The color table follows catalog order; show each family at its first entry.
-    for anchor in dict.fromkeys(entry.anchor for entry in entries):
-        section = by_anchor[anchor]
-        color = next(entry.color for entry in entries if entry.anchor == anchor)
-        active = ' aria-current="page"' if current == section.filename else ""
-        name = re.sub(r" \d+(?:\.\d+)+$", "", section.title)
-        parts.append(f'<li><a href="{section.filename}"{active}><span>{html.escape(name)}</span>'
-                     f'<small class="color-label">{swatch(color)}{html.escape(color)}</small></a></li>')
-    parts.append('</ul>')
+    for category, category_color in CATEGORIES.items():
+        parts.append(f'<section class="category-group" style="--category-color:{COLORS[category_color]}">'
+                     f'<h2>{swatch(category_color)}{html.escape(category)}'
+                     f'<small>{category_color}</small></h2><ul>')
+        # Older versions remain on their family page rather than adding menu rows.
+        families = dict.fromkeys(entry.anchor for entry in entries if entry.category == category)
+        for anchor in families:
+            section = by_anchor[anchor]
+            color = next(entry.color for entry in entries if entry.anchor == anchor)
+            active = ' aria-current="page"' if current == section.filename else ""
+            name = re.sub(r" \d+(?:\.\d+)+$", "", section.title)
+            name = name.removesuffix(" RAM experiment").replace("Aurora HP-filter variant", "Aurora HP-filter")
+            parts.append(f'<li><a href="{section.filename}"{active}><span>{html.escape(name)}</span>'
+                         f'<small class="color-label">{swatch(color)}{html.escape(color)}</small></a></li>')
+        parts.append('</ul></section>')
     return "\n".join(parts)
 
 
-def document(title: str, body: str, menu: str, digest: str) -> str:
+def document(title: str, body: str, menu: str, digest: str, filename: str) -> str:
     """Render complete static pages; a small script enhances navigation afterward."""
     renderer_digest = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
     app_digest = hashlib.sha256((ROOT / "site/navigation.js").read_bytes()).hexdigest()
+    style_digest = hashlib.sha256((ROOT / "site/style.css").read_bytes()).hexdigest()
     quickstart_digest = quick_start_digest()
     return f'''<!doctype html>
 <!-- Generated by scripts/render_reference.py; edit docs/firmware_reference.md. -->
@@ -206,12 +216,12 @@ def document(title: str, body: str, menu: str, digest: str) -> str:
 <meta name="reference-sha256" content="{digest}">
 <meta name="renderer-sha256" content="{renderer_digest}">
 <meta name="quickstart-sha256" content="{quickstart_digest}">
-<meta name="description" content="AuroraSwitch firmware colors, knobs, buttons, gates and modes.">
+<meta name="description" content="AuroraSwitch startup categories, firmware colors and controls.">
 <title>{html.escape(title)} · AuroraSwitch</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v={style_digest}">
 <script type="module" src="navigation.js?v={app_digest}" data-reference="reference.json?v={digest}-{renderer_digest}-{quickstart_digest}"></script>
 </head>
-<body>
+<body data-page="{filename}">
 <a class="skip-link" href="#main">Skip to controls</a>
 <header class="site-header">
 <a class="brand" href="index.html">AuroraSwitch <span>Firmware reference</span></a>
@@ -220,10 +230,18 @@ def document(title: str, body: str, menu: str, digest: str) -> str:
 <a href="https://github.com/RyanJarv/AuroraSwitch">GitHub</a>
 </nav>
 </header>
+<section class="selector-controls" aria-label="Aurora startup menu controls">
+<span class="selector-title">Aurora startup menu <small>Current source build</small></span>
+<dl>
+<div><dt><kbd>Shift</kbd></dt><dd>Next category</dd></div>
+<div><dt><kbd>Reverse</kbd></dt><dd>Next firmware</dd></div>
+<div><dt><kbd>Freeze</kbd></dt><dd>Verify &amp; launch</dd></div>
+</dl>
+</section>
 <div class="layout">
 <aside class="sidebar"><nav aria-label="Firmware directory">{menu}</nav></aside>
 <div class="content">
-<details class="mobile-menu"><summary>Choose firmware / color</summary>
+<details class="mobile-menu"><summary>Firmware categories</summary>
 <nav aria-label="Mobile firmware directory">{menu}</nav></details>
 <main id="main">
 {body}
@@ -246,12 +264,15 @@ def render_pages() -> dict[str, str]:
     if len(parts) != 1 + 2 * len(sections):
         raise ValueError("Rendered sections do not match Markdown sections")
     bodies = {section.anchor: parts[2 * i + 2] for i, section in enumerate(sections)}
-    home = '''<h1>AuroraSwitch</h1>
-<p>Choose a supported firmware from a USB drive and launch it on your Aurora.</p>
-<p class="beta-status">Beta software: keep the original Aurora firmware for recovery.</p>
+    home = '''<div class="home-heading"><h1>Choose your sound.</h1>
+<p>AuroraSwitch · Firmware for your Aurora</p></div>
 '''
-    home += render_markdown(read_quick_start((ROOT / "README.md").read_text()), [], ROOT)
-    pages = {"index.html": document("Firmware reference", home, navigation(sections, entries, "index.html"), digest)}
+    home += '<nav class="category-overview" aria-label="Firmware categories">'
+    home += navigation(sections, entries, "index.html") + '</nav>'
+    home += '<details class="setup-guide"><summary>Install AuroraSwitch</summary>'
+    home += render_markdown(read_quick_start((ROOT / "README.md").read_text()), [], ROOT) + '</details>'
+    home += '<p class="beta-status">Beta · Limited testing. Keep original Aurora firmware for recovery.</p>'
+    pages = {"index.html": document("Firmware reference", home, navigation(sections, entries, "index.html"), digest, "index.html")}
     for section in sections:
         versions = [entry for entry in entries if entry.anchor == section.anchor]
         if not versions:
@@ -271,7 +292,10 @@ def render_pages() -> dict[str, str]:
         body = f'<div class="firmware-heading"><h1 id="{section.anchor}">{html.escape(section.title)}</h1>'
         body += f'<div class="firmware-downloads">{actions}</div></div>'
         color = versions[0].color
-        body += f'<p class="firmware-meta"><span class="color-label">{swatch(color)}{color}</span>{version_list(section, versions)}</p>'
+        category = versions[0].category
+        category_color = CATEGORIES[category]
+        body += f'<p class="firmware-meta"><span class="category-label">{swatch(category_color)}{html.escape(category)}</span>'
+        body += f'<span class="color-label">{swatch(color)}{color}</span>{version_list(section, versions)}</p>'
         # The original drawing maps physical positions; all functions remain in Markdown.
         intro, separator, controls = content.partition('<h2 ')
         body += intro
@@ -279,7 +303,7 @@ def render_pages() -> dict[str, str]:
 <img src="aurora-panel.svg" width="280" height="580" alt="Aurora panel: knobs 1 Warp, 2 Time, 3 Blur, 4 Reflect, 5 Mix, 6 Atmosphere; buttons 7 Reverse, 8 Freeze, 9 Shift.">
 </figure><div class="control-tables">'''
         body += separator + controls + '</div></div>'
-        pages[section.filename] = document(section.title, body, navigation(sections, entries, section.filename), digest)
+        pages[section.filename] = document(section.title, body, navigation(sections, entries, section.filename), digest, section.filename)
     return pages
 
 

@@ -3,11 +3,12 @@
 GitHub Pages serves the checked-in files in `site/`: no Jekyll or deployment-time
 build. Firmware and evidence are not uploaded.
 
-The home page has a brief overview and direct release/firmware downloads. The shared
-desktop sidebar/mobile menu is the firmware directory; each family has a
-control page. One list follows each family's first appearance in the selector
-catalog, regardless of release status. Unsupported-firmware notes stay in the
-Markdown reference, not a separate website page. Share a firmware page URL for direct access.
+The home page groups firmware into blue Reverbs, green Delays, and amber
+Synths / Other. Firmware pages share the same grouped sidebar/mobile directory.
+The startup strip labels Shift, Reverse, and Freeze directly; firmware colors
+stay unchanged. Family order within each group matches the selector catalog.
+Installation stays in a short expandable section. Unsupported-firmware notes
+stay in the Markdown reference, not a separate website page.
 
 A small `navigation.js` loads `reference.json` once and replaces only the main content
 on navigation. The sidebar, mobile menu and footer stay as ordinary HTML.
@@ -26,11 +27,13 @@ make reference-html
 make test
 ```
 
-The color table drives navigation, so there is no second firmware catalog to edit.
+The category/color table drives navigation, so there is no second firmware catalog to edit.
 Versions on the same family page share one color, matching `menu_colors` in
 `firmware/images.hpp`; different families must use distinct colors.
-The directory shows family names with adjacent color dots and labels; version
-numbers stay on the control pages.
+Tests bind category membership/order to `firmware/images.hpp`. The directory shows
+family names with adjacent color dots and labels; version numbers stay on control
+pages. Website UX rules live in `AGENTS.md`: prefer clear labels and structure,
+not paragraphs explaining website widgets.
 The renderer uses GitHub Markdown and writes the HTML fallbacks and
 SPA data from identical content; shared styling is in `site/style.css`. Regenerate
 after changing the reference, renderer or `navigation.js` (its URL is content-versioned).
@@ -52,8 +55,8 @@ geckodriver --port 4444
 python3 scripts/check_reference_browser.py --webdriver http://127.0.0.1:4444
 ```
 
-It checks no-reload switching, the panel drawing, visible details, Back/Forward, mobile layouts and
-ordinary page navigation with JavaScript disabled or SPA data missing/stale.
+It checks grouped navigation, startup labels, no-reload switching, the panel
+drawing, Back/Forward, mobile/dark layouts, keyboard access, and static fallbacks.
 
 Repository **Settings → Pages → Source** must be **GitHub Actions**.
 Pushes to `main` deploy automatically; the workflow can also be run manually.
