@@ -262,7 +262,14 @@ def render_pages() -> dict[str, str]:
         content = content.replace('<h2 id="details-and-sources">Details and sources</h2>',
                                   '<h2 id="details-and-sources">Details &amp; sources</h2>')
         content = label_controls(content)
-        body = f'<h1 id="{section.anchor}">{html.escape(section.title)}</h1>'
+        # The leading link-only paragraph supplies page actions without a second catalog.
+        actions, content = content.lstrip().split('</p>', 1)
+        actions = actions.replace('<br>', '')
+        if not re.fullmatch(r'<p>(?:<a\b[^>]*>[^<]+</a>\s*)+', actions):
+            raise ValueError(f"Expected leading download links: {section.filename}")
+        actions = actions.removeprefix('<p>').replace('<a ', '<a class="download-button" ')
+        body = f'<div class="firmware-heading"><h1 id="{section.anchor}">{html.escape(section.title)}</h1>'
+        body += f'<div class="firmware-downloads">{actions}</div></div>'
         color = versions[0].color
         body += f'<p class="firmware-meta"><span class="color-label">{swatch(color)}{color}</span>{version_list(section, versions)}</p>'
         # The original drawing maps physical positions; all functions remain in Markdown.

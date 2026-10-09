@@ -61,6 +61,11 @@ p { margin: .7rem 0 1rem; }
 .color-label { display: inline-flex; align-items: center; gap: .5rem; font-size: .9rem; white-space: nowrap; }
 .swatch { display: inline-block; flex-shrink: 0; width: .85rem; height: .85rem; border: 1px solid #777; border-radius: 50%; vertical-align: -.05rem; }
 .firmware-meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem 1.2rem; margin: -.25rem 0 1.2rem; }
+.firmware-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: .5rem 1rem; margin-bottom: 1rem; }
+.firmware-heading h1 { margin-bottom: 0; }
+.firmware-downloads { display: flex; flex-wrap: wrap; gap: .5rem; margin-left: auto; }
+.download-button { display: inline-block; padding: .45rem .8rem; border: 1px solid var(--accent); border-radius: .45rem; background: var(--selected); color: var(--accent); font-size: .85rem; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.download-button:hover { background: var(--accent); color: var(--bg); }
 .version-list { display: block; font-size: .8rem; color: var(--muted); margin-top: .2rem; }
 .control-layout { display: grid; grid-template-columns: 205px minmax(0, 1fr); gap: 1.5rem; align-items: start; }
 .panel-map { position: sticky; top: 6rem; margin: 1rem 0; }

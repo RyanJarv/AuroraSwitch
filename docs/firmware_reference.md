@@ -28,7 +28,7 @@ recovery testing. FataMorgana uses our RAM build; its duplicate QSPI option is r
 
 ## FDN 1.2.2 — Blue
 
-[Download BIN](https://www.qubitelectronix.com/s/AR_FDN_v1_2_2.bin). Save in `aurora/`.
+[Download](https://www.qubitelectronix.com/s/AR_FDN_v1_2_2.bin)
 
 Stereo feedback-delay-network reverb. Start with moderate Time; high settings feed back.
 
@@ -62,7 +62,7 @@ Source: Qu-Bit's [FDN getting started guide](https://www.qubitelectronix.com/alt
 
 ## Aurora 1.4.4 — Green
 
-[Download ZIP](https://www.qubitelectronix.com/s/Aurora_v1_4_4.zip). Extract `Aurora_v1_4_4.bin` into `aurora/`.
+[Download ZIP](https://www.qubitelectronix.com/s/Aurora_v1_4_4.zip)
 
 Stock spectral reverb: pitch manipulation, spectral smearing and stereo delays.
 
@@ -113,8 +113,7 @@ covering firmware 1.4.4. Calibration is maintenance, not a performance control.
 
 ## EchoGarden 0.3.1 — Cyan
 
-[Get firmware on Qu-Bit's Discord](https://discord.com/channels/1171549067122311298/1257378715944484864) (login required).
-Find `AuroraEchoGarden_v0_3_1_STABLE.bin` and save it in `aurora/`. No stable public download URL is available.
+[Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
 
 Multi-line echoes with diffusion/reverb around the repeats.
 
@@ -148,8 +147,7 @@ Source: author-supplied EchoGarden v0.3.1 Parameter Manual.
 
 ## CloudscapeX — Magenta
 
-[Get firmware on Qu-Bit's Discord](https://discord.com/channels/1171549067122311298/1257378715944484864) (login required).
-Find `AuroraCloudscapeX.bin` and save it in `aurora/`. No stable public download URL is available.
+[Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
 
 Modulated delay, diffusion and filter delay.
 
@@ -188,8 +186,7 @@ identified as the only release paired with `CloudscapeX.bin`.
 
 ## The Oscillator Is a Lie 0.0.2 — Amber
 
-[Get firmware on Qu-Bit's Discord](https://discord.com/channels/1171549067122311298/1257378715944484864) (login required).
-Find `TheOscillatorIsALie_v0_0_2.bin` and save it in `aurora/`. No stable public download URL is available.
+[Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
 
 Aliasing/ring-mod oscillator, not a reverb. Raise Blur above zero to hear it.
 
@@ -225,10 +222,9 @@ Source: supplied author notes, February 10–11, 2026.
 
 ## Flux Capacitor — Yellow
 
-Download BIN: [0.3.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/download/v0.3.0/flux-capacitor-0.3.0.bin),
-[0.2.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/download/v0.2.0/flux-capacitor-0.2.0.bin),
-[0.1.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/download/v0.1.0/flux-capacitor-0.1.0.bin).
-Save one version in `aurora/`; older versions need the source-build selector.
+[Download 0.3.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/download/v0.3.0/flux-capacitor-0.3.0.bin)
+[Download 0.2.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/download/v0.2.0/flux-capacitor-0.2.0.bin)
+[Download 0.1.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/download/v0.1.0/flux-capacitor-0.1.0.bin)
 
 Stereo tape-style pitch, braking, delay and coloration.
 
@@ -271,9 +267,8 @@ and versioned `main.cpp` / `tape_delay.h` at tags 0.1.0 and 0.2.0.
 
 ## Morse — White
 
-Download BIN: [0.2.0](https://github.com/DaveParr/Aurora-Morse/releases/download/v0.2.0/aurora-morse-0.2.0.bin),
-[0.1.0](https://github.com/DaveParr/Aurora-Morse/releases/download/v0.1.0/aurora-morse-0.1.0.bin).
-Save one version in `aurora/`; 0.1.0 needs the source-build selector.
+[Download 0.2.0](https://github.com/DaveParr/Aurora-Morse/releases/download/v0.2.0/aurora-morse-0.2.0.bin)
+[Download 0.1.0](https://github.com/DaveParr/Aurora-Morse/releases/download/v0.1.0/aurora-morse-0.1.0.bin)
 
 Clocked stereo VCA: **audio input + clock into Freeze gate + Mix above zero**.
 Freeze button alone does not clock it.
@@ -311,8 +306,7 @@ and `main.cpp`, `pattern.h`, `envelope.h` at tags 0.1.0/0.2.0.
 
 ## Tempest 1.0.0 — Pale red
 
-[Download BIN](https://github.com/jfriess/Aurora-Firmwares/releases/download/Tempest-v1.0.0/Tempest_v1_0_0.bin).
-Save in `aurora/`; requires the source-build selector.
+[Download](https://github.com/jfriess/Aurora-Firmwares/releases/download/Tempest-v1.0.0/Tempest_v1_0_0.bin)
 
 Stereo distortion with a clean low-frequency bypass. **Mix is not dry/wet.**
 
@@ -360,8 +354,7 @@ and [algorithm details](https://github.com/jfriess/Aurora-Firmwares/blob/d5504d7
 
 ## FataMorgana RAM experiment — Azure
 
-No compatible prebuilt download. Use [the RAM-build instructions](user_guide.md#fatamorgana)
-and save the resulting `FataMorgana.bin` in `aurora/`. The upstream QSPI build is not interchangeable.
+[Build RAM firmware](user_guide.md#fatamorgana)
 
 Dual wavetable synth: A left, B right. External audio can modulate or be waveshaped.
 Only the exact development RAM build is supported, not upstream QSPI.
@@ -423,9 +416,7 @@ No selector color; these cannot launch with the published RAM selector.
 
 ## Dirt Verb 1.1 — Red-pink
 
-[Get firmware on Qu-Bit's Discord](https://discord.com/channels/1171549067122311298/1257378715944484864) (login required).
-Find `DirtVerb 1.1.bin` and save it in `aurora/`; requires the QSPI development selector.
-No stable public download URL is available.
+[Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
 
 Driven reverb with optional chorus and pitch shifting. Only the exact
 `DirtVerb 1.1.bin` is admitted by this branch's selector.
@@ -460,9 +451,7 @@ Driven reverb with optional chorus and pitch shifting. Only the exact
 
 ## Aurora HP-filter variant — Lime
 
-[Get firmware on Qu-Bit's Discord](https://discord.com/channels/1171549067122311298/1257378715944484864) (login required).
-Find `Aurora_v1-4-6_hpfilt.bin` and save it in `aurora/`; requires the QSPI development selector.
-No stable public download URL is available.
+[Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
 
 Stock Aurora controls with two shifted changes. Place the exact supplied
 `Aurora_v1-4-6_hpfilt.bin` in `aurora/`; only this development branch's selector

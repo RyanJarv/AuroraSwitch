@@ -72,14 +72,16 @@ class ReferenceSiteTests(unittest.TestCase):
             parser.feed(file.read_text())
             cls.pages[file.name] = parser
 
-    def test_each_firmware_page_explains_how_to_obtain_its_image(self):
-        """Keep download guidance on direct pages, not only the setup guide."""
+    def test_each_firmware_page_has_download_actions(self):
+        """Keep compact actions in both direct pages and SPA navigation."""
         for section in self.sections:
             if section.filename == "index.html" or section.filename not in self.pages:
                 continue
             with self.subTest(page=section.filename):
-                self.assertIn("`aurora/`", section.markdown)
-                self.assertRegex(section.markdown, r"Download|Get firmware|No compatible prebuilt download")
+                page = (SITE / section.filename).read_text()
+                self.assertIn('class="firmware-heading"', page)
+                self.assertIn('class="download-button"', page)
+                self.assertRegex(section.markdown, r"Download|Discord download|Build RAM firmware")
         for name, version in (("flux-capacitor", "0.1.0"), ("flux-capacitor", "0.2.0"),
                               ("flux-capacitor", "0.3.0"), ("aurora-morse", "0.1.0"),
                               ("aurora-morse", "0.2.0")):
