@@ -349,10 +349,9 @@ class ReferenceSiteTests(unittest.TestCase):
         for name in PANEL_CONTROLS:
             self.assertIn(name, " ".join(panel.itertext()))
 
-    def test_navigation_rejects_unknown_colors_or_availability(self):
-        for old, new in (("| Blue |", "| Invisible |"), ("| Release |", "| Available maybe |")):
-            with self.subTest(replacement=new), self.assertRaises(ValueError):
-                read_reference(self.source.replace(old, new, 1))
+    def test_manually_edited_catalog_table_requires_regeneration(self):
+        with self.assertRaisesRegex(ValueError, "run make reference-html"):
+            read_reference(self.source.replace("| Blue |", "| Green |", 1))
 
     def test_menu_names_omit_versions_and_have_adjacent_family_colors(self):
         menu = navigation(self.sections, self.entries, "index.html")
@@ -419,15 +418,7 @@ class ReferenceSiteTests(unittest.TestCase):
 
     def test_navigation_rejects_missing_link_targets(self):
         with self.assertRaisesRegex(ValueError, "Missing firmware section"):
-            read_reference(
-                self.source.replace(
-                    "[FDN 1.2.2](#fdn-122--blue)", "[FDN 1.2.2](#missing-firmware)", 1
-                )
-            )
-
-    def test_navigation_rejects_duplicate_selector_colors(self):
-        with self.assertRaisesRegex(ValueError, "duplicate selector colors"):
-            read_reference(self.source.replace("| Green |", "| Blue |", 1))
+            read_reference(self.source.replace("## FDN 1.2.2 — Blue", "## Missing firmware", 1))
 
     def test_colors_may_repeat_across_categories(self):
         yellow = [entry for entry in self.entries if entry.color == "Yellow"]
@@ -442,23 +433,6 @@ class ReferenceSiteTests(unittest.TestCase):
             versions = [entry for entry in self.entries if entry.anchor == anchor]
             self.assertEqual(len(versions), count)
             self.assertEqual({entry.color for entry in versions}, {color})
-        with self.assertRaisesRegex(ValueError, "Inconsistent family"):
-            read_reference(
-                self.source.replace(
-                    "| Yellow | [Flux Capacitor 0.1.0]", "| Azure | [Flux Capacitor 0.1.0]"
-                )
-            )
-
-    def test_categories_reject_unknown_values_or_split_versions(self):
-        with self.assertRaisesRegex(ValueError, "Invalid color row"):
-            read_reference(self.source.replace("| Reverbs |", "| Unknown |", 1))
-        with self.assertRaisesRegex(ValueError, "Inconsistent family category"):
-            read_reference(
-                self.source.replace(
-                    "| Delays | Yellow | [Flux Capacitor 0.1.0]",
-                    "| Reverbs | Yellow | [Flux Capacitor 0.1.0]",
-                )
-            )
 
     def test_navigation_rejects_sections_without_a_color_entry(self):
         with self.assertRaisesRegex(ValueError, "Unlinked firmware sections"):

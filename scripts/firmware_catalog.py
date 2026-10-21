@@ -40,28 +40,38 @@ def validate_catalog(data: dict) -> dict:
             if row[key] in values:
                 raise ValueError("duplicate firmware " + key)
             values.add(row[key])
+        # Human-facing fields must be printable and nonempty. Keep binary
+        # fields, flags, the optional URL and RGB channels out of this text check.
+        if any(
+            not isinstance(value, str) or not value or any(ord(c) < 32 for c in value)
+            for key, value in row.items()
+            if key not in ("bytes", "stack", "reset", "resident", "download", "rgb")
+        ):
+            raise ValueError("firmware labels must be nonempty printable text")
         if (
-            any(
-                not isinstance(value, str) or not value or any(ord(c) < 32 for c in value)
-                for key, value in row.items()
-                if key not in ("bytes", "stack", "reset", "resident", "download", "rgb")
-            )
-            or not re.fullmatch(r"[a-z0-9][a-z0-9.-]*", row["id"])
+            not re.fullmatch(r"[a-z0-9][a-z0-9.-]*", row["id"])
             or not re.fullmatch(r"[a-z0-9][a-z0-9-]*", row["family"])
             or not re.fullmatch(r"[a-z0-9-]+", row["reference"])
-            or any(c in row["filename"] for c in ("/", "\\"))
-            or not row["filename"].endswith(".bin")
-            or not re.fullmatch(r"[0-9a-f]{64}", row["sha256"])
-            or not 16 <= row["bytes"] <= 480 * 1024
-            or row["execution"] not in ("sram", "qspi")
-            or row["availability"] not in ("Release", "Development")
-            or row["category"] not in categories
-            or row["color"] not in colors
-            or row["rgb"] != colors[row["color"]]["rgb"]
-            or type(row["resident"]) is not bool
-            or (row["download"] is not None and not row["download"].startswith("https://"))
         ):
-            raise ValueError("invalid firmware metadata")
+            raise ValueError("invalid firmware ID, family or reference anchor")
+        if any(c in row["filename"] for c in ("/", "\\")) or not row["filename"].endswith(".bin"):
+            raise ValueError("firmware filename must be a .bin name without directories")
+        if not re.fullmatch(r"[0-9a-f]{64}", row["sha256"]):
+            raise ValueError("firmware SHA-256 must have 64 lowercase hexadecimal characters")
+        if not 16 <= row["bytes"] <= 480 * 1024:
+            raise ValueError("firmware size is outside the supported bounds")
+        if row["execution"] not in ("sram", "qspi"):
+            raise ValueError("unknown firmware execution target")
+        if row["availability"] not in ("Release", "Development"):
+            raise ValueError("unknown firmware availability")
+        if row["category"] not in categories:
+            raise ValueError("unknown firmware category")
+        if row["color"] not in colors or row["rgb"] != colors[row["color"]]["rgb"]:
+            raise ValueError("firmware color must match the catalog palette")
+        if type(row["resident"]) is not bool:
+            raise ValueError("firmware resident flag must be a boolean")
+        if row["download"] is not None and not row["download"].startswith("https://"):
+            raise ValueError("firmware download must use HTTPS")
         family = tuple(row[key] for key in ("family_name", "reference", "category", "color"))
         if row["family"] in families and families[row["family"]] != family:
             raise ValueError("inconsistent firmware family")

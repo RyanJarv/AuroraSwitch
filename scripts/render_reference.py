@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate SPA content and direct-link HTML fallbacks from one reference."""
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 import hashlib
 import html
 import json
@@ -129,7 +129,7 @@ class Entry:
 
 
 def read_reference(source: str) -> tuple[str, list[Section], list[Entry]]:
-    """Use the category/color table as the navigation catalog; reject stale links."""
+    """Build navigation from the catalog and require matching documentation."""
     parts = re.split(r"^## (.+)\n", source, flags=re.M)
     sections = [Section(parts[i], parts[i + 1]) for i in range(1, len(parts), 2)]
     by_anchor = {section.anchor: section for section in sections}
@@ -143,51 +143,9 @@ def read_reference(source: str) -> tuple[str, list[Section], list[Entry]]:
     for required in ("color-lookup", "outside-the-selector-catalog"):
         if required not in by_anchor:
             raise ValueError(f"Missing reference section: {required}")
-    entries = []
-    for line in by_anchor["color-lookup"].markdown.splitlines():
-        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
-        if not line.startswith("|") or cells[0] in ("Category", "---"):
-            continue
-        if len(cells) != 5:
-            raise ValueError(f"Malformed color row: {line}")
-        category, color, link, description, availability = cells
-        match = re.fullmatch(r"\[([^]]+)\]\(#([\w-]+)\)", link)
-        if (
-            category not in CATEGORIES
-            or color not in COLORS
-            or availability not in ("Release", "Development")
-            or not match
-        ):
-            raise ValueError(f"Invalid color row: {line}")
-        if match[2] not in by_anchor or by_anchor[match[2]].filename == "index.html":
-            raise ValueError(f"Missing firmware section: {link}")
-        entries.append(Entry(color, match[1], match[2], description, availability, category))
-    if not entries:
-        raise ValueError("Missing selector colors")
-    # Versions share one family color; colors may repeat across categories.
-    for entry in entries:
-        for other in entries:
-            if (entry.anchor == other.anchor and entry.color != other.color) or (
-                entry.category == other.category
-                and entry.anchor != other.anchor
-                and entry.color == other.color
-            ):
-                raise ValueError("Inconsistent family or duplicate selector colors")
-            if entry.anchor == other.anchor and entry.category != other.category:
-                raise ValueError("Inconsistent family category")
-    if len({entry.name for entry in entries}) != len(entries):
-        raise ValueError("Duplicate firmware version")
-    unused = (
-        set(by_anchor)
-        - {entry.anchor for entry in entries}
-        - {
-            "color-lookup",
-            "outside-the-selector-catalog",
-        }
-    )
-    if unused:
-        raise ValueError(f"Unlinked firmware sections: {sorted(unused)}")
-    expected = [
+    # The table is generated from this same catalog. Do not parse it back into
+    # a second catalog with its own rules for firmware names, colors and groups.
+    entries = [
         Entry(
             row["color"],
             row["name"],
@@ -199,9 +157,22 @@ def read_reference(source: str) -> tuple[str, list[Section], list[Entry]]:
         )
         for row in read_catalog()["images"]
     ]
-    if entries != [replace(entry, family_name="") for entry in expected]:
+    for entry in entries:
+        if entry.anchor not in by_anchor:
+            raise ValueError(f"Missing firmware section: {entry.anchor}")
+    unused = (
+        set(by_anchor)
+        - {entry.anchor for entry in entries}
+        - {
+            "color-lookup",
+            "outside-the-selector-catalog",
+        }
+    )
+    if unused:
+        raise ValueError(f"Unlinked firmware sections: {sorted(unused)}")
+    if source != update_catalog_table(source):
         raise ValueError("Reference table differs from compiled catalog; run make reference-html")
-    return parts[0], sections, expected
+    return parts[0], sections, entries
 
 
 def render_markdown(

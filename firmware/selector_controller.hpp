@@ -68,17 +68,13 @@ namespace aurora_selector
                         return media_.Ready();
                     });
                 media_.EndDiscovery();
-                selected_ = static_cast<unsigned>(menu_.Selected());
-                state_ = !media_.Ready()   ? State::Waiting
-                    : menu_.HasSelection() ? State::Selected
-                                           : State::Empty;
+                UpdateSelectionState();
                 if (boot_pending_)
                 {
                     // Try once at startup; reconnecting USB must not launch firmware.
                     boot_pending_ = false;
                     const int choice = media_.BootChoice();
                     automatic = choice >= 0 && media_.Ready() && menu_.Select(choice);
-                    selected_ = static_cast<unsigned>(menu_.Selected());
                 }
             }
             media_was_ready_ = media_.Ready();
@@ -92,19 +88,17 @@ namespace aurora_selector
                 {
                     menu_.Next();
                 }
-                selected_ = static_cast<unsigned>(menu_.Selected());
-                state_ = !media_.Ready()   ? State::Waiting
-                    : menu_.HasSelection() ? State::Selected
-                                           : State::Empty;
+                UpdateSelectionState();
             }
             if ((load_pressed || automatic) && !category_changed && !selection_changed
                 && media_.Ready() && menu_.HasSelection())
             {
                 state_ = State::Loading;
                 loading();
-                if (!media_.Authenticate(selected_) || !media_.Ready()
-                    || (!automatic && !media_.Remember(selected_)) || !media_.Ready()
-                    || !media_.Launch(selected_))
+                const auto selected = Selected();
+                if (!media_.Authenticate(selected) || !media_.Ready()
+                    || (!automatic && !media_.Remember(selected)) || !media_.Ready()
+                    || !media_.Launch(selected))
                 {
                     state_ = State::Error;
                 }
@@ -118,7 +112,7 @@ namespace aurora_selector
 
         unsigned Selected() const
         {
-            return selected_;
+            return static_cast<unsigned>(menu_.Selected());
         }
 
         const auto& Menu() const
@@ -127,9 +121,24 @@ namespace aurora_selector
         }
 
       private:
+        void UpdateSelectionState()
+        {
+            if (!media_.Ready())
+            {
+                state_ = State::Waiting;
+            }
+            else if (menu_.HasSelection())
+            {
+                state_ = State::Selected;
+            }
+            else
+            {
+                state_ = State::Empty;
+            }
+        }
+
         Media& media_;
-        daisy_development::SupportedImageMenu<sizeof(Images) / sizeof(Images[0])> menu_;
-        unsigned selected_ = 0;
+        daisy_development::SupportedImageMenu<ImageCount> menu_;
         State state_ = State::Waiting;
         bool media_was_ready_ = false;
         bool boot_pending_ = true;
