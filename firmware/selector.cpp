@@ -1,8 +1,8 @@
 // Panel menu and read-only loading; handoff.cpp owns irreversible launch.
 #include "aurora.h"
 #include "images.hpp"
+#include "selector_controller.hpp"
 #include "../support/read_only_image_staging.hpp"
-#include "../support/supported_image_menu.hpp"
 #include "../support/media_initialization.hpp"
 #include "../support/operation_timing.hpp"
 #ifdef SELECTOR_VIRTUAL_TRANSPORT
@@ -40,14 +40,17 @@ namespace
     volatile daisy_development::OperationTiming discovery_timing{};
     __attribute__((section(".selector_staging"), aligned(32)))
     std::uint8_t staged[aurora_selector::StagingCapacity()];
-    unsigned selected = 0;
-    daisy_development::SupportedImageMenu<
-        sizeof(aurora_selector::Images) / sizeof(aurora_selector::Images[0])>
-        menu(aurora_selector::Categories);
-    // Freeze authenticates and launches in the same iteration; no stale approval.
-    enum class State { Waiting, Empty, Selected, Loading, Error };
-    State state = State::Waiting;
-    bool media_was_ready = false;
+    struct SelectorMedia
+    {
+        bool Ready();
+        void BeginDiscovery();
+        void EndDiscovery();
+        bool Authenticate(unsigned index);
+        bool Launch(unsigned index);
+    };
+    SelectorMedia media;
+    aurora_selector::SelectorController<SelectorMedia> controller(media);
+    using State = aurora_selector::SelectorController<SelectorMedia>::State;
     volatile daisy_development::MediaInitialization media_initialization =
         daisy_development::MediaInitialization::Ready;
 
@@ -74,8 +77,8 @@ namespace
         leds.SetLed(4, g);
         leds.SetLed(5, b);
         // Selection colors belong to the exact catalog, not two special indices.
-        const auto color = menu.HasSelection()
-            ? aurora_selector::Images[selected].menu_color
+        const auto color = controller.Menu().HasSelection()
+            ? aurora_selector::Images[controller.Selected()].menu_color
             : std::array<float, 3>{0.f, 0.f, 0.f};
         for(unsigned component = 0; component < color.size(); ++component)
             leds.SetLed(component, color[component]);
@@ -86,8 +89,8 @@ namespace
         for(unsigned position = 0; position < 6; ++position)
             for(unsigned component = 0; component < 3; ++component)
                 leds.SetLed(arcs[position][component],
-                    menu.HasSelection() && position == menu.Position()
-                    ? aurora_selector::CategoryColors[menu.Category()][component] : 0.f);
+                    controller.Menu().HasSelection() && position == controller.Menu().Position()
+                    ? aurora_selector::CategoryColors[controller.Menu().Category()][component] : 0.f);
         leds.SwapBuffersAndTransmit();
     }
 
@@ -167,6 +170,21 @@ namespace
         load_diagnostic.timing.Finish(daisy::System::GetNow());
         return authenticated;
     }
+
+    bool SelectorMedia::Ready() { return MediaReady(); }
+    void SelectorMedia::BeginDiscovery() { discovery_timing.Begin(daisy::System::GetNow()); }
+    void SelectorMedia::EndDiscovery() { discovery_timing.Finish(daisy::System::GetNow()); }
+    bool SelectorMedia::Authenticate(unsigned index) { return AuthenticateFile(index); }
+    bool SelectorMedia::Launch(unsigned index)
+    {
+#ifdef SELECTOR_VIRTUAL_TRANSPORT
+        return aurora_selector::VirtualLaunch(seed, selector_virtual_media,
+            aurora_selector::Images[index], staged);
+#else
+        return aurora_selector::ExperimentalLaunch(seed, aurora::usb,
+            selector_filesystem.GetUSBPath(), aurora_selector::Images[index], staged);
+#endif
+    }
 }
 
 int main()
@@ -220,8 +238,7 @@ int main()
         {
             // Latched until reset; neither readiness nor a button can hide it
             // or authorize loading/launch. Do not pump failed USB handles.
-            menu.Clear();
-            state = State::Error;
+            controller.FailInitialization();
             SetStatus(0.4f, 0.f, 0.f);
             daisy::System::Delay(20);
             continue;
@@ -234,62 +251,13 @@ int main()
         next_button.Debounce();
         load_button.Debounce();
         category_button.Debounce();
-        const bool media_ready = MediaReady();
-        if(!media_ready)
-        {
-            menu.Clear();
-            state = State::Waiting;
-        }
-        if(media_ready && !media_was_ready)
-        {
-            // Discovery reuses the exact staging/hash/vector path. It overwrites
-            // staging and therefore always revokes any previous launch approval.
-            state = State::Loading;
-            SetStatus(0.4f, 0.2f, 0.f);
-            discovery_timing.Begin(daisy::System::GetNow());
-            menu.Discover([](std::size_t index) {
-                return AuthenticateFile(static_cast<unsigned>(index));
-            }, [] { return MediaReady(); });
-            discovery_timing.Finish(daisy::System::GetNow());
-            selected = static_cast<unsigned>(menu.Selected());
-            state = !MediaReady() ? State::Waiting
-                : menu.HasSelection() ? State::Selected : State::Empty;
-        }
-        media_was_ready = MediaReady();
         const bool category_changed = category_button.FallingEdge();
         const bool selection_changed = next_button.FallingEdge();
-        if(category_changed || selection_changed)
-        {
-            if(category_changed) menu.NextCategory();
-            else menu.Next();
-            selected = static_cast<unsigned>(menu.Selected());
-            state = !MediaReady() ? State::Waiting
-                : menu.HasSelection() ? State::Selected : State::Empty;
-        }
-        if(load_button.FallingEdge() && !category_changed && !selection_changed
-           && MediaReady() && menu.HasSelection())
-        {
-            state = State::Loading;
-            SetStatus(0.4f, 0.2f, 0.f);
-            // Handoff independently revalidates these same staged bytes.
-            if(!AuthenticateFile(selected) || !MediaReady())
-                state = State::Error;
-            else
-            {
-#ifdef SELECTOR_VIRTUAL_TRANSPORT
-                if(!aurora_selector::VirtualLaunch(seed, selector_virtual_media,
-                       aurora_selector::Images[selected], staged))
-#else
-                if(!aurora_selector::ExperimentalLaunch(
-                       seed, aurora::usb, selector_filesystem.GetUSBPath(),
-                       aurora_selector::Images[selected], staged))
-#endif
-                    state = State::Error;
-            }
-        }
+        controller.Update(category_changed, selection_changed,
+            load_button.FallingEdge(), [] { SetStatus(0.4f, 0.2f, 0.f); });
         if(now % 20U == 0U)
         {
-            switch(state)
+            switch(controller.GetState())
             {
                 case State::Waiting: SetStatus(0.f, 0.f, 0.1f); break;
                 case State::Empty: SetStatus(0.4f, 0.f, 0.f); break;

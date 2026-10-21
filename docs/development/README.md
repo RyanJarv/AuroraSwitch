@@ -20,6 +20,11 @@ See `make help` for virtual build targets. Never install virtual firmware.
 Packaging requires clean committed source; it records inputs and checks ELF/BIN
 agreement. It does not prove runtime behavior.
 
+The selector's discovery and Freeze flow accepts a media implementation in
+`firmware/selector_controller.hpp`; host tests supply a fake, while
+`firmware/selector.cpp` supplies USB or virtual media. The virtual build remains
+for linked Arm execution and does not test real USB.
+
 From a checkout, `make download-release USB_DIR="/Volumes/AURORA"` automates
 checked release/public-firmware downloads and copying; it needs `gh` and host
 compilers, but no Arm compiler. `scripts/prepare_payloads.py --output prepared

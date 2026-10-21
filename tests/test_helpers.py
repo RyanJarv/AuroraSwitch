@@ -33,6 +33,9 @@ class HelperTests(unittest.TestCase):
     def test_supported_image_discovery(self):
         self.compile_and_run("menu_test")
 
+    def test_selector_with_replaced_media(self):
+        self.compile_and_run("selector_controller_test")
+
     def test_catalog_colors_and_capacity(self):
         self.compile_and_run("catalog_test")
 
