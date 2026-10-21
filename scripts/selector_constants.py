@@ -4,7 +4,7 @@ import re
 
 
 def read_constants(header: str) -> dict[str, int]:
-    definitions = re.findall(r"^#define SELECTOR_(\w+) (0x[0-9a-fA-F]+|[0-9]+)$", header, re.M)
+    definitions = re.findall(r"^#define SELECTOR_(\w+) (0x[0-9a-fA-F]+|0|[1-9][0-9]*)$", header, re.M)
     names = [name for name, _ in definitions]
     if (not definitions or len(set(names)) != len(names)
             or len(definitions) != len(re.findall(r"^#define SELECTOR_", header, re.M))):
