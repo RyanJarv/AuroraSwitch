@@ -64,7 +64,7 @@ def run(bundle: Path, images: Path, runner_root: Path, output: Path) -> dict:
     inputs = identities("fdn")
     results = []
     output.mkdir(parents=True, exist_ok=False)
-    for scenario in ("dirt", "repeat-dirt", "fdn", "menu", "bad-record", "bad-file", "bad-resident", "bad-wrapper",
+    for scenario in ("dirt", "repeat-dirt", "fdn", "menu", "bad-record", "unknown-record", "bad-file", "bad-resident", "bad-wrapper",
                      "choose-fdn", "repeat-fdn"):
         directory = output / scenario
         directory.mkdir()
@@ -79,6 +79,12 @@ def run(bundle: Path, images: Path, runner_root: Path, output: Path) -> dict:
             if scenario == "repeat-fdn":
                 record = (output / "choose-fdn" / "boot-store.bin").read_bytes()[16:96]
             if scenario == "bad-record": record = record[:-1] + bytes([record[-1] ^ 1])
+            second_record = bytes(80)
+            if scenario == "unknown-record":
+                record = b"AURBOOT1" + struct.pack("<I", 1) + rows[0]["sha256"].encode()
+                record += struct.pack("<I", zlib.crc32(record))
+                second_record = b"AURBOOT1" + struct.pack("<I", 2) + b"0" * 64
+                second_record += struct.pack("<I", zlib.crc32(second_record))
             initial = bytearray(bytes(range(256)) * (0x800000 // 256))
             initial[0x40000:0x40000 + len(combined)] = combined
             if scenario == "bad-resident": initial[0x40958] ^= 1
@@ -111,7 +117,7 @@ def run(bundle: Path, images: Path, runner_root: Path, output: Path) -> dict:
                     commands.append(f"sysbus LoadBinary {monitor_path(path)} {hex(0xc0100000 + index * 0x40000)}")
             init = temp / "init.py"
             init.write_text("from System import Array, Byte\nbus = machine.SystemBus\n"
-                + f"bus.WriteBytes(Array[Byte]({list(struct.pack('<4I', 1, int(scenario != 'choose-fdn'), 0, 0) + record + bytes(80))!r}), {store})\n"
+                + f"bus.WriteBytes(Array[Byte]({list(struct.pack('<4I', 1, 3 if scenario == 'unknown-record' else int(scenario != 'choose-fdn'), 0, 0) + record + second_record)!r}), {store})\n"
                 + f"bus.WriteBytes(Array[Byte]({list(struct.pack('<4I64sI', 1, 1, 1, 0, b'', 0))!r}), {media})\n"
                 + "print('PERSISTENT_SELECTOR_MAIN')\n")
             hook = temp / "media.py"
@@ -134,6 +140,10 @@ def run(bundle: Path, images: Path, runner_root: Path, output: Path) -> dict:
                 + "print('PERSISTENT_DMA_ZERO')\nprint('PERSISTENT_PAYLOAD_RESET')\n")
             commands += [f'cpu AddHook {hex(reset)} "exec(open(\'{boundary}\').read())"',
                 f'cpu AddHook {hex(halt)} "print(\'PERSISTENT_PAYLOAD_HALT\'); cpu.IsHalted = True"']
+            for index in present:
+                if index != choice:
+                    commands.append(f'cpu AddHook {hex(rows[index]["reset"] & ~1)} '
+                        '"print(\'PERSISTENT_UNEXPECTED_PAYLOAD\'); cpu.IsHalted = True"')
             if scenario == "choose-fdn":
                 commands += ['emulation RunFor "0.500000"', "pause", "gpioPortC OnGPIO 11 false",
                     'emulation RunFor "0.040000"', "pause", "gpioPortC OnGPIO 11 true"]
@@ -159,7 +169,8 @@ def run(bundle: Path, images: Path, runner_root: Path, output: Path) -> dict:
             positive = scenario in ("dirt", "repeat-dirt", "fdn", "choose-fdn", "repeat-fdn")
             if (clean.splitlines().count("PERSISTENT_PAYLOAD_HALT") != int(positive)
                     or clean.splitlines().count("PERSISTENT_PAYLOAD_RESET") != int(positive)
-                    or clean.splitlines().count("PERSISTENT_DMA_ZERO") != int(positive)):
+                    or clean.splitlines().count("PERSISTENT_DMA_ZERO") != int(positive)
+                    or clean.splitlines().count("PERSISTENT_UNEXPECTED_PAYLOAD") != 0):
                 raise ValueError("unexpected/missing payload entry: " + str(directory / "raw.log"))
             if clean.splitlines().count("PERSISTENT_SELECTOR_MAIN") != int(scenario != "bad-wrapper"):
                 raise ValueError("wrapper did not enter expected selector startup")
