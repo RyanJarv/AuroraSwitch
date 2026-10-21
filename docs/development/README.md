@@ -83,7 +83,8 @@ copying. Use a new output folder each time.
 1. Measure a user-owned binary without admitting it:
    `python3 scripts/inspect_firmware.py --execution sram /path/to/firmware.bin`
    (use `qspi` only for a reviewed flash-execution image). This prints size,
-   SHA-256, vectors and existing catalog matches; it changes no files.
+   SHA-256, vectors and existing catalog matches; it modifies neither the binary
+   nor the catalog.
 2. Review RAM layout, startup, DMA, inherited clocks/MPU and persistent writes.
    Add one `FirmwareCatalog` record in [images.hpp](../../firmware/images.hpp).
    Keep its stable ID and all exact image identity fields together. Reuse an

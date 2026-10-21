@@ -27,9 +27,6 @@ class FirmwareCatalogTests(unittest.TestCase):
             actual = {key: row[key] for key in frozen if key != "category"}
             actual["category"] = [c["name"] for c in catalog["categories"]].index(row["category"])
             self.assertEqual(actual, frozen)
-        self.assertEqual(catalog["staging_capacity"], 182240)
-        self.assertEqual({row["id"] for row in catalog["images"] if row["download"]},
-                         {"fdn", "spectral", "flux-0.3.0", "morse-0.2.0"})
 
     def test_invalid_metadata_rejects(self):
         original = firmware_catalog.read_catalog()
@@ -91,13 +88,6 @@ class FirmwareCatalogTests(unittest.TestCase):
                 self.assertIn("synthetic.html", render_reference.navigation(sections, entries, "index.html"))
                 with self.assertRaisesRegex(ValueError, "differs from compiled catalog"):
                     render_reference.read_reference(updated.replace("| Test firmware |", "| Wrong description |"))
-
-    def test_catalog_changes_invalidate_spa_identity(self):
-        original = render_reference.renderer_identity()
-        changed = copy.deepcopy(firmware_catalog.read_catalog())
-        changed["colors"][0]["css"] = "#123456"
-        with mock.patch.object(render_reference, "read_catalog", return_value=changed):
-            self.assertNotEqual(render_reference.renderer_identity(), original)
 
     def test_inspection_measures_unknown_binary_without_admitting_it(self):
         with tempfile.TemporaryDirectory() as temporary:

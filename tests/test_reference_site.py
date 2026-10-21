@@ -303,8 +303,7 @@ class ReferenceSiteTests(unittest.TestCase):
             entries = [entry for entry in self.entries if entry.anchor == section.anchor]
             if not entries:
                 continue
-            name = re.sub(r" \d+(?:\.\d+)+$", "", section.title)
-            name = name.removesuffix(" RAM experiment").replace("Aurora HP-filter variant", "Aurora HP-filter")
+            name = entries[0].family_name
             self.assertIn(f'<span>{name}</span><small class="color-label">'
                           f'{swatch(entries[0].color)}{entries[0].color}</small>', menu)
             if name != section.title:

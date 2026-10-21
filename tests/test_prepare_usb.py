@@ -40,6 +40,8 @@ class UsbTests(unittest.TestCase):
         self.assertEqual(verifier.call_count, 2)
         self.assertEqual((self.usb / "options.txt").read_bytes(), b"keep settings")
         self.assertEqual((self.usb / "AuroraSwitch.bin").read_bytes(), self.selector.read_bytes())
+        self.assertEqual(set(prepare_usb.DOWNLOADS), {"AR_FDN_v1_2_2.bin", "Aurora_v1_4_4.bin",
+                                                    "flux-capacitor-0.3.0.bin", "aurora-morse-0.2.0.bin"})
         self.assertEqual({p.name for p in (self.usb / "aurora").iterdir()}, set(prepare_usb.DOWNLOADS))
 
     def test_failed_download_or_authentication_does_not_write_drive(self):
