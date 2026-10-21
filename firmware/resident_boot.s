@@ -30,13 +30,23 @@ selector_resident_boot_start:
     ldr r1, =0x24000000
     ldr r5, =2166136261
     ldr r6, =16777619
+    mov r8, r2
 resident_copy:
     ldrb r3, [r0], #1
-    eors r5, r5, r3
-    mul r5, r5, r6
     strb r3, [r1], #1
     subs r2, r2, #1
     bne resident_copy
+    dsb sy
+// Validate the SRAM bytes that will execute, not the flash bytes just read.
+resident_readback_start:
+    ldr r0, =0x24000000
+    mov r2, r8
+resident_readback:
+    ldrb r3, [r0], #1
+    eors r5, r5, r3
+    mul r5, r5, r6
+    subs r2, r2, #1
+    bne resident_readback
     cmp r5, r7
     bne resident_invalid
     ldr r4, =0x24000000
