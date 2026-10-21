@@ -132,6 +132,7 @@ def compose(dirt: bytes, selector: bytes, boot: bytes, addresses: dict[str, int]
     if (stack != CONSTANTS["DTCM_END"] or not reset & 1
             or not sram_base + 8 <= reset < sram_base + len(selector)):
         raise ValueError("selector reset/stack vectors")
+    # NOR erases to all-one bits; gaps in the installer retain that erased value.
     combined = bytearray(b"\xff" * (image - base + len(selector)))
     combined[:len(dirt)] = dirt
     struct.pack_into("<I", combined, 4, entry)
