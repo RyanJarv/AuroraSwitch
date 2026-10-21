@@ -72,6 +72,12 @@ needed for discovery and fresh launch authentication. Other supported images
 remain in `aurora/`. `resident.json` binds input package, source, toolchain via
 the package, output identities, layout and exact four-byte patch.
 
+The bundle's source commit must be available in this repository's Git history.
+The preparer reads that commit's layout once; newer commits and uncommitted
+header edits do not change an older bundle's placement. Missing source revisions,
+misaligned addresses and wrappers overlapping metadata reject before output is
+created. The bundle files must be regular files, with no symlinks.
+
 **Never distribute this folder or its installer:** they contain third-party
 firmware. The preparation command never copies to a drive or programs a module.
 The separate `make package-virtual` companion produces a clearly named
