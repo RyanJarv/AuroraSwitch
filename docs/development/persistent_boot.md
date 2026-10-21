@@ -123,10 +123,35 @@ launch, unchanged NOR, write suppression and negative controls. Private dumps
 remain ignored. It does not qualify physical USB writes, flash timing/cache
 gates, payload settings behavior/audio, or ordinary stock recovery.
 
-Before physical use, qualify the exact installer on hardware: initial stock
-installation, repeated Dirt boots, RAM/Dirt changes, held-button menu entry,
-missing/slow/corrupt/read-only USB, interrupted choice writes, persistence-sector
-ownership during payload execution, and ordinary stock USB restoration. Other
-firmware may write its own settings; zero selector application writes does not
-promise a module with no flash writes. No hardware operation is authorized by
-building or preparing these files.
+## Physical screen and flash-write measurement
+
+The [physical screen](evidence/persistent_boot_physical_20261021.json) binds the
+installed 209,548-byte private image to SHA-256 `e6356fa7e929...`. Readback matched
+the candidate and pinned stock loader. The user confirmed selector/Dirt operation
+and an ordinary automatic Dirt power-on with USB connected and the debug ribbon
+disconnected. That ordinary power-on had no command capture.
+
+A temporary external ST-Link watchpoint observed CPU writes to QUADSPI_CCR
+through two 15-second debugger-reset windows. Each recorded the same 13 command
+setups, all from the stock loader, with no array erase/program setups. Two
+identical status-register setup stores must not be counted as two completed
+flash transactions. One reset reached Dirt and the installer readback remained
+exact. The repeat remained in the selector waiting for USB; its SRAM image was
+exact and CPU fault registers clear. It is not a successful automatic-boot pass.
+The cause of that USB wait is unresolved.
+
+Keep the debugger probe temporary: it changes execution timing, observes CPU
+command setup rather than bus transactions, and cannot establish uninterrupted
+cold-boot behavior. The existing linked virtual write checks remain permanent.
+For nonintrusive physical measurement, capture the QSPI bus from power-on and
+separate application erase/program, status-register operations and payload
+settings writes. Identical readback alone cannot exclude rewriting identical
+bytes. Private probe scripts and raw records remain under
+`.deps/flash-write-probe-20261021/`; no firmware instrumentation was added.
+
+Full qualification still requires repeated ordinary Dirt boots, RAM/Dirt changes,
+held-button menu entry, missing/slow/corrupt/read-only USB, interrupted choice
+writes, persistence-sector ownership during payload execution, and ordinary
+stock USB restoration. Other firmware may write its own settings; zero selector
+application writes does not promise a module with no flash writes. No hardware
+operation is authorized by building or preparing these files.

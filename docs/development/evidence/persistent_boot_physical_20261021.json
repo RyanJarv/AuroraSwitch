@@ -1,0 +1,133 @@
+{
+  "after_completed_monitored_reset_installer_sha256": "e6356fa7e929ea73c26f8bb9ae30231f4e7e89cb43d639539542adcaa6790c08",
+  "candidate_source_commit": "5fe19cd4fb4376927197580734e87b73e8e8a7fe",
+  "command_setups": [
+    {
+      "ccr": "0x00000166",
+      "kind": "setup",
+      "pc": "0x080120e6"
+    },
+    {
+      "ccr": "0x00000199",
+      "kind": "setup",
+      "pc": "0x080120fe"
+    },
+    {
+      "ccr": "0x09000105",
+      "kind": "read",
+      "pc": "0x08012396"
+    },
+    {
+      "ccr": "0x010001c0",
+      "kind": "setup",
+      "pc": "0x080120e6"
+    },
+    {
+      "ccr": "0x010001c0",
+      "kind": "setup",
+      "pc": "0x08012172"
+    },
+    {
+      "ccr": "0x09000105",
+      "kind": "read",
+      "pc": "0x08012396"
+    },
+    {
+      "ccr": "0x00000106",
+      "kind": "setup",
+      "pc": "0x080120e6"
+    },
+    {
+      "ccr": "0x09000105",
+      "kind": "read",
+      "pc": "0x08012396"
+    },
+    {
+      "ccr": "0x01000101",
+      "kind": "nonvolatile_register_write",
+      "pc": "0x080120e6"
+    },
+    {
+      "ccr": "0x01000101",
+      "kind": "nonvolatile_register_write",
+      "pc": "0x08012172"
+    },
+    {
+      "ccr": "0x09000105",
+      "kind": "read",
+      "pc": "0x08012396"
+    },
+    {
+      "ccr": "0x09000105",
+      "kind": "read",
+      "pc": "0x080123d4"
+    },
+    {
+      "ccr": "0x1f18edeb",
+      "kind": "read",
+      "pc": "0x08011ec8"
+    }
+  ],
+  "date": "2026-10-21",
+  "development_only": true,
+  "initial_selector_and_dirt_launch": "user reported working normally",
+  "installed_image_authenticated": true,
+  "installer": {
+    "bytes": 209548,
+    "sha256": "e6356fa7e929ea73c26f8bb9ae30231f4e7e89cb43d639539542adcaa6790c08"
+  },
+  "limits": [
+    "CPU-origin QUADSPI_CCR setups only, not wire transactions or internal flash.",
+    "Two identical status setup stores can belong to a single status-register operation.",
+    "One reset reached Dirt; the repeat remained waiting for USB and is not a successful auto-boot pass.",
+    "No flash-program/erase positive control or uninterrupted cold-boot bus capture performed.",
+    "Post-first-window readback log was empty due to full host disk; exact 209548-byte readback itself matched and is preserved.",
+    "Ordinary stock USB restoration remains untested.",
+    "Ordinary power-on success is a user observation with no command capture.",
+    "No causal attribution of the USB wait to debugger pauses versus warm reset versus another issue.",
+    "Physical held-button override, repeated switching, adverse media and ordinary stock USB restoration are not qualified by this screen."
+  ],
+  "loader_sha256": "b442456ab1c7f9689b73e57fb09ca55331d02760b54be28c10a207afed95f06e",
+  "monitored_debugger_resets": [
+    {
+      "all_observed_command_pcs_in_stock_loader": true,
+      "array_mutation_setups": 0,
+      "command_setups": 13,
+      "host_window_ms": 15000,
+      "nonvolatile_register_setups": 2,
+      "outcome": "completed-to-dirt",
+      "raw_log": "monitored-dirt-boot-2.log",
+      "raw_log_sha256": "9f8d0e602b162d22a6da4a79c78820e48bc6144a4095c5820b800d268b8f0a21"
+    },
+    {
+      "all_observed_command_pcs_in_stock_loader": true,
+      "array_mutation_setups": 0,
+      "command_setups": 13,
+      "host_window_ms": 15000,
+      "nonvolatile_register_setups": 2,
+      "outcome": "selector-waiting-for-usb",
+      "raw_log": "aurora-monitored-dirt-boot-repeat.log",
+      "raw_log_sha256": "721100f7994cab01efa665a9c6d3cd6680db1a8e4b069477f17cbb58689b10b2"
+    }
+  ],
+  "ordinary_power_on": {
+    "command_capture": false,
+    "debug_ribbon_disconnected": true,
+    "usb_thumb_drive_connected": true,
+    "user_report": "Dirt starts automatically and works"
+  },
+  "physical_qualified": false,
+  "private_observation_report_sha256": "6c5c752698916001871296d8e3b1a9a13757b283298ebd8414858d608337132e",
+  "repeat_cpu_faults": {
+    "cfsr": 0,
+    "hfsr": 0
+  },
+  "repeat_selector_sram_matches_sealed_bundle": true,
+  "same_ordered_loader_command_setups": true,
+  "schema": "aurora-persistent-boot-physical-screen-v1",
+  "validation_decision": {
+    "next_nonintrusive_measurement": "Passive QSPI bus capture from power-on, separating application erase/program from status-register and payload settings operations.",
+    "permanent": "Retain the existing linked virtual erase/program counters and whole-NOR comparison.",
+    "temporary": "Keep the external ST-Link command-setup probe local until reliable across startup scenarios."
+  }
+}
