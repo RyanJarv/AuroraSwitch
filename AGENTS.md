@@ -28,6 +28,9 @@ GitHub operations. Preserve unrelated local changes.
 
 ## Firmware and evidence
 
+- Keep external virtualization integration code and run instructions in its
+  owning repository. Retain firmware tests and bounded validation summaries here.
+
 - Preserve exact-image authentication, launch-time staged-byte verification,
   DMA cleanup, reviewed memory bounds, and ordinary stock USB recovery.
 - Do not distribute third-party firmware binaries. Keep download sources and

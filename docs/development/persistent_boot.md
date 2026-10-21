@@ -104,17 +104,6 @@ remain private under `.deps/`.
 write suppression, launch authentication, menu override, reconnect behavior,
 exact resident matching, bounded layout, and private-output guards.
 
-The affected linked startup/launch lane reuses the existing external virtual
-runner. Supply a directory with exact FDN and Dirt originals:
-
-```sh
-python3 scripts/check_persistent_boot.py \
-  --bundle dist/VIRTUAL_MANIFEST_SHA256 \
-  --images .deps/private-resident-install/aurora \
-  --runner-root ../vcv-qubit \
-  --output .deps/persistent-boot-check
-```
-
 The stock-loader case uses a no-media USB host model, then supplies synthetic
 files to the selector. It does not execute the updater's USB comparison or
 establish physical power-on behavior. The other cases use a prepared handoff.

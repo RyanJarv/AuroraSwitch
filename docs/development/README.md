@@ -34,8 +34,7 @@ x86_64 Linux image on Apple Silicon; the first build downloads the pinned Arm
 toolchain. This matches the exact host-toolchain archive used by release CI;
 the firmware target is still Arm Cortex-M. Compilation under emulation may be
 slow. `make package` and `make package-virtual` still require a clean committed
-checkout. Docker does not supply the external virtual runner or qualify a
-physical release.
+checkout. Docker builds do not qualify a physical release.
 In Docker Desktop **Settings → Resources → File Sharing**, share this repository
 folder before running the script or opening the Docker toolchain in CLion. A
 denied bind mount means the container cannot see the project, even when its
