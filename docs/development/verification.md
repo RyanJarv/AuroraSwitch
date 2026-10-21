@@ -6,10 +6,20 @@ This branch admits 13 RAM images and Dirt Verb (QSPI) in every build.
 QSPI Fata is retired. Physical reliability and ordinary
 stock USB recovery remain open.
 
-Frozen virtual records cover earlier exact builds, not the selector after
-Fata retirement and the family-color merge. See
+The [persistent-boot checkpoint](evidence/persistent_boot_loader_20261021.json)
+covers stock-loader startup and SRAM corruption rejection. The
+[test-refactor checkpoint](evidence/test_refactor_20261021.json) covers fresh
+USB/synthetic packages, 15 linked cases and the USB build's cleanup census.
+Its Dirt/FDN cycles reach Dirt main or FDN reset entry; they do not exercise
+payload audio or real USB. The [physical screen](evidence/persistent_boot_physical_20261021.json)
+is limited to its separately identified installed candidate.
+
+See [testing](testing.md) for current local checks and
+[installer guards](evidence/installer_guards_20261021.json) for source-bound layout,
+bundle admission and byte-parity results. Full audio-cycle and broader payload
+records remain bound to older exact builds; see
 [onboarding](firmware_onboarding.md) and [QSPI checkpoints](qspi_additional_images.md).
-Host tests cover the current source; they do not replace live or physical tests.
+Host and modeled checks do not replace exact-build physical qualification.
 
 ## Seven-image checkpoint (history)
 

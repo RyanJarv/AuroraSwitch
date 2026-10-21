@@ -12,6 +12,12 @@ test commands, including with `UBSAN_OPTIONS=halt_on_error=0`. It requires the
 specific runtime diagnostic and a failed executable; compiler errors and
 unrelated crashes cannot satisfy the check.
 
+Git is also required for the installer layout tests. Temporary local repositories
+verify that a bundle's source revision wins over newer commits, dirty or missing
+working-tree headers, and replace refs. Bundle-admission tests run the real
+validation function with only the external Arm tools substituted. Actual saved
+USB/synthetic packages are checked separately for unchanged installer bytes.
+
 ## Shared production code
 
 `selector_controller.hpp` owns selection, discovery and automatic-launch policy.
@@ -37,6 +43,9 @@ write suppression and unmount safeguards.
 Each must fail its named native assertion; a compilation failure does not count.
 Saved-choice tests also exhaust 81 write cut points, 640 single-bit corruptions,
 sequence ambiguity/wrap and 100,000 deterministic choices with exact write counts.
+For every catalog image, a native probe emits records for four generation
+boundaries; Python independently checks their byte layout, selected identity,
+generation and CRC using `struct` and `zlib`.
 Existing probes cover staging, catalog admission, memory bounds, initialization,
 DMA/handoff ordering, QSPI programming failures and control flow.
 

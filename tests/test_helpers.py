@@ -2,6 +2,9 @@
 from pathlib import Path
 import hashlib
 import os
+import re
+import struct
+import zlib
 import shutil
 import subprocess
 import tempfile
@@ -12,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class HelperTests(unittest.TestCase):
-    def compile_and_run(self, source: str, *, usb: bool = False) -> None:
+    def compile_and_run(self, source: str, *, usb: bool = False) -> bytes:
         """Use the same warnings and isolated output for every native probe."""
         with tempfile.TemporaryDirectory(prefix="aurora-host-tests-") as directory:
             executable = Path(directory) / source
@@ -24,7 +27,7 @@ class HelperTests(unittest.TestCase):
                 command += ["-I" + str(ROOT / "tests/fakes"), str(ROOT / "firmware/media_usb.cpp")]
             command += [str(ROOT / "firmware" / (source + ".cpp")), "-o", str(executable)]
             subprocess.run(command, check=True)
-            subprocess.run([str(executable)], check=True)
+            return subprocess.run([str(executable)], check=True, stdout=subprocess.PIPE).stdout
 
     def test_sanitizer_gate_rejects_undefined_behavior(self):
         with tempfile.TemporaryDirectory(prefix="aurora-ubsan-negative-") as directory:
@@ -39,7 +42,7 @@ class HelperTests(unittest.TestCase):
             def capture(*args, **kwargs):
                 # Run the actual compiler and executable; retain their output so
                 # neither a compilation error nor an unrelated crash can pass.
-                kwargs.update(capture_output=True, text=True)
+                kwargs.update(stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                 return execute(*args, **kwargs)
 
             with mock.patch(__name__ + ".ROOT", root), mock.patch.dict(os.environ, {
@@ -54,6 +57,22 @@ class HelperTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256((ROOT / "tests/fakes/file_media_before_refactor.hpp").read_bytes()).hexdigest(),
                          "dd02ce0a7a9aeeaa9bed6d2c734a51483a12bbd65d277bce164ade0bbbdd057d")
         self.compile_and_run("file_media_test", usb=True)
+
+    def test_catalog_boot_records_match_independent_crc_and_generation(self):
+        records = self.compile_and_run("boot_record_test")
+        hashes = re.findall(r'\{"0:/aurora/[^"]+",\s*"([0-9a-f]{64})"',
+                            (ROOT / "firmware/images.hpp").read_text())
+        self.assertGreater(len(hashes), 1)
+        self.assertEqual(len(records), len(hashes) * 4 * 80)
+        for index, digest in enumerate(hashes):
+            for case, generation in enumerate((1, 2, 0xffffffff, 0)):
+                with self.subTest(image=index, generation=generation):
+                    offset = (index * 4 + case) * 80
+                    record = records[offset:offset + 80]
+                    self.assertEqual(record[:8], b"AURBOOT1")
+                    self.assertEqual(struct.unpack_from("<I", record, 8)[0], generation)
+                    self.assertEqual(record[12:76], digest.encode())
+                    self.assertEqual(struct.unpack_from("<I", record, 76)[0], zlib.crc32(record[:76]))
 
     def test_shared_helpers(self):
         for source in ("staging_test", "handoff_sequence_test", "backed_reader_test"):
