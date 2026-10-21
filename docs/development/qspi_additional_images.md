@@ -12,7 +12,7 @@ the earlier QSPI evidence, but do not use it to qualify the changed selector.
 The retired QSPI build helper is available in Git history, not current targets.
 
 Current catalog: 13 RAM entries and Dirt Verb (red-pink) in every build.
-HP-filter Aurora is lime. Dirt is the only QSPI payload. Fata stays at index 11; HP-filter
+HP-filter Aurora is yellow. Dirt is the only QSPI payload. Fata stays at index 11; HP-filter
 moves from 14 to 13. Historical traces retain their original indices.
 
 The merge from `main` also adopts fixed family colors: yellow for all Flux

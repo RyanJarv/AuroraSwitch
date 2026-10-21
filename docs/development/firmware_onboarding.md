@@ -95,7 +95,8 @@ and leaves every byte unchanged. Non-default runtime settings, later saves,
 selector handoff and control/audio behavior are still unverified.
 
 Tempest is now a provisional eleventh catalog entry on the development branch,
-using pale red. Existing indices, staging capacity and loader code are unchanged.
+originally using pale red (red in the current palette). Existing indices, staging
+capacity and loader code are unchanged.
 This is preparation for linked tests, not release admission or a compatibility
 claim; it must not be shipped on the strength of the flash inventory alone.
 

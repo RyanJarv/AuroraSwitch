@@ -92,7 +92,7 @@ Download the named BIN from each linked release and place it in `aurora/`.
 | [Flux 0.1.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/tag/v0.1.0) | `flux-capacitor-0.1.0.bin` | Yellow |
 | [Flux 0.2.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/tag/v0.2.0) | `flux-capacitor-0.2.0.bin` | Yellow |
 | [Morse 0.1.0](https://github.com/DaveParr/Aurora-Morse/releases/tag/v0.1.0) | `aurora-morse-0.1.0.bin` | White |
-| [Tempest 1.0.0](https://github.com/jfriess/Aurora-Firmwares/releases/tag/Tempest-v1.0.0) | `Tempest_v1_0_0.bin` | Pale red |
+| [Tempest 1.0.0](https://github.com/jfriess/Aurora-Firmwares/releases/tag/Tempest-v1.0.0) | `Tempest_v1_0_0.bin` | Red |
 
 Tempest saves its settings in QSPI. This is payload behavior, not selector
 flashing; do not assume its settings are isolated from other alternative apps.
@@ -124,7 +124,7 @@ Every build of `codex/qspi-dirt-verb` also supports these exact files:
 | Firmware | Filename | Reverse color |
 | --- | --- | --- |
 | Dirt Verb 1.1 | `DirtVerb 1.1.bin` | Red-pink |
-| HP-filter Aurora | `Aurora_v1-4-6_hpfilt.bin` | Lime |
+| HP-filter Aurora | `Aurora_v1-4-6_hpfilt.bin` | Yellow |
 
 Earlier exact-build virtual screening passes; physical tests remain open.
 Only Dirt uses QSPI; HP-filter still launches from RAM. QSPI launching replaces
