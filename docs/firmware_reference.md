@@ -14,14 +14,14 @@
 | Delays | Yellow | [Flux Capacitor 0.1.0](#flux-capacitor--yellow) | Tape pitch, stop, wow/flutter | Development |
 | Delays | Yellow | [Flux Capacitor 0.2.0](#flux-capacitor--yellow) | Adds tape delay | Development |
 | Synths / Other | White | [Morse 0.1.0](#morse--white) | Three-pattern rhythmic VCA | Development |
-| Synths / Other | Pale red | [Tempest 1.0.0](#tempest-100--pale-red) | Multi-bank distortion | Development |
+| Synths / Other | Red | [Tempest 1.0.0](#tempest-100--red) | Multi-bank distortion | Development |
 | Synths / Other | Azure | [FataMorgana RAM experiment](#fatamorgana-ram-experiment--azure) | Dual wavetable synthesizer | Development |
 | Reverbs | Red-pink | [Dirt Verb 1.1](#dirt-verb-11--red-pink) | Driven reverb with chorus and pitch shifting | Development |
-| Reverbs | Lime | [Aurora HP-filter variant](#aurora-hp-filter-variant--lime) | Spectral reverb with dry-input high-pass | Development |
+| Reverbs | Yellow | [Aurora HP-filter variant](#aurora-hp-filter-variant--yellow) | Spectral reverb with dry-input high-pass | Development |
 
 Current source build: **Shift** → category, **Reverse** → firmware,
 **Freeze** → verify and launch. Category colors: blue reverbs, green delays,
-amber synths/other. Firmware colors are unchanged.
+amber synths/other.
 The older published release uses Reverse → Freeze → Shift.
 Power cycle with the selector USB attached to return. [Setup guide](user_guide.md).
 
@@ -307,7 +307,7 @@ Pattern changes apply at a step boundary or reset, not only the next Reset.
 Sources: [0.2.0 guide](https://github.com/DaveParr/Aurora-Morse/blob/v0.2.0/README.md)
 and `main.cpp`, `pattern.h`, `envelope.h` at tags 0.1.0/0.2.0.
 
-## Tempest 1.0.0 — Pale red
+## Tempest 1.0.0 — Red
 
 [Download](https://github.com/jfriess/Aurora-Firmwares/releases/download/Tempest-v1.0.0/Tempest_v1_0_0.bin)
 
@@ -452,7 +452,7 @@ Driven reverb with optional chorus and pitch shifting. Only the exact
 - Controls come from community-supplied author notes, not a reviewed source build.
   Physical handoff and stock USB recovery remain unverified.
 
-## Aurora HP-filter variant — Lime
+## Aurora HP-filter variant — Yellow
 
 [Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
 

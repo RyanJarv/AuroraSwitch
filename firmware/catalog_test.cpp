@@ -26,8 +26,8 @@ int main()
     constexpr std::array<float, 3> colors[] = {
         {0.f, 0.f, .4f}, {0.f, .4f, 0.f}, {0.f, .4f, .4f},
         {.4f, 0.f, .4f}, {.4f, .2f, 0.f}, {.4f, .4f, 0.f},
-        {.4f, .4f, .4f}, {.4f, .2f, .2f}, {0.f, .2f, .4f},
-        {.4f, 0.f, .1f}, {.1f, .4f, 0.f},
+        {.4f, .4f, .4f}, {.4f, 0.f, 0.f}, {0.f, .2f, .4f},
+        {.4f, 0.f, .1f}, {.4f, .4f, 0.f},
     };
     for(unsigned i = 0; i < count; ++i)
     {
@@ -36,8 +36,27 @@ int main()
         assert(Images[i].size <= StagingCapacity());
         for(unsigned j = 0; j < i; ++j)
         {
-            assert((Images[i].menu_color == Images[j].menu_color)
-                   == (families[i] == families[j]));
+            if(families[i] == families[j])
+                assert(Images[i].menu_color == Images[j].menu_color);
+            else if(Categories[i] == Categories[j])
+            {
+                // Compare RGB proportions so brightness alone cannot distinguish
+                // families. This is a palette guard, not a perceptual LED model.
+                const auto& a = Images[i].menu_color;
+                const auto& b = Images[j].menu_color;
+                const float sum_a = a[0] + a[1] + a[2];
+                const float sum_b = b[0] + b[1] + b[2];
+                assert(sum_a > 0.f && sum_b > 0.f);
+                float distance_squared = 0.f;
+                for(unsigned channel = 0; channel < 3; ++channel)
+                {
+                    const float delta = a[channel] / sum_a - b[channel] / sum_b;
+                    distance_squared += delta * delta;
+                }
+                // At least 0.4 apart in normalized RGB: rejects the old
+                // green/lime and white/pale-red pairs, including dimmer copies.
+                assert(distance_squared >= .16f);
+            }
             assert(std::strcmp(Images[i].path, Images[j].path) != 0);
             assert(std::strcmp(Images[i].sha256, Images[j].sha256) != 0);
         }

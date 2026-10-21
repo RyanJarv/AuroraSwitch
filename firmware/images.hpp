@@ -19,10 +19,10 @@ namespace aurora_selector
         constexpr std::array<float, 3> Oscillator{0.4f, 0.2f, 0.f};
         constexpr std::array<float, 3> Flux{0.4f, 0.4f, 0.f};
         constexpr std::array<float, 3> Morse{0.4f, 0.4f, 0.4f};
-        constexpr std::array<float, 3> Tempest{0.4f, 0.2f, 0.2f};
+        constexpr std::array<float, 3> Tempest{0.4f, 0.f, 0.f};
         constexpr std::array<float, 3> FataMorgana{0.f, 0.2f, 0.4f};
         constexpr std::array<float, 3> DirtVerb{0.4f, 0.f, 0.1f};
-        constexpr std::array<float, 3> HpFilter{0.1f, 0.4f, 0.f};
+        constexpr std::array<float, 3> HpFilter{0.4f, 0.4f, 0.f};
     }
 
     // Exact file contract and its panel color, not a general firmware description.

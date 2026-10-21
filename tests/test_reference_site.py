@@ -156,7 +156,7 @@ class ReferenceSiteTests(unittest.TestCase):
 
     def test_additional_images_are_development_only_and_ram_fata_is_unique(self):
         for name, color in (("Dirt Verb 1.1", "Red-pink"),
-                            ("Aurora HP-filter variant", "Lime")):
+                            ("Aurora HP-filter variant", "Yellow")):
             entry = next(entry for entry in self.entries if entry.name == name)
             self.assertEqual(entry.color, color)
             self.assertEqual(entry.availability, "Development")
@@ -359,6 +359,11 @@ class ReferenceSiteTests(unittest.TestCase):
     def test_navigation_rejects_duplicate_selector_colors(self):
         with self.assertRaisesRegex(ValueError, "duplicate selector colors"):
             read_reference(self.source.replace("| Green |", "| Blue |", 1))
+
+    def test_colors_may_repeat_across_categories(self):
+        yellow = [entry for entry in self.entries if entry.color == "Yellow"]
+        self.assertEqual({entry.category for entry in yellow}, {"Reverbs", "Delays"})
+        self.assertEqual(len({entry.anchor for entry in yellow}), 2)
 
     def test_versions_share_stable_family_colors(self):
         for anchor, color, count in (("flux-capacitor--yellow", "Yellow", 3),

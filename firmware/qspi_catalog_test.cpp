@@ -35,8 +35,8 @@ int main()
     for(unsigned i = 0; i < 14; ++i)
         for(unsigned j = 0; j < i; ++j)
         {
-            // Main keeps older Flux/Morse versions in their family color.
-            if(i >= 12 || j >= 12)
+            // Additional families must be distinct within their category.
+            if(Categories[i] == Categories[j] && (i >= 12 || j >= 12))
                 assert(Images[i].menu_color != Images[j].menu_color);
             assert(std::strcmp(Images[i].path, Images[j].path) != 0);
         }

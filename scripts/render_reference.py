@@ -16,8 +16,8 @@ REPOSITORY = "https://github.com/RyanJarv/AuroraSwitch/blob/main/"
 COLORS = {
     "Blue": "#3787ff", "Green": "#35bf58", "Cyan": "#32c9ce",
     "Magenta": "#d855d5", "Amber": "#dc9a25", "Yellow": "#ead342",
-    "White": "#fff", "Pale red": "#ec9292", "Azure": "#3ea7dc",
-    "Red-pink": "#e84b78", "Lime": "#81d43b",
+    "White": "#fff", "Red": "#e84444", "Azure": "#3ea7dc",
+    "Red-pink": "#e84b78",
 }
 CATEGORIES = {"Reverbs": "Blue", "Delays": "Green", "Synths / Other": "Amber"}
 PANEL_CONTROLS = ("Warp", "Time", "Blur", "Reflect", "Mix", "Atmosphere", "Reverse", "Freeze", "Shift")
@@ -118,10 +118,12 @@ def read_reference(source: str) -> tuple[str, list[Section], list[Entry]]:
         entries.append(Entry(color, match[1], match[2], description, availability, category))
     if not entries:
         raise ValueError("Missing selector colors")
-    # Versions share one family page/color; unrelated families cannot share it.
+    # Versions share one family color; colors may repeat across categories.
     for entry in entries:
         for other in entries:
-            if (entry.anchor == other.anchor) != (entry.color == other.color):
+            if ((entry.anchor == other.anchor and entry.color != other.color)
+                    or (entry.category == other.category and entry.anchor != other.anchor
+                        and entry.color == other.color)):
                 raise ValueError("Inconsistent family or duplicate selector colors")
             if entry.anchor == other.anchor and entry.category != other.category:
                 raise ValueError("Inconsistent family category")
