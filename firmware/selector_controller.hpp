@@ -1,20 +1,33 @@
 #pragma once
 
-// Selection flow shared by the device entry point and host tests. Media owns
-// authentication and launch; this controller never grants lasting approval.
+// Handle menu buttons and the one-time attempt to boot the saved firmware.
+// File loading and final verification stay in Media: selecting an entry does
+// not authorize running bytes that might change before launch.
 #include "images.hpp"
 #include "../support/supported_image_menu.hpp"
 
 namespace aurora_selector
 {
-    template<class Media> class SelectorController
+    template <class Media> class SelectorController
     {
       public:
-        enum class State { Waiting, Empty, Selected, Loading, Error };
+        enum class State
+        {
+            Waiting,
+            Empty,
+            Selected,
+            Loading,
+            Error
+        };
 
-        explicit SelectorController(Media& media) : media_(media), menu_(Categories) {}
+        explicit SelectorController(Media& media) : media_(media), menu_(Categories)
+        {
+        }
 
-        void RequestMenu() { boot_pending_ = false; }
+        void RequestMenu()
+        {
+            boot_pending_ = false;
+        }
 
         void FailInitialization()
         {
@@ -23,71 +36,102 @@ namespace aurora_selector
             state_ = State::Error;
         }
 
-        template<class Loading> void Update(bool category_changed,
-                                            bool selection_changed,
-                                            bool load_pressed, Loading loading)
+        template <class Loading>
+        void Update(bool category_changed, bool selection_changed, bool load_pressed,
+                    Loading loading)
         {
-            if(category_changed || selection_changed) RequestMenu();
+            if (category_changed || selection_changed)
+            {
+                RequestMenu();
+            }
             bool automatic = false;
             const bool media_ready = media_.Ready();
-            if(!media_ready)
+            if (!media_ready)
             {
                 menu_.Clear();
                 state_ = State::Waiting;
             }
-            if(media_ready && !media_was_ready_)
+            if (media_ready && !media_was_ready_)
             {
-                // Discovery overwrites staging; Freeze authenticates again.
+                // Scanning reuses the same RAM buffer for every file. The chosen file
+                // must be loaded and verified again when Freeze is pressed.
                 state_ = State::Loading;
                 loading();
                 media_.BeginDiscovery();
-                menu_.Discover([this](std::size_t index) {
-                    return media_.Authenticate(static_cast<unsigned>(index));
-                }, [this] { return media_.Ready(); });
+                menu_.Discover(
+                    [this](std::size_t index)
+                    {
+                        return media_.Authenticate(static_cast<unsigned>(index));
+                    },
+                    [this]
+                    {
+                        return media_.Ready();
+                    });
                 media_.EndDiscovery();
                 selected_ = static_cast<unsigned>(menu_.Selected());
-                state_ = !media_.Ready() ? State::Waiting
-                    : menu_.HasSelection() ? State::Selected : State::Empty;
-                if(boot_pending_)
+                state_ = !media_.Ready()   ? State::Waiting
+                    : menu_.HasSelection() ? State::Selected
+                                           : State::Empty;
+                if (boot_pending_)
                 {
-                    boot_pending_ = false; // One attempt; reconnect never launches unexpectedly.
+                    // Try once at startup; reconnecting USB must not launch firmware.
+                    boot_pending_ = false;
                     const int choice = media_.BootChoice();
                     automatic = choice >= 0 && media_.Ready() && menu_.Select(choice);
                     selected_ = static_cast<unsigned>(menu_.Selected());
                 }
             }
             media_was_ready_ = media_.Ready();
-            if(category_changed || selection_changed)
+            if (category_changed || selection_changed)
             {
-                if(category_changed) menu_.NextCategory();
-                else menu_.Next();
+                if (category_changed)
+                {
+                    menu_.NextCategory();
+                }
+                else
+                {
+                    menu_.Next();
+                }
                 selected_ = static_cast<unsigned>(menu_.Selected());
-                state_ = !media_.Ready() ? State::Waiting
-                    : menu_.HasSelection() ? State::Selected : State::Empty;
+                state_ = !media_.Ready()   ? State::Waiting
+                    : menu_.HasSelection() ? State::Selected
+                                           : State::Empty;
             }
-            if((load_pressed || automatic) && !category_changed && !selection_changed
-               && media_.Ready() && menu_.HasSelection())
+            if ((load_pressed || automatic) && !category_changed && !selection_changed
+                && media_.Ready() && menu_.HasSelection())
             {
                 state_ = State::Loading;
                 loading();
-                if(!media_.Authenticate(selected_) || !media_.Ready()
-                   || (!automatic && !media_.Remember(selected_)) || !media_.Ready()
-                   || !media_.Launch(selected_))
+                if (!media_.Authenticate(selected_) || !media_.Ready()
+                    || (!automatic && !media_.Remember(selected_)) || !media_.Ready()
+                    || !media_.Launch(selected_))
+                {
                     state_ = State::Error;
+                }
             }
         }
 
-        State GetState() const { return state_; }
-        unsigned Selected() const { return selected_; }
-        const auto& Menu() const { return menu_; }
+        State GetState() const
+        {
+            return state_;
+        }
+
+        unsigned Selected() const
+        {
+            return selected_;
+        }
+
+        const auto& Menu() const
+        {
+            return menu_;
+        }
 
       private:
         Media& media_;
-        daisy_development::SupportedImageMenu<sizeof(Images) / sizeof(Images[0])>
-            menu_;
+        daisy_development::SupportedImageMenu<sizeof(Images) / sizeof(Images[0])> menu_;
         unsigned selected_ = 0;
         State state_ = State::Waiting;
         bool media_was_ready_ = false;
         bool boot_pending_ = true;
     };
-}
+} // namespace aurora_selector

@@ -9,15 +9,54 @@ struct Platform
     int validations = 0;
     bool initial_valid = true, final_valid = true, unmount = true, install = true;
     std::vector<int> steps;
-    bool Validate() { steps.push_back(0); return ++validations == 1 ? initial_valid : final_valid; }
-    bool Unmount() { steps.push_back(1); return unmount; }
-    void StopMedia() { steps.push_back(2); }
-    void MaskInterrupts() { steps.push_back(3); }
-    void ResetBusMasters() { steps.push_back(4); }
-    void DisableRuntime() { steps.push_back(5); }
-    bool InstallTrampoline() { steps.push_back(6); return install; }
-    void Fatal() { steps.push_back(7); }
-    void Jump() { steps.push_back(8); }
+
+    bool Validate()
+    {
+        steps.push_back(0);
+        return ++validations == 1 ? initial_valid : final_valid;
+    }
+
+    bool Unmount()
+    {
+        steps.push_back(1);
+        return unmount;
+    }
+
+    void StopMedia()
+    {
+        steps.push_back(2);
+    }
+
+    void MaskInterrupts()
+    {
+        steps.push_back(3);
+    }
+
+    void ResetBusMasters()
+    {
+        steps.push_back(4);
+    }
+
+    void DisableRuntime()
+    {
+        steps.push_back(5);
+    }
+
+    bool InstallTrampoline()
+    {
+        steps.push_back(6);
+        return install;
+    }
+
+    void Fatal()
+    {
+        steps.push_back(7);
+    }
+
+    void Jump()
+    {
+        steps.push_back(8);
+    }
 };
 
 int main()

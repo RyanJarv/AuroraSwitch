@@ -1,4 +1,5 @@
 """Synthetic USB staging tests; no device or firmware-execution claims."""
+
 import io
 import hashlib
 import json
@@ -33,23 +34,38 @@ class UsbTests(unittest.TestCase):
             (output / "aurora" / source.name).write_bytes(source.read_bytes())
 
     def test_stage_and_repeat_preserve_settings(self):
-        with mock.patch.object(prepare_usb, "download", return_value=b"synthetic payload"), \
-                mock.patch.object(prepare_usb, "prepare", side_effect=self.prepare) as verifier:
+        with (
+            mock.patch.object(prepare_usb, "download", return_value=b"synthetic payload"),
+            mock.patch.object(prepare_usb, "prepare", side_effect=self.prepare) as verifier,
+        ):
             prepare_usb.stage(self.usb, self.selector)
             prepare_usb.stage(self.usb, self.selector)
         self.assertEqual(verifier.call_count, 2)
         self.assertEqual((self.usb / "options.txt").read_bytes(), b"keep settings")
         self.assertEqual((self.usb / "AuroraSwitch.bin").read_bytes(), self.selector.read_bytes())
-        self.assertEqual(set(prepare_usb.DOWNLOADS), {"AR_FDN_v1_2_2.bin", "Aurora_v1_4_4.bin",
-                                                    "flux-capacitor-0.3.0.bin", "aurora-morse-0.2.0.bin"})
-        self.assertEqual({p.name for p in (self.usb / "aurora").iterdir()}, set(prepare_usb.DOWNLOADS))
+        self.assertEqual(
+            set(prepare_usb.DOWNLOADS),
+            {
+                "AR_FDN_v1_2_2.bin",
+                "Aurora_v1_4_4.bin",
+                "flux-capacitor-0.3.0.bin",
+                "aurora-morse-0.2.0.bin",
+            },
+        )
+        self.assertEqual(
+            {p.name for p in (self.usb / "aurora").iterdir()}, set(prepare_usb.DOWNLOADS)
+        )
 
     def test_failed_download_or_authentication_does_not_write_drive(self):
         for failure in ("download", "prepare"):
-            with self.subTest(failure=failure), \
-                    mock.patch.object(prepare_usb, "download", return_value=b"bad") as download, \
-                    mock.patch.object(prepare_usb, "prepare") as verifier:
-                {"download": download, "prepare": verifier}[failure].side_effect = ValueError("reject")
+            with (
+                self.subTest(failure=failure),
+                mock.patch.object(prepare_usb, "download", return_value=b"bad") as download,
+                mock.patch.object(prepare_usb, "prepare") as verifier,
+            ):
+                {"download": download, "prepare": verifier}[failure].side_effect = ValueError(
+                    "reject"
+                )
                 with self.assertRaisesRegex(ValueError, "reject"):
                     prepare_usb.stage(self.usb, self.selector)
                 self.assertEqual([p.name for p in self.usb.iterdir()], ["options.txt"])
@@ -67,7 +83,10 @@ class UsbTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         result = prepare_usb.subprocess.run(
             ["make", "-n", "build", "usb", "MAKE=echo", f"USB_DIR={self.usb}"],
-            cwd=root, capture_output=True, text=True)
+            cwd=root,
+            capture_output=True,
+            text=True,
+        )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("-C firmware BUILD_DIR=build-experimental-dma", result.stdout)
         self.assertIn('scripts/prepare_usb.py --usb "', result.stdout)
@@ -76,18 +95,25 @@ class UsbTests(unittest.TestCase):
     def test_release_setup_fetches_only_pinned_verifier_dependency(self):
         revision = setup_dependencies.PINS["mbedtls"][1]
         origin = setup_dependencies.PINS["mbedtls"][0]
-        with mock.patch.object(setup_dependencies, "ROOT", self.root), \
-                mock.patch.object(setup_dependencies.subprocess, "run") as commands, \
-                mock.patch.object(setup_dependencies, "git", side_effect=[origin, revision, ""]):
+        with (
+            mock.patch.object(setup_dependencies, "ROOT", self.root),
+            mock.patch.object(setup_dependencies.subprocess, "run") as commands,
+            mock.patch.object(setup_dependencies, "git", side_effect=[origin, revision, ""]),
+        ):
             setup_dependencies.setup(verification_only=True)
         calls = [call.args[0] for call in commands.call_args_list]
         self.assertEqual(len(calls), 2)
-        self.assertEqual(calls[0], ["git", "clone", "--no-checkout", origin,
-                                   str(self.root / ".deps/mbedtls")])
+        self.assertEqual(
+            calls[0], ["git", "clone", "--no-checkout", origin, str(self.root / ".deps/mbedtls")]
+        )
         self.assertEqual(calls[1][-3:], ["checkout", "--detach", revision])
-        with mock.patch.object(setup_dependencies, "ROOT", self.root), \
-                mock.patch.object(setup_dependencies.subprocess, "run"), \
-                mock.patch.object(setup_dependencies, "git", side_effect=[origin, revision, " M source.c"]):
+        with (
+            mock.patch.object(setup_dependencies, "ROOT", self.root),
+            mock.patch.object(setup_dependencies.subprocess, "run"),
+            mock.patch.object(
+                setup_dependencies, "git", side_effect=[origin, revision, " M source.c"]
+            ),
+        ):
             with self.assertRaisesRegex(RuntimeError, "modified dependency"):
                 setup_dependencies.setup(verification_only=True)
 
@@ -101,9 +127,18 @@ class UsbTests(unittest.TestCase):
         with zipfile.ZipFile(stream, "w") as archive:
             archive.writestr("Aurora_v1_4_4.bin", b"payload")
             archive.writestr("../ignored", b"never extracted")
-        with mock.patch.object(prepare_usb.urllib.request, "urlopen", return_value=io.BytesIO(stream.getvalue())):
-            self.assertEqual(prepare_usb.download("https://example.test/image.zip", "Aurora_v1_4_4.bin"), b"payload")
-        with mock.patch.object(prepare_usb.urllib.request, "urlopen", return_value=io.BytesIO(b"x" * (2 * 1024 * 1024 + 1))):
+        with mock.patch.object(
+            prepare_usb.urllib.request, "urlopen", return_value=io.BytesIO(stream.getvalue())
+        ):
+            self.assertEqual(
+                prepare_usb.download("https://example.test/image.zip", "Aurora_v1_4_4.bin"),
+                b"payload",
+            )
+        with mock.patch.object(
+            prepare_usb.urllib.request,
+            "urlopen",
+            return_value=io.BytesIO(b"x" * (2 * 1024 * 1024 + 1)),
+        ):
             with self.assertRaisesRegex(ValueError, "too large"):
                 prepare_usb.download("https://example.test/image.bin", "image.bin")
 
@@ -117,17 +152,29 @@ class UsbTests(unittest.TestCase):
             (folder / name).write_bytes(data)
             files[name] = {"bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
         manifest = {
-            "schema": "aurora-switch-development-bundle-v1", "source_commit": "a" * 40,
-            "files": files, "build_provenance": {"configuration": {
-                "EXPERIMENTAL_HANDOFF": 1, "DMA_ARENA_CLEANUP": 1, "VIRTUAL_TRANSPORT": 0}}}
+            "schema": "aurora-switch-development-bundle-v1",
+            "source_commit": "a" * 40,
+            "files": files,
+            "build_provenance": {
+                "configuration": {
+                    "EXPERIMENTAL_HANDOFF": 1,
+                    "DMA_ARENA_CLEANUP": 1,
+                    "VIRTUAL_TRANSPORT": 0,
+                }
+            },
+        }
+
         def verify(tag="v-test"):
             (folder / "manifest.json").write_text(json.dumps(manifest))
             responses = ["v-test", "a" * 40] if tag == "latest" else ["a" * 40]
-            with mock.patch.object(prepare_usb.subprocess, "run") as download, \
-                    mock.patch.object(prepare_usb.subprocess, "check_output", side_effect=responses):
+            with (
+                mock.patch.object(prepare_usb.subprocess, "run") as download,
+                mock.patch.object(prepare_usb.subprocess, "check_output", side_effect=responses),
+            ):
                 result = prepare_usb.release_selector(tag, folder)
                 self.assertEqual(download.call_args.args[0][3], "v-test")
                 return result
+
         self.assertEqual(verify(), folder / "AuroraSwitch.bin")
         self.assertEqual(verify("latest"), folder / "AuroraSwitch.bin")
         manifest["source_commit"] = "b" * 40

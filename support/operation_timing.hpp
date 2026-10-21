@@ -20,12 +20,16 @@ namespace daisy_development
             started_ms = now;
             elapsed_ms = 0;
         }
+
         void Finish(std::uint32_t now) volatile
         {
             const auto duration = now - started_ms;
             elapsed_ms = duration;
-            if(duration > maximum_ms) maximum_ms = duration;
+            if (duration > maximum_ms)
+            {
+                maximum_ms = duration;
+            }
             completed = 1;
         }
     };
-}
+} // namespace daisy_development

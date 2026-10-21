@@ -1,4 +1,5 @@
 """Host-only synthetic safety tests; no device or vendor files required."""
+
 from pathlib import Path
 import hashlib
 import os
@@ -21,8 +22,12 @@ class HelperTests(unittest.TestCase):
             executable = Path(directory) / source
             command = [os.environ.get("CXX", "c++"), "-std=c++17", "-Wall", "-Wextra", "-Werror"]
             if os.environ.get("AURORA_HOST_SANITIZERS") == "1":
-                command += ["-g", "-fsanitize=address,undefined", "-fno-sanitize-recover=all",
-                            "-fno-omit-frame-pointer"]
+                command += [
+                    "-g",
+                    "-fsanitize=address,undefined",
+                    "-fno-sanitize-recover=all",
+                    "-fno-omit-frame-pointer",
+                ]
             if usb:
                 command += ["-I" + str(ROOT / "tests/fakes"), str(ROOT / "firmware/media_usb.cpp")]
             command += [str(ROOT / "firmware" / (source + ".cpp")), "-o", str(executable)]
@@ -36,7 +41,8 @@ class HelperTests(unittest.TestCase):
             (root / "firmware/ub_probe.cpp").write_text(
                 "#include <climits>\n"
                 "int main() { volatile int value = INT_MAX; "
-                "volatile int overflow = value + 1; (void)overflow; }\n")
+                "volatile int overflow = value + 1; (void)overflow; }\n"
+            )
             execute = subprocess.run
 
             def capture(*args, **kwargs):
@@ -45,34 +51,49 @@ class HelperTests(unittest.TestCase):
                 kwargs.update(stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
                 return execute(*args, **kwargs)
 
-            with mock.patch(__name__ + ".ROOT", root), mock.patch.dict(os.environ, {
-                "AURORA_HOST_SANITIZERS": "1", "UBSAN_OPTIONS": "halt_on_error=0",
-            }), mock.patch.object(subprocess, "run", side_effect=capture):
+            with (
+                mock.patch(__name__ + ".ROOT", root),
+                mock.patch.dict(
+                    os.environ,
+                    {
+                        "AURORA_HOST_SANITIZERS": "1",
+                        "UBSAN_OPTIONS": "halt_on_error=0",
+                    },
+                ),
+                mock.patch.object(subprocess, "run", side_effect=capture),
+            ):
                 with self.assertRaises(subprocess.CalledProcessError) as failure:
                     self.compile_and_run("ub_probe")
             self.assertEqual(len(failure.exception.cmd), 1)  # Execution, not compilation.
             self.assertIn("runtime error: signed integer overflow", failure.exception.stderr)
 
     def test_production_usb_file_policy(self):
-        self.assertEqual(hashlib.sha256((ROOT / "tests/fakes/file_media_before_refactor.hpp").read_bytes()).hexdigest(),
-                         "dd02ce0a7a9aeeaa9bed6d2c734a51483a12bbd65d277bce164ade0bbbdd057d")
+        self.assertEqual(
+            hashlib.sha256(
+                (ROOT / "tests/fakes/file_media_before_refactor.hpp").read_bytes()
+            ).hexdigest(),
+            "dd02ce0a7a9aeeaa9bed6d2c734a51483a12bbd65d277bce164ade0bbbdd057d",
+        )
         self.compile_and_run("file_media_test", usb=True)
 
     def test_catalog_boot_records_match_independent_crc_and_generation(self):
         records = self.compile_and_run("boot_record_test")
-        hashes = re.findall(r'\{"0:/aurora/[^"]+",\s*"([0-9a-f]{64})"',
-                            (ROOT / "firmware/images.hpp").read_text())
+        hashes = re.findall(
+            r'\{"0:/aurora/[^"]+",\s*"([0-9a-f]{64})"', (ROOT / "firmware/images.hpp").read_text()
+        )
         self.assertGreater(len(hashes), 1)
         self.assertEqual(len(records), len(hashes) * 4 * 80)
         for index, digest in enumerate(hashes):
-            for case, generation in enumerate((1, 2, 0xffffffff, 0)):
+            for case, generation in enumerate((1, 2, 0xFFFFFFFF, 0)):
                 with self.subTest(image=index, generation=generation):
                     offset = (index * 4 + case) * 80
-                    record = records[offset:offset + 80]
+                    record = records[offset : offset + 80]
                     self.assertEqual(record[:8], b"AURBOOT1")
                     self.assertEqual(struct.unpack_from("<I", record, 8)[0], generation)
                     self.assertEqual(record[12:76], digest.encode())
-                    self.assertEqual(struct.unpack_from("<I", record, 76)[0], zlib.crc32(record[:76]))
+                    self.assertEqual(
+                        struct.unpack_from("<I", record, 76)[0], zlib.crc32(record[:76])
+                    )
 
     def test_shared_helpers(self):
         for source in ("staging_test", "handoff_sequence_test", "backed_reader_test"):
@@ -107,10 +128,20 @@ class HelperTests(unittest.TestCase):
         self.compile_and_run("qspi_programming_test")
 
     def test_no_programming_targets(self):
-        for target in ("program", "program-dfu", "program-boot", "debug", "openocd", "debug_client"):
+        for target in (
+            "program",
+            "program-dfu",
+            "program-boot",
+            "debug",
+            "openocd",
+            "debug_client",
+        ):
             with self.subTest(target=target):
-                result = subprocess.run(["make", "-n", "-C", str(ROOT / "firmware"), target],
-                    capture_output=True, text=True)
+                result = subprocess.run(
+                    ["make", "-n", "-C", str(ROOT / "firmware"), target],
+                    capture_output=True,
+                    text=True,
+                )
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn("physical deployment is not authorized", result.stderr)
 
@@ -141,16 +172,31 @@ class HelperTests(unittest.TestCase):
                 "$(BUILD_DIR)/resident_boot.o: resident_boot.s Makefile\n"
                 "\t@echo compile-assembly\n"
                 "$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile\n"
-                "\t@echo link-selector -o $@\n")
+                "\t@echo link-selector -o $@\n"
+            )
             shutil.copyfile(ROOT / "firmware/Makefile", root / "Makefile")
-            for name in ("probe.cpp", "copy_jump.s", "resident_boot.s", "staging_reserve.ld", "trampoline_reserve.ld"):
+            for name in (
+                "probe.cpp",
+                "copy_jump.s",
+                "resident_boot.s",
+                "staging_reserve.ld",
+                "trampoline_reserve.ld",
+            ):
                 (root / name).write_text("synthetic input\n")
-            builds = ((0, "build-experimental-dma", "AuroraSwitch"),
-                      (1, "build-virtual-experimental-dma", "AuroraSwitchVirtual"))
+            builds = (
+                (0, "build-experimental-dma", "AuroraSwitch"),
+                (1, "build-virtual-experimental-dma", "AuroraSwitchVirtual"),
+            )
             for virtual, build, target in builds:
                 folder = root / build
                 folder.mkdir()
-                for name in ("probe.o", "copy_jump.o", "resident_boot.o", "staging_reserve.ld", "trampoline_reserve.ld"):
+                for name in (
+                    "probe.o",
+                    "copy_jump.o",
+                    "resident_boot.o",
+                    "staging_reserve.ld",
+                    "trampoline_reserve.ld",
+                ):
                     (folder / name).write_bytes(b"synthetic build output")
                 (folder / f"{target}.elf").write_bytes(b"synthetic ELF")
             for path in root.parent.rglob("*"):
@@ -159,16 +205,28 @@ class HelperTests(unittest.TestCase):
             for virtual, build, target in builds:
                 elf = root / build / f"{target}.elf"
                 os.utime(elf, (2000, 2000))
-                command = ["make", "-n", f"{build}/{target}.elf",
-                           f"SDK_ROOT={root / 'sdk'}", f"VIRTUAL_TRANSPORT={virtual}"]
+                command = [
+                    "make",
+                    "-n",
+                    f"{build}/{target}.elf",
+                    f"SDK_ROOT={root / 'sdk'}",
+                    f"VIRTUAL_TRANSPORT={virtual}",
+                ]
                 baseline = subprocess.run(command, cwd=root, capture_output=True, text=True)
                 self.assertEqual(baseline.returncode, 0, baseline.stderr)
                 self.assertNotIn("link-selector", baseline.stdout)
-                for changed in (archive, linker, upstream, Path("../support/selector_constants.h"),
-                                Path("staging_reserve.ld"), Path("trampoline_reserve.ld")):
+                for changed in (
+                    archive,
+                    linker,
+                    upstream,
+                    Path("../support/selector_constants.h"),
+                    Path("staging_reserve.ld"),
+                    Path("trampoline_reserve.ld"),
+                ):
                     with self.subTest(virtual=virtual, changed=changed.name):
-                        result = subprocess.run(command + ["-W", str(changed)],
-                                                cwd=root, capture_output=True, text=True)
+                        result = subprocess.run(
+                            command + ["-W", str(changed)], cwd=root, capture_output=True, text=True
+                        )
                         self.assertEqual(result.returncode, 0, result.stderr)
                         self.assertIn("link-selector", result.stdout)
                         if changed == upstream:
@@ -178,9 +236,18 @@ class HelperTests(unittest.TestCase):
                             self.assertEqual(result.stdout.count("-E -P -x c"), 2)
 
     def test_synthetic_objects_cannot_share_installable_directory(self):
-        result = subprocess.run(["make", "-n", "-C", str(ROOT / "firmware"),
-            "VIRTUAL_TRANSPORT=1", "BUILD_DIR=build-experimental-dma"],
-            capture_output=True, text=True)
+        result = subprocess.run(
+            [
+                "make",
+                "-n",
+                "-C",
+                str(ROOT / "firmware"),
+                "VIRTUAL_TRANSPORT=1",
+                "BUILD_DIR=build-experimental-dma",
+            ],
+            capture_output=True,
+            text=True,
+        )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Use BUILD_DIR=build-virtual-experimental-dma", result.stderr)
 

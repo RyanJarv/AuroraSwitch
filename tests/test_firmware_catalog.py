@@ -1,6 +1,8 @@
 """Catalog onboarding and independent preservation of existing launch contracts."""
+
 import copy
 import json
+import re
 from pathlib import Path
 import shutil
 import struct
@@ -35,7 +37,7 @@ class FirmwareCatalogTests(unittest.TestCase):
             lambda d: d["images"][0].update(filename="../escape.bin"),
             lambda d: d["images"][0].update(sha256="invalid"),
             lambda d: d["images"][0].update(download="http://unsafe.example/image.bin"),
-            lambda d: d["images"][7].update(color="Blue", rgb=[0, 0, .4]),
+            lambda d: d["images"][7].update(color="Blue", rgb=[0, 0, 0.4]),
             lambda d: d["images"][0].update(resident=True),
         )
         for mutate in mutations:
@@ -56,14 +58,22 @@ class FirmwareCatalogTests(unittest.TestCase):
             for name in ("selector_constants.h", "sram_image_vectors.hpp"):
                 shutil.copyfile(ROOT / "support" / name, root / "support" / name)
             header = root / "firmware/images.hpp"
-            source = header.read_text().replace("HpFilter, Count", "HpFilter, Synthetic, Count")
-            source = source.replace("    };\n    static_assert(sizeof(Families)",
+            source = re.sub(r"HpFilter,\s*Count", "HpFilter, Synthetic, Count", header.read_text())
+            source = re.sub(
+                r"    };\s*(?=static_assert\(sizeof\(Families\))",
                 '        {"synthetic", "Synthetic", Category::Delays, Color::Blue, "synthetic--blue"},\n'
-                "    };\n    static_assert(sizeof(Families)")
-            source = source.replace("    };\n    constexpr std::size_t ImageCount",
+                "    };\n    ",
+                source,
+            )
+            source = re.sub(
+                r"    };\s*(?=constexpr std::size_t ImageCount)",
                 '        {Family::Synthetic, "synthetic-v1", "Synthetic v1", "Test firmware", false, nullptr, false,\n'
-                '         {"0:/aurora/synthetic.bin", "' + "a" * 64 + '", 200000U, {0x20020000U, 0x24000009U}}},\n'
-                "    };\n    constexpr std::size_t ImageCount")
+                '         {"0:/aurora/synthetic.bin", "'
+                + "a" * 64
+                + '", 200000U, {0x20020000U, 0x24000009U}}},\n'
+                "    };\n    ",
+                source,
+            )
             header.write_text(source)
             firmware_catalog.read_catalog.cache_clear()
             try:
@@ -74,20 +84,37 @@ class FirmwareCatalogTests(unittest.TestCase):
             self.assertEqual(len(catalog["images"]), 15)
             self.assertEqual(catalog["staging_capacity"], 200000)
             self.assertEqual(catalog["images"][-1]["category"], "Delays")
-            self.assertEqual(catalog["images"][-1]["rgb"], [0, 0, .4])
+            self.assertEqual(catalog["images"][-1]["rgb"], [0, 0, 0.4])
             # The normal native catalog invariants also accept the addition.
             executable = root / "native-test"
-            subprocess.run(["c++", "-std=c++17", "-Wall", "-Wextra", "-Werror",
-                            str(root / "firmware/catalog_test.cpp"), "-o", str(executable)], check=True)
+            subprocess.run(
+                [
+                    "c++",
+                    "-std=c++17",
+                    "-Wall",
+                    "-Wextra",
+                    "-Werror",
+                    str(root / "firmware/catalog_test.cpp"),
+                    "-o",
+                    str(executable),
+                ],
+                check=True,
+            )
             subprocess.run([str(executable)], check=True)
-            source = (ROOT / "docs/firmware_reference.md").read_text() + "\n## Synthetic — Blue\n\nTest controls.\n"
+            source = (
+                ROOT / "docs/firmware_reference.md"
+            ).read_text() + "\n## Synthetic — Blue\n\nTest controls.\n"
             with mock.patch.object(render_reference, "read_catalog", return_value=catalog):
                 updated = render_reference.update_catalog_table(source)
                 _, sections, entries = render_reference.read_reference(updated)
                 self.assertEqual(entries[-1].name, "Synthetic v1")
-                self.assertIn("synthetic.html", render_reference.navigation(sections, entries, "index.html"))
+                self.assertIn(
+                    "synthetic.html", render_reference.navigation(sections, entries, "index.html")
+                )
                 with self.assertRaisesRegex(ValueError, "differs from compiled catalog"):
-                    render_reference.read_reference(updated.replace("| Test firmware |", "| Wrong description |"))
+                    render_reference.read_reference(
+                        updated.replace("| Test firmware |", "| Wrong description |")
+                    )
 
     def test_inspection_measures_unknown_binary_without_admitting_it(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -99,8 +126,12 @@ class FirmwareCatalogTests(unittest.TestCase):
             self.assertEqual(measured["catalog_matches"], [])
             self.assertEqual(measured["bytes"], 128)
             self.assertEqual(path.read_bytes(), data)
-            for stack, reset in ((0x20020004, 0x24000009), (0x20020000, 0x24000008),
-                                 (0x20020000, 0x24000081), (0x20020000, 0x90040009)):
+            for stack, reset in (
+                (0x20020004, 0x24000009),
+                (0x20020000, 0x24000008),
+                (0x20020000, 0x24000081),
+                (0x20020000, 0x90040009),
+            ):
                 struct.pack_into("<II", data, 0, stack, reset)
                 path.write_bytes(data)
                 with self.subTest(stack=stack, reset=reset), self.assertRaises(ValueError):

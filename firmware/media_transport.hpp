@@ -5,7 +5,12 @@
 
 namespace aurora_selector
 {
-    enum class FileStatus { Ok, Missing, Error };
+    enum class FileStatus
+    {
+        Ok,
+        Missing,
+        Error
+    };
 
     // One open file, backed by the existing DMA-safe FatFs objects on hardware.
     // The build links one implementation; selection and file policy are shared.
@@ -25,4 +30,4 @@ namespace aurora_selector
         bool Unmount();
         void Stop();
     };
-}
+} // namespace aurora_selector

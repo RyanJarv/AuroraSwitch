@@ -75,3 +75,20 @@ The cycles supply prepared loader context and external choice/file fixtures
 after each modeled reset. They reach Dirt main or FDN reset entry, with no audio
 continuation or physical reliability claim. Historical full audio-cycle records
 remain bound to their older exact candidates.
+
+## Readability and formatting
+
+Comments should first explain the purpose in ordinary language. Keep hardware
+registers, memory regions and other technical details where they help someone
+make a safe change; explain unfamiliar terms alongside them.
+
+C++ uses `.clang-format` (clang-format 19.1.7). Python uses `pyproject.toml`
+(Black 25.1.0). Run Black over `scripts/` and `tests/`; run clang-format over
+`firmware/`, `support/` and `tests/fakes/`, excluding the frozen
+`tests/fakes/file_media_before_refactor.hpp` oracle. Formatting tools are optional
+development dependencies, not requirements for building or testing.
+
+Keep formatting and comment edits separate from changes to control flow. A
+shorter implementation must still preserve authentication, I/O failure handling
+and handoff ordering. Use the existing production-boundary tests rather than
+adding assertions about whitespace or comments.

@@ -9,27 +9,59 @@ struct FakeMedia
     bool reject_launch_auth = false;
     bool withdraw_on_launch_auth = false;
     bool withdraw_during_discovery = false;
-    std::array<bool, sizeof(aurora_selector::Images) / sizeof(aurora_selector::Images[0])> present{};
+    std::array<bool, sizeof(aurora_selector::Images) / sizeof(aurora_selector::Images[0])>
+        present{};
     unsigned attempts = 0, launches = 0, last_launch = 0;
     unsigned discovery_starts = 0, discovery_ends = 0;
     int saved = -1;
     bool remember_fail = false;
     unsigned remembers = 0;
 
-    int BootChoice() { return saved; }
-    bool Remember(unsigned index) { ++remembers; saved = index; return !remember_fail; }
+    int BootChoice()
+    {
+        return saved;
+    }
 
-    bool Ready() const { return ready; }
-    void BeginDiscovery() { ++discovery_starts; }
-    void EndDiscovery() { ++discovery_ends; }
+    bool Remember(unsigned index)
+    {
+        ++remembers;
+        saved = index;
+        return !remember_fail;
+    }
+
+    bool Ready() const
+    {
+        return ready;
+    }
+
+    void BeginDiscovery()
+    {
+        ++discovery_starts;
+    }
+
+    void EndDiscovery()
+    {
+        ++discovery_ends;
+    }
+
     bool Authenticate(unsigned index)
     {
         ++attempts;
-        if(withdraw_during_discovery && index == 1) ready = false;
-        if(reject_launch_auth && attempts > present.size()) return false;
-        if(withdraw_on_launch_auth && attempts > present.size()) ready = false;
+        if (withdraw_during_discovery && index == 1)
+        {
+            ready = false;
+        }
+        if (reject_launch_auth && attempts > present.size())
+        {
+            return false;
+        }
+        if (withdraw_on_launch_auth && attempts > present.size())
+        {
+            ready = false;
+        }
         return present[index];
     }
+
     bool Launch(unsigned index)
     {
         ++launches;
@@ -45,8 +77,13 @@ int main()
     media.present[0] = media.present[1] = media.present[2] = true;
     Controller selector(media);
     unsigned loading = 0;
-    auto tick = [&](bool category = false, bool next = false, bool freeze = false) {
-        selector.Update(category, next, freeze, [&] { ++loading; });
+    auto tick = [&](bool category = false, bool next = false, bool freeze = false)
+    {
+        selector.Update(category, next, freeze,
+                        [&]
+                        {
+                            ++loading;
+                        });
     };
 
     tick(false, false, true);
@@ -69,9 +106,15 @@ int main()
     changed.ready = true;
     changed.present[0] = true;
     Controller changed_selector(changed);
-    changed_selector.Update(false, false, false, [] {});
+    changed_selector.Update(false, false, false,
+                            []
+                            {
+                            });
     changed.reject_launch_auth = true;
-    changed_selector.Update(false, false, true, [] {});
+    changed_selector.Update(false, false, true,
+                            []
+                            {
+                            });
     assert(changed_selector.GetState() == Controller::State::Error);
     assert(changed.launches == 0);
 
@@ -80,17 +123,29 @@ int main()
     withdrawn.ready = true;
     withdrawn.present[0] = true;
     Controller withdrawn_selector(withdrawn);
-    withdrawn_selector.Update(false, false, false, [] {});
+    withdrawn_selector.Update(false, false, false,
+                              []
+                              {
+                              });
     withdrawn.withdraw_on_launch_auth = true;
-    withdrawn_selector.Update(false, false, true, [] {});
+    withdrawn_selector.Update(false, false, true,
+                              []
+                              {
+                              });
     assert(withdrawn_selector.GetState() == Controller::State::Error);
     assert(withdrawn.launches == 0);
-    withdrawn_selector.Update(false, false, false, [] {});
+    withdrawn_selector.Update(false, false, false,
+                              []
+                              {
+                              });
     assert(withdrawn_selector.GetState() == Controller::State::Waiting);
     assert(!withdrawn_selector.Menu().HasSelection());
     withdrawn.ready = true;
     withdrawn.withdraw_on_launch_auth = false;
-    withdrawn_selector.Update(false, false, false, [] {});
+    withdrawn_selector.Update(false, false, false,
+                              []
+                              {
+                              });
     assert(withdrawn.discovery_starts == 2 && withdrawn_selector.Menu().HasSelection());
 
     withdrawn_selector.FailInitialization();
@@ -102,26 +157,44 @@ int main()
     interrupted.present[0] = true;
     interrupted.withdraw_during_discovery = true;
     Controller interrupted_selector(interrupted);
-    interrupted_selector.Update(false, false, true, [] {});
+    interrupted_selector.Update(false, false, true,
+                                []
+                                {
+                                });
     assert(interrupted_selector.GetState() == Controller::State::Waiting);
     assert(!interrupted_selector.Menu().HasSelection() && interrupted.launches == 0);
 
-    for(bool menu : {false, true})
+    for (bool menu : {false, true})
     {
         FakeMedia boot;
         boot.ready = true;
         boot.saved = 2;
         boot.present[0] = boot.present[2] = true;
         Controller automatic(boot);
-        if(menu) automatic.RequestMenu();
-        automatic.Update(false, false, false, [] {});
+        if (menu)
+        {
+            automatic.RequestMenu();
+        }
+        automatic.Update(false, false, false,
+                         []
+                         {
+                         });
         assert(boot.launches == (menu ? 0U : 1U));
         assert(boot.remembers == 0); // Automatic startup never writes the saved choice.
-        if(!menu) assert(boot.last_launch == 2 && boot.attempts == boot.present.size() + 1);
+        if (!menu)
+        {
+            assert(boot.last_launch == 2 && boot.attempts == boot.present.size() + 1);
+        }
         boot.ready = false;
-        automatic.Update(false, false, false, [] {});
+        automatic.Update(false, false, false,
+                         []
+                         {
+                         });
         boot.ready = true;
-        automatic.Update(false, false, false, [] {});
+        automatic.Update(false, false, false,
+                         []
+                         {
+                         });
         assert(boot.launches == (menu ? 0U : 1U));
     }
     FakeMedia missing;
@@ -129,10 +202,16 @@ int main()
     missing.saved = 2;
     missing.present[0] = true;
     Controller missing_selector(missing);
-    missing_selector.Update(false, false, false, [] {});
+    missing_selector.Update(false, false, false,
+                            []
+                            {
+                            });
     assert(missing.launches == 0 && missing_selector.GetState() == Controller::State::Selected);
     missing.remember_fail = true;
-    missing_selector.Update(false, false, true, [] {});
+    missing_selector.Update(false, false, true,
+                            []
+                            {
+                            });
     assert(missing.launches == 0 && missing_selector.GetState() == Controller::State::Error);
     FakeMedia changed_boot;
     changed_boot.ready = true;
@@ -140,7 +219,10 @@ int main()
     changed_boot.present[0] = true;
     changed_boot.reject_launch_auth = true;
     Controller changed_auto(changed_boot);
-    changed_auto.Update(false, false, false, [] {});
+    changed_auto.Update(false, false, false,
+                        []
+                        {
+                        });
     assert(changed_boot.launches == 0 && changed_boot.remembers == 0);
     assert(changed_auto.GetState() == Controller::State::Error);
 }

@@ -3,11 +3,12 @@
 .cpu cortex-m7
 .thumb
 
-// Isolated terminal handoff primitive, NOT peripheral teardown.
-// Caller must first authenticate staged bytes, quiesce every bus master,
-// disable/clean caches and interrupts, and copy this blob to executable SRAM4.
+// Start the chosen firmware without returning to the selector. RAM firmware
+// overwrites the selector itself, so this routine first runs from separate SRAM4.
+// It uses no stack or external calls that could refer to overwritten memory.
+// Before calling: verify staged bytes, stop DMA/peripherals that can write RAM,
+// clean/disable caches, mask interrupts and copy this routine into SRAM4.
 // R0 = staged source, R1 = AXI destination, R2 = nonzero exact image length.
-// No stack, external calls or references to overwritten selector storage.
 .section .selector_copy_jump,"ax",%progbits
 .balign 4
 .global selector_copy_jump_blob_start
@@ -25,9 +26,10 @@ copy_byte:
     strb r3, [r1], #1
     subs r2, r2, #1
     bne copy_byte
+    // Clear the RAM that the next firmware expects to start empty.
     // Pinned Daisy SRAM linker: RAM_D2_DMA = [0x30000000, 0x30008000).
     // Staging begins at 0x30008000, outside this arena. Teardown has already
-    // reset bus masters and cleaned/disabled caches. Do not erase live
+    // stopped peripherals that can write RAM and cleaned/disabled caches. Do not erase live
     // selector data earlier; this stackless terminal phase never returns.
     ldr r0, =SELECTOR_DMA_BASE
     ldr r1, =SELECTOR_DMA_END

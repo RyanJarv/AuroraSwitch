@@ -1,4 +1,5 @@
 """Fetch stable public releases, authenticate them, then prepare a chosen drive."""
+
 import argparse
 import io
 import hashlib
@@ -17,30 +18,55 @@ from prepare_payloads import prepare
 # Support and the default-download subset are separate catalog decisions.
 from firmware_catalog import read_catalog
 
-DOWNLOADS = {row["filename"]: row["download"] for row in read_catalog()["images"]
-             if row["download"] is not None}
+DOWNLOADS = {
+    row["filename"]: row["download"]
+    for row in read_catalog()["images"]
+    if row["download"] is not None
+}
 
 
 def release_selector(tag: str, destination: Path) -> Path:
     """Check release bytes and tag identity before any drive writes (not a signature)."""
     repository = "RyanJarv/AuroraSwitch"
     if tag == "latest":
-        tag = subprocess.check_output([
-            "gh", "release", "view", "--repo", repository,
-            "--json", "tagName", "--jq", ".tagName"], text=True).strip()
+        tag = subprocess.check_output(
+            [
+                "gh",
+                "release",
+                "view",
+                "--repo",
+                repository,
+                "--json",
+                "tagName",
+                "--jq",
+                ".tagName",
+            ],
+            text=True,
+        ).strip()
         if not tag:
             raise ValueError("no latest published release")
-    subprocess.run(["gh", "release", "download", tag, "--repo", repository,
-                    "--dir", str(destination)], check=True)
+    subprocess.run(
+        ["gh", "release", "download", tag, "--repo", repository, "--dir", str(destination)],
+        check=True,
+    )
     manifest = json.loads((destination / "manifest.json").read_bytes())
-    commit = subprocess.check_output([
-        "gh", "api", f"repos/{repository}/commits/{urllib.parse.quote(tag, safe='')}",
-        "--jq", ".sha"], text=True).strip()
+    commit = subprocess.check_output(
+        [
+            "gh",
+            "api",
+            f"repos/{repository}/commits/{urllib.parse.quote(tag, safe='')}",
+            "--jq",
+            ".sha",
+        ],
+        text=True,
+    ).strip()
     print(f"Checking release {tag} from {commit}", flush=True)
-    if (manifest.get("schema") != "aurora-switch-development-bundle-v1"
-            or manifest.get("source_commit") != commit
-            or manifest.get("build_provenance", {}).get("configuration") != {
-                "EXPERIMENTAL_HANDOFF": 1, "DMA_ARENA_CLEANUP": 1, "VIRTUAL_TRANSPORT": 0}):
+    if (
+        manifest.get("schema") != "aurora-switch-development-bundle-v1"
+        or manifest.get("source_commit") != commit
+        or manifest.get("build_provenance", {}).get("configuration")
+        != {"EXPERIMENTAL_HANDOFF": 1, "DMA_ARENA_CLEANUP": 1, "VIRTUAL_TRANSPORT": 0}
+    ):
         raise ValueError("release source identity or USB build configuration mismatch")
     files = manifest.get("files", {})
     if set(files) != {"AuroraSwitch.bin", "AuroraSwitch.elf", "AuroraSwitch.map"}:
@@ -59,8 +85,11 @@ def check_destination(usb: Path) -> None:
     for entry in usb.iterdir():
         if entry.suffix.lower() == ".bin" and entry.name != "AuroraSwitch.bin":
             raise ValueError(f"move root-level updater off the drive first: {entry.name}")
-    for path in [usb / "aurora", usb / "AuroraSwitch.bin",
-                 *(usb / "aurora" / name for name in DOWNLOADS)]:
+    for path in [
+        usb / "aurora",
+        usb / "AuroraSwitch.bin",
+        *(usb / "aurora" / name for name in DOWNLOADS),
+    ]:
         if path.is_symlink():
             raise ValueError(f"refusing symlink destination: {path}")
 
@@ -111,9 +140,13 @@ def stage(usb: Path, selector: Path) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--usb", type=Path, required=True)
-    parser.add_argument("--release-tag", help="download a checked GitHub release instead of building")
+    parser.add_argument(
+        "--release-tag", help="download a checked GitHub release instead of building"
+    )
     args = parser.parse_args()
-    selector = Path(__file__).resolve().parents[1] / "firmware/build-experimental-dma/AuroraSwitch.bin"
+    selector = (
+        Path(__file__).resolve().parents[1] / "firmware/build-experimental-dma/AuroraSwitch.bin"
+    )
     try:
         check_destination(args.usb)
         if args.release_tag:
@@ -121,8 +154,13 @@ def main() -> int:
                 stage(args.usb, release_selector(args.release_tag, Path(temporary)))
         else:
             stage(args.usb, selector)
-    except (OSError, ValueError, KeyError, zipfile.BadZipFile,
-            subprocess.CalledProcessError) as error:
+    except (
+        OSError,
+        ValueError,
+        KeyError,
+        zipfile.BadZipFile,
+        subprocess.CalledProcessError,
+    ) as error:
         parser.exit(2, f"USB preparation failed: {error}\n")
     return 0
 

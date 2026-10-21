@@ -1,4 +1,5 @@
 """Synthetic preparation tests; not target execution or compatibility evidence."""
+
 from contextlib import contextmanager
 import hashlib
 import json
@@ -20,10 +21,16 @@ class PrepareTests(unittest.TestCase):
         self.addCleanup(directory.cleanup)
         self.root = Path(directory.name)
         self.data = [b"synthetic-first-image", b"synthetic-second-image"]
-        self.images = [{"filename": f"image-{i}.bin", "bytes": len(data),
-                        "sha256": hashlib.sha256(data).hexdigest(),
-                        "stack": 0x20020000, "reset": 0x24000011}
-                       for i, data in enumerate(self.data)]
+        self.images = [
+            {
+                "filename": f"image-{i}.bin",
+                "bytes": len(data),
+                "sha256": hashlib.sha256(data).hexdigest(),
+                "stack": 0x20020000,
+                "reset": 0x24000011,
+            }
+            for i, data in enumerate(self.data)
+        ]
         self.files = []
         for i, data in enumerate(self.data):
             path = self.root / f"user-name-{i}.bin"
@@ -36,9 +43,11 @@ class PrepareTests(unittest.TestCase):
         def authenticator():
             yield Path("synthetic-authenticator")
 
-        for patcher in (mock.patch.object(payloads, "authenticator", authenticator),
-                        mock.patch.object(payloads, "catalog", return_value=self.images),
-                        mock.patch.object(payloads.subprocess, "run", side_effect=self.check)):
+        for patcher in (
+            mock.patch.object(payloads, "authenticator", authenticator),
+            mock.patch.object(payloads, "catalog", return_value=self.images),
+            mock.patch.object(payloads.subprocess, "run", side_effect=self.check),
+        ):
             patcher.start()
             self.addCleanup(patcher.stop)
 
@@ -89,8 +98,9 @@ class PrepareTests(unittest.TestCase):
         self.assertFalse(self.output.exists())
 
     def test_cpp_authentication_failure_rejects(self):
-        with mock.patch.object(payloads.subprocess, "run",
-                               side_effect=subprocess.CalledProcessError(2, ["synthetic"])):
+        with mock.patch.object(
+            payloads.subprocess, "run", side_effect=subprocess.CalledProcessError(2, ["synthetic"])
+        ):
             with self.assertRaises(subprocess.CalledProcessError):
                 payloads.prepare(self.files, self.output)
         self.assertFalse(self.output.exists())
@@ -99,6 +109,7 @@ class PrepareTests(unittest.TestCase):
         def change_source(command, **kwargs):
             self.check(command, **kwargs)
             self.files[0].write_bytes(b"replaced-after-validation")
+
         with mock.patch.object(payloads.subprocess, "run", side_effect=change_source):
             payloads.prepare(self.files[:1], self.output)
         self.assertEqual((self.output / "aurora/image-0.bin").read_bytes(), self.data[0])
@@ -125,9 +136,13 @@ class PrepareTests(unittest.TestCase):
         line = f"0:/aurora/{row['filename']}\t{row['bytes']}\t{row['sha256']}\t{row['stack']}\t{row['reset']}\n"
         with mock.patch.object(verify_images.subprocess, "check_output", return_value=line):
             self.assertEqual(verify_images.catalog(Path("synthetic")), [row])
-        for invalid in ("", line + line, line.replace("image-0.bin", "../escape.bin"),
-                        line.replace(row["sha256"], "not-a-hash"),
-                        line.replace(str(row["bytes"]), "999999")):
+        for invalid in (
+            "",
+            line + line,
+            line.replace("image-0.bin", "../escape.bin"),
+            line.replace(row["sha256"], "not-a-hash"),
+            line.replace(str(row["bytes"]), "999999"),
+        ):
             with mock.patch.object(verify_images.subprocess, "check_output", return_value=invalid):
                 with self.assertRaises(ValueError):
                     verify_images.catalog(Path("synthetic"))

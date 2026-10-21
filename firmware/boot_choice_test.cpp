@@ -2,30 +2,44 @@
 #include <cassert>
 #include <algorithm>
 using namespace aurora_selector;
+
 struct Store
 {
     BootRecord records[2]{};
     bool present[2]{}, fail = false, corrupt = false, read_fail = false;
     unsigned writes = 0, cut = 80;
+
     bool Read(unsigned slot, BootRecord& record)
-    { record = records[slot]; return !read_fail && present[slot]; }
-    bool Healthy() const { return !read_fail; }
+    {
+        record = records[slot];
+        return !read_fail && present[slot];
+    }
+
+    bool Healthy() const
+    {
+        return !read_fail;
+    }
+
     bool Write(unsigned slot, const BootRecord& record)
     {
         ++writes;
         present[slot] = true;
         std::copy_n(record.begin(), cut, records[slot].begin());
-        if(corrupt) records[slot][20] ^= 1;
+        if (corrupt)
+        {
+            records[slot][20] ^= 1;
+        }
         return !fail && cut == record.size();
     }
 };
+
 int main()
 {
     Store store;
     assert(ReadBootChoice(store).index == -1);
     assert(RememberBootChoice(store, 12));
     const auto first = store.records[0];
-    for(unsigned boot = 0; boot < 100; ++boot)
+    for (unsigned boot = 0; boot < 100; ++boot)
     {
         assert(ReadBootChoice(store).index == 12);
         assert(RememberBootChoice(store, 12));
@@ -35,7 +49,7 @@ int main()
     assert(ReadBootChoice(store).index == 1 && store.records[0] == first);
     // Every single-byte corruption of the latest record preserves the old choice.
     const auto latest = store.records[1];
-    for(unsigned i = 0; i < latest.size(); ++i)
+    for (unsigned i = 0; i < latest.size(); ++i)
     {
         store.records[1] = latest;
         store.records[1][i] ^= 1;
@@ -82,20 +96,22 @@ int main()
     Store baseline;
     assert(RememberBootChoice(baseline, 0));
     assert(RememberBootChoice(baseline, 1));
-    for(unsigned cut = 0; cut <= 80; ++cut)
+    for (unsigned cut = 0; cut <= 80; ++cut)
     {
         auto interrupted = baseline;
         interrupted.cut = cut;
         assert(RememberBootChoice(interrupted, 2) == (cut == 80));
         assert(ReadBootChoice(interrupted).index == (cut == 80 ? 2 : 1));
     }
-    for(unsigned byte = 0; byte < 80; ++byte)
-        for(unsigned bit = 0; bit < 8; ++bit)
+    for (unsigned byte = 0; byte < 80; ++byte)
+    {
+        for (unsigned bit = 0; bit < 8; ++bit)
         {
             auto damaged = baseline;
             damaged.records[1][byte] ^= 1U << bit;
             assert(ReadBootChoice(damaged).index == 0);
         }
+    }
     auto half_range = baseline;
     RecordWord(half_range.records[1], 8, RecordWord(half_range.records[0], 8) + 0x80000000U);
     RecordWord(half_range.records[1], 76, RecordCrc(half_range.records[1]));
@@ -103,15 +119,17 @@ int main()
     assert(!RememberBootChoice(half_range, 2) && half_range.writes == 2);
     // Deterministic varied/repeated choices: one write per actual change.
     unsigned random = 12345, last = 1, expected_writes = baseline.writes;
-    for(unsigned i = 0; i < 100000; ++i)
+    for (unsigned i = 0; i < 100000; ++i)
     {
         random = random * 1664525U + 1013904223U;
         const unsigned next = (random >> 16) % 3;
-        if(next != last) ++expected_writes;
+        if (next != last)
+        {
+            ++expected_writes;
+        }
         assert(RememberBootChoice(baseline, next));
         assert(ReadBootChoice(baseline).index == static_cast<int>(next));
         assert(baseline.writes == expected_writes);
         last = next;
     }
-
 }

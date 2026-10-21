@@ -1,7 +1,9 @@
 """Negative controls: the native probes must catch named broken safeguards."""
+
 from pathlib import Path
 import os
 import resource
+import re
 import shutil
 import subprocess
 import tempfile
@@ -13,27 +15,60 @@ ROOT = Path(__file__).resolve().parents[1]
 class FailureControls(unittest.TestCase):
     def test_named_safeguards_detect_broken_implementations(self):
         cases = (
-            ("close", "firmware/file_media.hpp",
-             "return media.Close() && valid && media.Ready();", "return valid && media.Ready();",
-             "file_media_test", "RecordOperation(current, write) == expected"),
-            ("sync", "firmware/file_media.hpp",
-             "&& count == record.size() && media.Sync();", "&& count == record.size();",
-             "file_media_test", "RecordOperation(current, write) == expected"),
-            ("record-crc", "support/boot_choice.hpp",
-             "&& RecordWord(record, 76) == RecordCrc(record)", "&& true",
-             "boot_choice_test", "ReadBootChoice(store).index == 12"),
-            ("record-readback", "support/boot_choice.hpp",
-             "BootRecord readback{};\n        return store.Read(slot, readback) && readback == record;",
-             "return true;", "boot_choice_test", "!RememberBootChoice(store, 2)"),
-            ("repeat-write-suppression", "support/boot_choice.hpp",
-             "if(previous.index == static_cast<int>(index)) return true;",
-             "", "boot_choice_test", "store.writes == 1"),
-            ("unmount", "firmware/handoff_sequence.hpp",
-             "!platform.Unmount()", "false",
-             "handoff_sequence_test", "good.steps"),
+            (
+                "close",
+                "firmware/file_media.hpp",
+                "return media.Close() && valid && media.Ready();",
+                "return valid && media.Ready();",
+                "file_media_test",
+                "RecordOperation(current, write) == expected",
+            ),
+            (
+                "sync",
+                "firmware/file_media.hpp",
+                "&& count == record.size() && media.Sync();",
+                "&& count == record.size();",
+                "file_media_test",
+                "RecordOperation(current, write) == expected",
+            ),
+            (
+                "record-crc",
+                "support/boot_choice.hpp",
+                "&& RecordWord(record, 76) == RecordCrc(record)",
+                "&& true",
+                "boot_choice_test",
+                "ReadBootChoice(store).index == 12",
+            ),
+            (
+                "record-readback",
+                "support/boot_choice.hpp",
+                "BootRecord readback{};\n        return store.Read(slot, readback) && readback == record;",
+                "return true;",
+                "boot_choice_test",
+                "!RememberBootChoice(store, 2)",
+            ),
+            (
+                "repeat-write-suppression",
+                "support/boot_choice.hpp",
+                "previous.index == static_cast<int>(index)",
+                "false",
+                "boot_choice_test",
+                "store.writes == 1",
+            ),
+            (
+                "unmount",
+                "firmware/handoff_sequence.hpp",
+                "!platform.Unmount()",
+                "false",
+                "handoff_sequence_test",
+                "good.steps",
+            ),
         )
         for name, header, before, after, probe, assertion in cases:
-            with self.subTest(safeguard=name), tempfile.TemporaryDirectory(prefix="aurora-negative-") as temporary:
+            with (
+                self.subTest(safeguard=name),
+                tempfile.TemporaryDirectory(prefix="aurora-negative-") as temporary,
+            ):
                 root = Path(temporary)
                 for directory in ("firmware", "support"):
                     (root / directory).mkdir()
@@ -43,16 +78,34 @@ class FailureControls(unittest.TestCase):
                 shutil.copytree(ROOT / "tests/fakes", root / "tests/fakes")
                 path = root / header
                 text = path.read_text()
-                self.assertEqual(text.count(before), 1)
-                path.write_text(text.replace(before, after))
-                command = [os.environ.get("CXX", "c++"), "-std=c++17", "-Wall", "-Wextra", "-Werror"]
+                # Match C++ tokens, not indentation or line wrapping. Formatting
+                # must not turn a safeguard mutation into a missing-string error.
+                tokens = re.findall(r"\w+|[^\w\s]", before)
+                pattern = r"\s*".join(re.escape(token) for token in tokens)
+                mutated, count = re.subn(pattern, lambda _: after, text)
+                self.assertEqual(count, 1)
+                path.write_text(mutated)
+                command = [
+                    os.environ.get("CXX", "c++"),
+                    "-std=c++17",
+                    "-Wall",
+                    "-Wextra",
+                    "-Werror",
+                ]
                 if probe == "file_media_test":
-                    command += ["-I" + str(root / "tests/fakes"), str(root / "firmware/media_usb.cpp")]
+                    command += [
+                        "-I" + str(root / "tests/fakes"),
+                        str(root / "firmware/media_usb.cpp"),
+                    ]
                 executable = root / probe
                 command += [str(root / "firmware" / (probe + ".cpp")), "-o", str(executable)]
                 subprocess.run(command, check=True, capture_output=True)
-                result = subprocess.run([str(executable)], capture_output=True, text=True,
-                    preexec_fn=lambda: resource.setrlimit(resource.RLIMIT_CORE, (0, 0)))
+                result = subprocess.run(
+                    [str(executable)],
+                    capture_output=True,
+                    text=True,
+                    preexec_fn=lambda: resource.setrlimit(resource.RLIMIT_CORE, (0, 0)),
+                )
                 self.assertNotEqual(result.returncode, 0, "broken safeguard passed: " + name)
                 self.assertIn("Assertion", result.stderr)
                 self.assertIn(assertion, result.stderr)
