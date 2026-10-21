@@ -6,9 +6,10 @@ endif
 ifeq ($(VIRTUAL_TRANSPORT),1)
 TARGET = AuroraSwitchVirtual
 EXPECTED_BUILD_DIR = build-virtual-experimental-dma
-C_DEFS += -DSELECTOR_VIRTUAL_TRANSPORT
+MEDIA_SOURCE = media_virtual.cpp
 else
 TARGET = AuroraSwitch
+MEDIA_SOURCE = media_usb.cpp
 EXPECTED_BUILD_DIR = build-experimental-dma
 endif
 BUILD_DIR ?= $(EXPECTED_BUILD_DIR)
@@ -18,7 +19,7 @@ ifneq ($(BUILD_DIR),$(EXPECTED_BUILD_DIR))
 $(error Use BUILD_DIR=$(EXPECTED_BUILD_DIR) for this transport)
 endif
 # Preserve link order for stable exact-image diagnostic bindings.
-CPP_SOURCES = handoff.cpp selector.cpp
+CPP_SOURCES = handoff.cpp selector.cpp $(MEDIA_SOURCE)
 ASM_SOURCES = copy_jump.s resident_boot.s
 override APP_TYPE := BOOT_SRAM
 USE_FATFS = 1

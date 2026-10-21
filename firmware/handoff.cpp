@@ -1,7 +1,6 @@
 // Hardware adapter for exact-image RAM and QSPI handoff.
 #include "handoff.hpp"
 #include "handoff_sequence.hpp"
-#include "fatfs.h"
 #include "mbedtls/sha256.h"
 #include <cstring>
 #include "../support/qspi_image_programming.hpp"
@@ -9,9 +8,6 @@
 extern "C" {
 volatile aurora_selector::QspiDiagnostic selector_qspi_diagnostic{};
 }
-#ifdef SELECTOR_VIRTUAL_TRANSPORT
-#include "../support/backed_image_reader.hpp"
-#endif
 
 extern "C"
 {
@@ -78,34 +74,11 @@ namespace aurora_selector
                 return static_cast<const std::uint8_t*>(qspi.GetData(QspiApplicationOffset));
             }
         };
-        // Release the selector's real filesystem and USB host before replacement.
-        struct UsbTransport
-        {
-            daisy::USBHostHandle& usb;
-            const char* path;
-            bool Unmount() { return f_mount(nullptr, path, 0) == FR_OK; }
-            void Stop() { usb.Deinit(); }
-        };
-#ifdef SELECTOR_VIRTUAL_TRANSPORT
-        // Test-media adapter; shares cleanup ordering without claiming USB behavior.
-        struct BackedTransport
-        {
-            volatile daisy_development::BackedImageDescriptor& descriptor;
-            bool Unmount()
-            {
-                // Synthetic media withdrawal, not a successful FatFs unmount.
-                return daisy_development::BackedImageReader(descriptor,
-                    reinterpret_cast<const std::uint8_t*>(0xc0000000U),
-                    StagingCapacity()).Ready();
-            }
-            void Stop() { descriptor.ready = 0; }
-        };
-#endif
         // Bind shared ordering to hardware while preserving bootloader-owned state.
-        template<class Transport> struct Platform
+        struct Platform
         {
             daisy::DaisySeed& seed;
-            Transport& transport;
+            MediaTransport& transport;
             const Image& image;
             const std::uint8_t* staged;
             bool qspi_prepared = false;
@@ -277,26 +250,12 @@ namespace aurora_selector
         };
     }
 
-    bool ExperimentalLaunch(daisy::DaisySeed& seed, daisy::USBHostHandle& usb,
-                            const char* media_path, const Image& image,
-                            const std::uint8_t* staged)
+    bool ExperimentalLaunch(daisy::DaisySeed& seed, MediaTransport& transport,
+                            const Image& image, const std::uint8_t* staged)
     {
-        UsbTransport transport{usb, media_path};
-        Platform<UsbTransport> platform{seed, transport, image, staged};
+        Platform platform{seed, transport, image, staged};
         if(!platform.PrepareTarget())
             return false;
         return PrepareAndJump(platform, platform.application_replaced);
     }
-#ifdef SELECTOR_VIRTUAL_TRANSPORT
-    bool VirtualLaunch(daisy::DaisySeed& seed,
-                       volatile daisy_development::BackedImageDescriptor& descriptor,
-                       const Image& image, const std::uint8_t* staged)
-    {
-        BackedTransport transport{descriptor};
-        Platform<BackedTransport> platform{seed, transport, image, staged};
-        if(!platform.PrepareTarget())
-            return false;
-        return PrepareAndJump(platform, platform.application_replaced);
-    }
-#endif
 }

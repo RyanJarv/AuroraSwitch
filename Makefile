@@ -1,5 +1,5 @@
 # Build/test and USB preparation; module installation remains a manual step.
-.PHONY: all build usb download-release build-virtual setup dependencies test check verify-images package package-virtual fata-ram-probe help reference-html
+.PHONY: all build usb download-release build-virtual setup dependencies test test-sanitize check verify-images package package-virtual fata-ram-probe help reference-html
 RELEASE_TAG ?= latest
 all: build
 reference-html:
@@ -22,6 +22,8 @@ dependencies: setup
 	$(MAKE) -C .deps/Aurora-SDK/libs/libDaisy
 test:
 	python3 -m unittest discover -s tests -v
+test-sanitize:
+	AURORA_HOST_SANITIZERS=1 python3 -m unittest discover -s tests -p test_helpers.py -v
 check: test
 	python3 -m compileall -q scripts tests
 verify-images: setup
@@ -39,6 +41,7 @@ help:
 	  'make download-release USB_DIR=/path/to/drive  Download latest release and prepare USB (no Arm compiler)' \
 	  'make build-virtual  Build synthetic-media test firmware; never install it' \
 	  'make check          Run host tests and Python syntax checks' \
+	  'make test-sanitize  Run native safety probes with ASan and UBSan' \
 	  'make package        Rebuild clean committed source into a verified USB bundle' \
 	  'make package-virtual  Package a synthetic-media test bundle' \
 	  'make verify-images FIRMWARE_DIR=/path/to/files  Check every catalog image'

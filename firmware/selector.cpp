@@ -6,22 +6,7 @@
 #include "../support/read_only_image_staging.hpp"
 #include "../support/media_initialization.hpp"
 #include "../support/operation_timing.hpp"
-#ifdef SELECTOR_VIRTUAL_TRANSPORT
-#include "../support/backed_image_reader.hpp"
-// Exact ELF symbol, not a profile copied from another image. Payload is mapped
-// by the virtual runner at SDRAM base; this build never initializes real USB.
-extern "C" {
-volatile daisy_development::BackedImageDescriptor selector_virtual_media{};
-// Synthetic persistence transport: raw records and I/O outcomes, never a
-// host-selected launch index. The guest decodes/adopts choices itself.
-struct VirtualBootStore
-{
-    std::uint32_t version, present, writes, fail_writes;
-    std::uint8_t records[2][80];
-};
-volatile VirtualBootStore selector_virtual_boot_store{1, 0, 0, 0, {}};
-}
-#endif
+#include "file_media.hpp"
 #include "mbedtls/sha256.h"
 #include "handoff.hpp"
 
@@ -31,20 +16,8 @@ namespace
     daisy::Switch next_button, load_button;
     daisy::Switch category_button;
     daisy::LedDriverPca9685<2, true> leds;
-    // BOOT_SRAM puts ordinary globals/stack in DTCM, inaccessible to USB DMA.
-    // FatFs reads sectors into both FATFS::win and FIL::buf, not just staging.
-#ifndef SELECTOR_VIRTUAL_TRANSPORT
-    DMA_BUFFER_MEM_SECTION __attribute__((aligned(32)))
-    daisy::FatFSInterface selector_filesystem;
-    DMA_BUFFER_MEM_SECTION __attribute__((aligned(32))) FIL selector_file;
-#endif
-    // Last file attempt for inspection; this record never authorizes launch.
-    struct LoadDiagnostic
-    {
-        std::uint32_t attempts, selection, staging_result, fatfs_result;
-        std::uint32_t file_size, bytes_read, authenticated;
-        daisy_development::OperationTiming timing;
-    };
+    aurora_selector::MediaTransport transport;
+    using aurora_selector::LoadDiagnostic;
     volatile LoadDiagnostic load_diagnostic{};
     volatile daisy_development::OperationTiming discovery_timing{};
     __attribute__((section(".selector_staging"), aligned(32)))
@@ -64,72 +37,6 @@ namespace
     using State = aurora_selector::SelectorController<SelectorMedia>::State;
     volatile daisy_development::MediaInitialization media_initialization =
         daisy_development::MediaInitialization::Ready;
-
-#ifdef SELECTOR_VIRTUAL_TRANSPORT
-    // Bind synthetic media to the runner's fixed payload arena, not a guest pointer.
-    daisy_development::BackedImageReader MakeReader()
-    {
-        return daisy_development::BackedImageReader(selector_virtual_media,
-            reinterpret_cast<const std::uint8_t*>(0xc0000000U),
-            aurora_selector::StagingCapacity());
-    }
-    bool MediaReady() { return MakeReader().Ready(); }
-    void PumpMedia() { MakeReader().Pump(); }
-#else
-    bool MediaReady() { return aurora::usb.GetReady(); }
-    void PumpMedia() { aurora::usb.Process(); }
-#endif
-
-    struct BootStore
-    {
-        bool healthy = true;
-        bool Healthy() const { return healthy; }
-        bool Read(unsigned slot, aurora_selector::BootRecord& record)
-        {
-#ifdef SELECTOR_VIRTUAL_TRANSPORT
-            if(selector_virtual_boot_store.version != 1
-               || !(selector_virtual_boot_store.present & (1U << slot))) return false;
-            for(unsigned i = 0; i < record.size(); ++i)
-                record[i] = selector_virtual_boot_store.records[slot][i];
-            return true;
-#else
-            if(!MediaReady()) { healthy = false; return false; }
-            const char* path = slot == 0 ? "0:/aurora/boot-a.dat" : "0:/aurora/boot-b.dat";
-            const auto opened = f_open(&selector_file, path, FA_READ);
-            if(opened != FR_OK)
-            {
-                if(opened != FR_NO_FILE && opened != FR_NO_PATH) healthy = false;
-                return false;
-            }
-            UINT count = 0;
-            const bool size_valid = f_size(&selector_file) == record.size();
-            if(size_valid && (f_read(&selector_file, record.data(), record.size(), &count) != FR_OK
-                             || count != record.size())) healthy = false;
-            if(f_close(&selector_file) != FR_OK || !MediaReady()) healthy = false;
-            return healthy && size_valid;
-#endif
-        }
-        bool Write(unsigned slot, const aurora_selector::BootRecord& record)
-        {
-#ifdef SELECTOR_VIRTUAL_TRANSPORT
-            selector_virtual_boot_store.writes = selector_virtual_boot_store.writes + 1U;
-            if(selector_virtual_boot_store.version != 1 || selector_virtual_boot_store.fail_writes)
-                return false;
-            for(unsigned i = 0; i < record.size(); ++i)
-                selector_virtual_boot_store.records[slot][i] = record[i];
-            selector_virtual_boot_store.present = selector_virtual_boot_store.present | (1U << slot);
-            return true;
-#else
-            if(!MediaReady()) return false;
-            const char* path = slot == 0 ? "0:/aurora/boot-a.dat" : "0:/aurora/boot-b.dat";
-            if(f_open(&selector_file, path, FA_WRITE | FA_CREATE_ALWAYS) != FR_OK) return false;
-            UINT count = 0;
-            const bool valid = f_write(&selector_file, record.data(), record.size(), &count) == FR_OK
-                && count == record.size() && f_sync(&selector_file) == FR_OK;
-            return f_close(&selector_file) == FR_OK && valid && MediaReady();
-#endif
-        }
-    };
 
     // Freeze shows load status; Reverse shows the current catalog selection.
     void SetStatus(float r, float g, float b)
@@ -156,73 +63,23 @@ namespace
         leds.SwapBuffersAndTransmit();
     }
 
-#ifndef SELECTOR_VIRTUAL_TRANSPORT
-    // Adapt the single FatFs handle to shared staging and capture its errors.
-    struct UsbFileReader
-    {
-        bool Ready() { return aurora::usb.GetReady(); }
-        bool Open(const char* path)
-        {
-            const auto result = f_open(&selector_file, path, FA_READ);
-            load_diagnostic.fatfs_result = result;
-            return result == FR_OK;
-        }
-        std::size_t Size()
-        {
-            load_diagnostic.file_size = f_size(&selector_file);
-            return load_diagnostic.file_size;
-        }
-        bool Read(std::uint8_t* buffer, std::size_t amount, std::size_t& read)
-        {
-            UINT count = 0;
-            const auto result = f_read(&selector_file, buffer, static_cast<UINT>(amount), &count);
-            load_diagnostic.fatfs_result = result;
-            load_diagnostic.bytes_read = load_diagnostic.bytes_read + count;
-            read = count;
-            return result == FR_OK;
-        }
-        void Pump() { aurora::usb.Process(); }
-        bool Close()
-        {
-            const auto result = f_close(&selector_file);
-            // Preserve the first operation failure rather than hide it by close.
-            if(load_diagnostic.fatfs_result == FR_OK)
-                load_diagnostic.fatfs_result = result;
-            return result == FR_OK;
-        }
-    };
-#endif
-
     // Used by discovery and Freeze; success authenticates the current RAM copy.
     bool AuthenticateFile(unsigned index)
     {
         load_diagnostic.timing.Begin(daisy::System::GetNow());
         // One read into staging; hash and later handoff consume these same bytes.
         // Never validate a file, close it, and then reopen an unvalidated copy.
-#ifdef SELECTOR_VIRTUAL_TRANSPORT
-        auto reader = MakeReader();
-#else
-        UsbFileReader reader;
-#endif
+        aurora_selector::FileReader reader{transport, load_diagnostic};
         load_diagnostic.attempts = load_diagnostic.attempts + 1U;
         load_diagnostic.selection = index;
         load_diagnostic.staging_result = 0xffffffffU;
-        // Synthetic transport has no FatFs result, including on success.
-#ifdef SELECTOR_VIRTUAL_TRANSPORT
-        load_diagnostic.fatfs_result = 0xffffffffU;
-#else
-        load_diagnostic.fatfs_result = FR_OK;
-#endif
+        load_diagnostic.fatfs_result = transport.SuccessResult();
         load_diagnostic.file_size = 0;
         load_diagnostic.bytes_read = 0;
         load_diagnostic.authenticated = 0;
         const auto& image = aurora_selector::Images[index];
         const auto result = daisy_development::StageReadOnlyImage(
             reader, image.path, staged, sizeof(staged), image.size);
-#ifdef SELECTOR_VIRTUAL_TRANSPORT
-        load_diagnostic.file_size = reader.Size();
-        load_diagnostic.bytes_read = reader.BytesRead();
-#endif
         load_diagnostic.staging_result = static_cast<std::uint32_t>(result);
         std::uint8_t digest[32]{};
         const bool authenticated = result == daisy_development::StagingResult::Staged
@@ -233,29 +90,24 @@ namespace
         return authenticated;
     }
 
-    bool SelectorMedia::Ready() { return MediaReady(); }
+    bool SelectorMedia::Ready() { return transport.Ready(); }
     void SelectorMedia::BeginDiscovery() { discovery_timing.Begin(daisy::System::GetNow()); }
     void SelectorMedia::EndDiscovery() { discovery_timing.Finish(daisy::System::GetNow()); }
     bool SelectorMedia::Authenticate(unsigned index) { return AuthenticateFile(index); }
     int SelectorMedia::BootChoice()
     {
-        BootStore store;
+        aurora_selector::FileBootStore store{transport};
         return aurora_selector::ReadBootChoice(store).index;
     }
     bool SelectorMedia::Remember(unsigned index)
     {
-        BootStore store;
+        aurora_selector::FileBootStore store{transport};
         return aurora_selector::RememberBootChoice(store, index);
     }
     bool SelectorMedia::Launch(unsigned index)
     {
-#ifdef SELECTOR_VIRTUAL_TRANSPORT
-        return aurora_selector::VirtualLaunch(seed, selector_virtual_media,
+        return aurora_selector::ExperimentalLaunch(seed, transport,
             aurora_selector::Images[index], staged);
-#else
-        return aurora_selector::ExperimentalLaunch(seed, aurora::usb,
-            selector_filesystem.GetUSBPath(), aurora_selector::Images[index], staged);
-#endif
     }
 }
 
@@ -291,17 +143,7 @@ int main()
     for(int channel = 0; channel < 32; ++channel)
         leds.SetLed(channel, 0.f);
 
-#ifndef SELECTOR_VIRTUAL_TRANSPORT
-    daisy::USBHostHandle::Config usb_config;
-    daisy::FatFSInterface::Config fs_config;
-    fs_config.media = daisy::FatFSInterface::Config::MEDIA_USB;
-    media_initialization = daisy_development::InitializeMedia(
-        [&] { return aurora::usb.Init(usb_config) == daisy::USBHostHandle::Result::OK; },
-        [&] { return selector_filesystem.Init(fs_config) == daisy::FatFSInterface::Result::OK; },
-        [&] { return f_mount(&selector_filesystem.GetUSBFileSystem(),
-                            selector_filesystem.GetUSBPath(), 0) == FR_OK; });
-
-#endif
+    media_initialization = transport.Initialize();
 
     std::uint32_t last_control = daisy::System::GetNow();
     const std::uint32_t buttons_started = last_control;
@@ -316,7 +158,7 @@ int main()
             daisy::System::Delay(20);
             continue;
         }
-        PumpMedia();
+        transport.Pump();
         const auto now = daisy::System::GetNow();
         if(now == last_control)
             continue;
