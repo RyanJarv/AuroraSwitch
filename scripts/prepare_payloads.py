@@ -1,5 +1,4 @@
 """Prepare user-owned exact images offline; no downloads, flashing or USB access."""
-
 import argparse
 import hashlib
 import json
@@ -18,10 +17,8 @@ def prepare(files: list[Path], output: Path) -> dict:
     # A partial directory after an I/O failure must be inspected, not reused.
     if output.exists() or output.is_symlink():
         raise ValueError("output already exists; choose a new empty destination")
-    with (
-        authenticator() as executable,
-        tempfile.TemporaryDirectory(prefix="aurora-payloads-") as temporary,
-    ):
+    with authenticator() as executable, tempfile.TemporaryDirectory(
+            prefix="aurora-payloads-") as temporary:
         images = catalog(executable)
         staged = []
         maximum = max(image["bytes"] for image in images)
@@ -29,11 +26,8 @@ def prepare(files: list[Path], output: Path) -> dict:
             with source.open("rb") as stream:
                 data = stream.read(maximum + 1)
             digest = hashlib.sha256(data).hexdigest()
-            matches = [
-                image
-                for image in images
-                if image["bytes"] == len(data) and image["sha256"] == digest
-            ]
+            matches = [image for image in images
+                       if image["bytes"] == len(data) and image["sha256"] == digest]
             if len(matches) != 1:
                 raise ValueError(f"unsupported or changed image: {source.name}")
             image = matches[0]
@@ -42,15 +36,12 @@ def prepare(files: list[Path], output: Path) -> dict:
             copy = Path(temporary) / image["filename"]
             copy.write_bytes(data)
             # Reuse staging, vectors, SHA and corruption controls from C++.
-            subprocess.run(
-                [str(executable), image["filename"], str(copy)], check=True, capture_output=True
-            )
+            subprocess.run([str(executable), image["filename"], str(copy)],
+                           check=True, capture_output=True)
             staged.append((image, data))
-        receipt = {
-            "schema": "aurora-switch-payloads-v1",
-            "images": [image for image, _ in staged],
-            "qualification": "byte-authentication-only",
-        }
+        receipt = {"schema": "aurora-switch-payloads-v1",
+                   "images": [image for image, _ in staged],
+                   "qualification": "byte-authentication-only"}
         # All inputs pass before creating any public output. Exclusive creation
         # also refuses a destination created concurrently after the first check.
         output.mkdir(parents=True, exist_ok=False)
@@ -67,9 +58,8 @@ def prepare(files: list[Path], output: Path) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--output", type=Path, required=True, help="new local folder; never an existing drive root"
-    )
+    parser.add_argument("--output", type=Path, required=True,
+                        help="new local folder; never an existing drive root")
     parser.add_argument("files", type=Path, nargs="+")
     args = parser.parse_args()
     try:

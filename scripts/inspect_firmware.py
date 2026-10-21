@@ -1,5 +1,4 @@
 """Measure a local binary for a proposed catalog entry; never authorize or install it."""
-
 import argparse
 import hashlib
 import json
@@ -21,29 +20,15 @@ def inspect(path: Path, execution: str) -> dict:
     stack, reset = struct.unpack_from("<II", data)
     base = CONSTANTS["AXI_SRAM_BASE" if execution == "sram" else "QSPI_APPLICATION_BASE"]
     entry = reset & ~1
-    if (
-        not CONSTANTS["DTCM_BASE"] < stack <= CONSTANTS["DTCM_END"]
-        or stack & 7
-        or not reset & 1
-        or entry < base
-        or entry + 2 > base + len(data)
-    ):
+    if (not CONSTANTS["DTCM_BASE"] < stack <= CONSTANTS["DTCM_END"] or stack & 7
+            or not reset & 1 or entry < base or entry + 2 > base + len(data)):
         raise ValueError("image vectors do not match the chosen execution type")
     digest = hashlib.sha256(data).hexdigest()
-    return {
-        "filename": path.name,
-        "bytes": len(data),
-        "sha256": digest,
-        "stack": stack,
-        "reset": reset,
-        "execution": execution,
-        "catalog_matches": [
-            row["id"]
-            for row in read_catalog()["images"]
-            if (row["bytes"], row["sha256"], row["stack"], row["reset"], row["execution"])
-            == (len(data), digest, stack, reset, execution)
-        ],
-    }
+    return {"filename": path.name, "bytes": len(data), "sha256": digest,
+            "stack": stack, "reset": reset, "execution": execution,
+            "catalog_matches": [row["id"] for row in read_catalog()["images"]
+                                if (row["bytes"], row["sha256"], row["stack"], row["reset"], row["execution"])
+                                == (len(data), digest, stack, reset, execution)]}
 
 
 if __name__ == "__main__":

@@ -1,19 +1,14 @@
 """Fetch exact public source dependencies; no packages, firmware or programming."""
-
 from pathlib import Path
 import argparse
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 PINS = {
-    "Aurora-SDK": (
-        "https://github.com/Qu-Bit-Electronix/Aurora-SDK.git",
-        "69b74a88b25e2fb4d722fc269bfd9395dd28edb5",
-    ),
-    "mbedtls": (
-        "https://github.com/Mbed-TLS/mbedtls.git",
-        "2fc8413bfcb51354c8e679141b17b3f1a5942561",
-    ),
+    "Aurora-SDK": ("https://github.com/Qu-Bit-Electronix/Aurora-SDK.git",
+                   "69b74a88b25e2fb4d722fc269bfd9395dd28edb5"),
+    "mbedtls": ("https://github.com/Mbed-TLS/mbedtls.git",
+                "2fc8413bfcb51354c8e679141b17b3f1a5942561"),
 }
 DAISY = "63fcabd38a20e14bc744499f0460e47925ea753e"
 
@@ -43,9 +38,7 @@ def setup(verification_only: bool = False) -> None:
         print("Pinned host-verification dependency ready; no Arm toolchain needed.")
         return
     sdk = directory / "Aurora-SDK"
-    subprocess.run(
-        ["git", "-C", str(sdk), "submodule", "update", "--init", "libs/libDaisy"], check=True
-    )
+    subprocess.run(["git", "-C", str(sdk), "submodule", "update", "--init", "libs/libDaisy"], check=True)
     library = sdk / "libs/libDaisy"
     if git(library, "rev-parse", "HEAD") != DAISY:
         raise RuntimeError("unexpected libDaisy revision")
@@ -56,9 +49,6 @@ def setup(verification_only: bool = False) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--verification-only",
-        action="store_true",
-        help="fetch only the host image verifier's SHA dependency",
-    )
+    parser.add_argument("--verification-only", action="store_true",
+                        help="fetch only the host image verifier's SHA dependency")
     setup(parser.parse_args().verification_only)
