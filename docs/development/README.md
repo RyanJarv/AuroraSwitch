@@ -20,6 +20,53 @@ See `make help` for virtual build targets. Never install virtual firmware.
 Packaging requires clean committed source; it records inputs and checks ELF/BIN
 agreement. It does not prove runtime behavior.
 
+On macOS, the pinned Linux toolchain can run through Docker Desktop:
+
+```sh
+sh scripts/docker_build.sh make check
+sh scripts/docker_build.sh make -j2 build
+sh scripts/docker_build.sh make -j2 build-virtual
+```
+
+Docker Desktop must be running. The script uses the current checkout and maps
+the current user, so generated files remain in this workspace. It builds an
+x86_64 Linux image on Apple Silicon; the first build downloads the pinned Arm
+toolchain. This matches the exact host-toolchain archive used by release CI;
+the firmware target is still Arm Cortex-M. Compilation under emulation may be
+slow. `make package` and `make package-virtual` still require a clean committed
+checkout. Docker does not supply the external virtual runner or qualify a
+physical release.
+In Docker Desktop **Settings → Resources → File Sharing**, share this repository
+folder before running the script or opening the Docker toolchain in CLion. A
+denied bind mount means the container cannot see the project, even when its
+compiler checks pass.
+
+For CLion, build the image first with the script above. In **Settings → Build,
+Execution, Deployment → Toolchains**, add a **Docker** toolchain using the local
+Docker Desktop server and image `aurora-switch-build:10-2020-q4-major`. Set Make
+to `/usr/bin/make` and CMake to `/usr/bin/cmake`. Leave the C and C++ compiler
+fields on automatic detection so CLion uses `/usr/bin/gcc` and `/usr/bin/g++`
+for its own toolchain checks. The project Makefile finds `arm-none-eabi-gcc`
+and `arm-none-eabi-g++` on the image's PATH for firmware builds. Do not point
+CLion's C++ compiler field at the `bin/` directory or the bare-metal compiler:
+CMake's generic link probe cannot link this firmware without its linker setup.
+Open the repository's top-level `Makefile` as a Makefile project; this repo has
+no `CMakeLists.txt`. In **Makefile** settings, select that toolchain and set the
+build target to `build`. Map this project folder to
+`/workspace` in the toolchain's container settings if CLion offers a path
+mapping. **Build → Build Project** and the build action for CLion's generated
+**Native Application** configurations use the Docker toolchain. The configuration
+label does not mean compilation runs on macOS. Use the build action: running the
+configuration also tries to execute its selected binary, and Arm firmware cannot
+run as a native container application.
+
+CLion's **Makefile Target** run configurations do not use Docker toolchains.
+For `make check` and `build-virtual` from the IDE, use its terminal or an
+External Tool that runs `/bin/sh` with arguments
+`scripts/docker_build.sh make check` or
+`scripts/docker_build.sh make -j2 build-virtual`, with working directory
+`$ProjectFileDir$`.
+
 The selector's discovery and Freeze flow accepts a media implementation in
 `firmware/selector_controller.hpp`; host tests supply a fake, while
 `firmware/selector.cpp` supplies USB or virtual media. The virtual build remains
