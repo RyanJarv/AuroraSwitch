@@ -1,5 +1,6 @@
 """Host-only synthetic safety tests; no device or vendor files required."""
 from pathlib import Path
+import hashlib
 import os
 import shutil
 import subprocess
@@ -24,6 +25,8 @@ class HelperTests(unittest.TestCase):
             subprocess.run([str(executable)], check=True)
 
     def test_production_usb_file_policy(self):
+        self.assertEqual(hashlib.sha256((ROOT / "tests/fakes/file_media_before_refactor.hpp").read_bytes()).hexdigest(),
+                         "dd02ce0a7a9aeeaa9bed6d2c734a51483a12bbd65d277bce164ade0bbbdd057d")
         self.compile_and_run("file_media_test", usb=True)
 
     def test_shared_helpers(self):

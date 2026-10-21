@@ -1,0 +1,102 @@
+{
+  "builds": [
+    {
+      "files": {
+        "AuroraSwitch.bin": {
+          "bytes": 107524,
+          "sha256": "fb9ff7f97fb92e0ec9333c9bcefb7c82bd98f83d1adfbe0073eb9120bd329b12"
+        },
+        "AuroraSwitch.elf": {
+          "bytes": 2008004,
+          "sha256": "99c340486fd67fbe46267f7a87a2672c607d08276d90fa5418974088b0627820"
+        },
+        "AuroraSwitch.map": {
+          "bytes": 848975,
+          "sha256": "59816440ed12cd76b77d559d42c6e4dc87ef8ecd942466296286ffef3a1d7fa5"
+        }
+      },
+      "manifest_sha256": "e2e4469c4147d249ad71300eec70b67a387b06709ffb4760575b1c63637d643d",
+      "synthetic_transport": false
+    },
+    {
+      "files": {
+        "AuroraSwitchVirtual.bin": {
+          "bytes": 77412,
+          "sha256": "7461ad4fc1e103aa617bf9b2ece3ba5e64d5eab002008ac32b908a6a421c88b9"
+        },
+        "AuroraSwitchVirtual.elf": {
+          "bytes": 1609968,
+          "sha256": "b794669541808393e582268517c757cd48e1f568135d99a3add839b2cb5ce3ed"
+        },
+        "AuroraSwitchVirtual.map": {
+          "bytes": 771480,
+          "sha256": "b8e8a4b37af1b0ed435fcdf9b9eb348dea49dcf92f3bcbb91ad6283f1b00b619"
+        }
+      },
+      "manifest_sha256": "6117bc8e41bfc75c20ec3d81b163b95d2539734745c28774623b658de4300a04",
+      "synthetic_transport": true
+    }
+  ],
+  "date": "2026-10-21",
+  "development_only": true,
+  "firmware_source_commit": "c2cce69377c7c42558467b29679da2130ce082b4",
+  "frozen_usb_oracle_commit": "9972d5ded0d985424e2746c6e3994d2e51cdbfdd",
+  "host_checks": {
+    "deterministic_choices": 100000,
+    "interrupted_write_cut_points": 81,
+    "native_sanitized_probes": 13,
+    "negative_controls": [
+      "close",
+      "sync",
+      "record-crc",
+      "record-readback",
+      "repeat-write-suppression",
+      "unmount"
+    ],
+    "single_bit_corruptions": 640,
+    "unit_tests": 76,
+    "usb_image_comparison_cases": 120,
+    "usb_record_comparison_cases": 300
+  },
+  "limits": [
+    "Synthetic file/choice fixtures; no physical USB, FatFs internals, audio or recovery qualification.",
+    "Cycle phases reset the same modeled machine with retained NOR; each receives prepared loader context and an external saved-choice fixture.",
+    "Dirt phases reach main; FDN phases stop at authenticated reset entry. These are handoff cycles, not full audio switching-cycle qualification.",
+    "Native USB tests replace external SDK/FatFs calls; they do not execute the host stack, disk driver or filesystem internals.",
+    "The new build has no physical qualification. No device programming, USB staging, reset or hardware access was performed."
+  ],
+  "linked_execution": {
+    "all_passed": true,
+    "array_erase_commands": 0,
+    "array_program_bytes": 0,
+    "cases": 15,
+    "complete_nor_unchanged_each_phase": true,
+    "dma_bytes_cleared_each_handoff": 32768,
+    "explicit_choice_writes": 1,
+    "observer_sha256": "6a7379cb4695ce548c2c9cfa2a87c719f0de5eea0ee5102f890b5833da657ec7",
+    "repeat_choice_writes": 0,
+    "runner_sha256": "1b440e8a83583e940f79b84e2a4a58e6886b1a921b3c1f67bf760ee31519e17b",
+    "three_boot_handoff_cycles": [
+      "Dirt-FDN-Dirt",
+      "FDN-Dirt-FDN"
+    ]
+  },
+  "physical_qualified": false,
+  "production_cleanup": {
+    "inherited_mpu_unchanged": true,
+    "ordered_mmio_stores": 20,
+    "primask": 1
+  },
+  "production_dma_placement": [
+    {
+      "address": "0x30000120",
+      "symbol": "(anonymous namespace)::filesystem"
+    },
+    {
+      "address": "0x300005a0",
+      "symbol": "(anonymous namespace)::file"
+    }
+  ],
+  "raw_archive_sha256": "c44b148b3da5e6e2c29b310219686a5ae2cf36f2c68e52524c7b88e7af40526b",
+  "schema": "aurora-test-refactor-development-v1"
+}
