@@ -1,0 +1,102 @@
+{
+  "browser_checks": [
+    "desktop/mobile navigation",
+    "keyboard",
+    "dark theme",
+    "JavaScript disabled",
+    "missing/stale SPA data fallbacks"
+  ],
+  "candidates": [
+    {
+      "bin_identical": false,
+      "bin_sha256": "eefde247fd2c6ffe6bff90415154a7aa2d3eccc34ae8c05b8a010e81f2823ab9",
+      "binary_bytes": 107564,
+      "layout_identical": true,
+      "manifest": "217764a43f1fe31f164d0707aded95cbb1c9efd11054ccf8ca6711b7214eb5e1",
+      "source_commit": "b366985d7d1844eb0ae355a8ddd04dfdb9a7fdbe",
+      "wrapper_identical": true,
+      "wrapper_sha256": "e4c9d37fb58a8a5c731532fbb505ffef943189590bf8d36d67d0ba0bec67e9c2"
+    },
+    {
+      "bin_identical": false,
+      "bin_sha256": "17ed06cfe7cde08289f127730161956722ac407a40b5b1ab1acafb3266f25289",
+      "binary_bytes": 77460,
+      "layout_identical": true,
+      "manifest": "7f4664a81ea7f93aba424f48bfd0e10f69d5d547fe7a8868ecf544b230974eb8",
+      "source_commit": "b366985d7d1844eb0ae355a8ddd04dfdb9a7fdbe",
+      "wrapper_identical": true,
+      "wrapper_sha256": "e4c9d37fb58a8a5c731532fbb505ffef943189590bf8d36d67d0ba0bec67e9c2"
+    }
+  ],
+  "controller_replay": {
+    "identical": [
+      "controller state",
+      "selected firmware",
+      "menu availability, category and position",
+      "complete media-call traces",
+      "saved choice and readiness"
+    ],
+    "permanent_test_added": false,
+    "temporary_probe_sha256": "8c17f9c91fe9d7dd5e448d82d7bb1ed8391365f31974c01752b9c0f5c2a8587e",
+    "updates": 100000
+  },
+  "date": "2026-10-21",
+  "formatting_parity": [
+    {
+      "after_manifest": "189689a24510d994276ae8546644ff4608896e8e562b2ff15e02ca4a3fcf583f",
+      "before_manifest": "3ca4046b7dc1a1a6837a499e4a02c755625cbf45cd2433f69a0dbab8e498e4ba",
+      "bin_sha256": "a94c3926c01f93fd102337995c5cc32f7eb96eaa1b56dc491b600b09c7ed966e",
+      "binary_and_wrapper_identical": true,
+      "binary_bytes": 107524,
+      "layout_identical": true,
+      "source_commit": "001fe40da3a58fec08b49dc7599209e7097adeab",
+      "wrapper_sha256": "e4c9d37fb58a8a5c731532fbb505ffef943189590bf8d36d67d0ba0bec67e9c2"
+    },
+    {
+      "after_manifest": "36d55089d80730d18da29e694e175473e9492baee1d67287d8020a986f13fe0b",
+      "before_manifest": "39b7f9e4ab6428d6a30308daf64b7235a9bb53405d181356ccca50509df4392f",
+      "bin_sha256": "15ffa0ef2eed388f6b53833418878c5e76acc6b0bc5a070f432e6ad746941159",
+      "binary_and_wrapper_identical": true,
+      "binary_bytes": 77412,
+      "layout_identical": true,
+      "source_commit": "001fe40da3a58fec08b49dc7599209e7097adeab",
+      "wrapper_sha256": "e4c9d37fb58a8a5c731532fbb505ffef943189590bf8d36d67d0ba0bec67e9c2"
+    }
+  ],
+  "formatting_source_commit": "001fe40da3a58fec08b49dc7599209e7097adeab",
+  "host_tests": 101,
+  "intentional_behavior_changes": [
+    "Generated reference tables must match the compiled catalog exactly, including spacing; manual edits require make reference-html.",
+    "Invalid firmware metadata reports the failing field group instead of a generic error."
+  ],
+  "limits": [
+    "The formatting-only binaries are byte-identical; the subsequent controller refactor changes the final binary and internal controller layout.",
+    "Resident wrapper bytes and placement are unchanged.",
+    "Modeled boot/flash checks do not qualify physical USB, audio, reset reliability or stock recovery.",
+    "No hardware access, programming or USB staging performed."
+  ],
+  "linked_boot": {
+    "all_passed": true,
+    "array_erase_commands": 0,
+    "array_program_bytes": 0,
+    "boot_record_write_case": "choose-fdn (explicit changed selection)",
+    "boot_record_writes": 1,
+    "cases": 15,
+    "complete_nor_unchanged": true,
+    "observer_sha256": "6a7379cb4695ce548c2c9cfa2a87c719f0de5eea0ee5102f890b5833da657ec7",
+    "resident_added_status_writes": 0,
+    "runner_sha256": "883251436f75123ba2633bd531ead109a6194783fcf31c6e5ec677af26c26f1e",
+    "stock_loader_status_writes": 1
+  },
+  "physical_qualified": false,
+  "private_evidence_archive_sha256": "943757a832270471c524c9d9bbe179670df722459ea0a57f0f72269692c55c9e",
+  "removed_redundancy": [
+    "Duplicate controller selection field and repeated nested state expression",
+    "Parsing a generated Markdown table back into a second firmware catalog",
+    "Separate table-field rejection tests duplicating compiled catalog validation"
+  ],
+  "sanitizer_tests": 16,
+  "scope": "Readable formatting and purpose-first comments, one owner for menu selection, direct catalog-driven reference navigation and clearer metadata validation.",
+  "source_commit": "b366985d7d1844eb0ae355a8ddd04dfdb9a7fdbe",
+  "website_content": "All 12 HTML fallbacks differ only in generated fingerprints; all SPA page bodies are identical."
+}

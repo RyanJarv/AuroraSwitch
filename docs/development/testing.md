@@ -92,3 +92,7 @@ Keep formatting and comment edits separate from changes to control flow. A
 shorter implementation must still preserve authentication, I/O failure handling
 and handoff ordering. Use the existing production-boundary tests rather than
 adding assertions about whitespace or comments.
+
+The [readability cleanup record](evidence/readability_20261021.json) binds the
+formatting parity, temporary controller replay and linked boot checks to exact
+source revisions and development bundles.
