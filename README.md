@@ -1,10 +1,8 @@
 # AuroraSwitch
 
-Choose a supported Aurora firmware from a USB drive. Shift changes category, Reverse selects, and Freeze verifies and starts it. RAM images launch without flashing; Dirt Verb runs from QSPI.
+Allows you to select which Aurora firmware you want to load when starting the module. This does not replace the official boot loader, to uninstall just change the file on the SD Card back to whatever you used before.
 
-Dirt Verb launch replaces the installed application, so menu re-entry needs ready USB media containing the selector firmware. Everything will work fine if you just leave it plugged in.
-
-Beta software with limited testing. Keep the original Aurora firmware and a backup of your USB drive. More hardware testing is needed.
+**Note:** You may to avoid using this for performances until this is better tested.
 
 ## Quick start
 
