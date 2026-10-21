@@ -64,17 +64,20 @@ def run(bundle: Path, images: Path, runner_root: Path, output: Path) -> dict:
     inputs = identities("fdn")
     results = []
     output.mkdir(parents=True, exist_ok=False)
-    for scenario in ("dirt", "repeat-dirt", "fdn", "menu", "bad-record", "bad-file", "bad-resident", "bad-wrapper"):
+    for scenario in ("dirt", "repeat-dirt", "fdn", "menu", "bad-record", "bad-file", "bad-resident", "bad-wrapper",
+                     "choose-fdn", "repeat-fdn"):
         directory = output / scenario
         directory.mkdir()
         with emulator._exclusive_emulator_lock(), tempfile.TemporaryDirectory(prefix="persistent-vm-") as temporary:
             temp = Path(temporary)
             platform, includes = prepare_platform(temp, "fdn", len(binary))
-            choice = 0 if scenario == "fdn" else dirt_index
+            choice = 0 if scenario in ("fdn", "choose-fdn", "repeat-fdn") else dirt_index
             record = b"AURBOOT1" + struct.pack("<I", 1) + rows[choice]["sha256"].encode()
             record += struct.pack("<I", zlib.crc32(record))
             if scenario == "repeat-dirt":
                 record = (output / "dirt" / "boot-store.bin").read_bytes()[16:96]
+            if scenario == "repeat-fdn":
+                record = (output / "choose-fdn" / "boot-store.bin").read_bytes()[16:96]
             if scenario == "bad-record": record = record[:-1] + bytes([record[-1] ^ 1])
             initial = bytearray(bytes(range(256)) * (0x800000 // 256))
             initial[0x40000:0x40000 + len(combined)] = combined
@@ -84,6 +87,7 @@ def run(bundle: Path, images: Path, runner_root: Path, output: Path) -> dict:
             nor.write_bytes(initial)
             commands = includes + ["logLevel 3", 'mach create "persistent-boot"',
                 "machine LoadPlatformDescription " + monitor_path(platform),
+                "auroraI2c1.auroraLed0 PwmRegisters true", "auroraI2c1.auroraLed1 PwmRegisters true",
                 "auroraQspi.auroraNor ArraySubset true",
                 "sysbus LoadBinary " + monitor_path(nor) + " 0x90000000",
                 # Prepared loader handoff: inherited memory-mapped QSPI, not
@@ -104,7 +108,7 @@ def run(bundle: Path, images: Path, runner_root: Path, output: Path) -> dict:
                     commands.append(f"sysbus LoadBinary {monitor_path(path)} {hex(0xc0100000 + index * 0x40000)}")
             init = temp / "init.py"
             init.write_text("from System import Array, Byte\nbus = machine.SystemBus\n"
-                + f"bus.WriteBytes(Array[Byte]({list(struct.pack('<4I', 1, 1, 0, 0) + record + bytes(80))!r}), {store})\n"
+                + f"bus.WriteBytes(Array[Byte]({list(struct.pack('<4I', 1, int(scenario != 'choose-fdn'), 0, 0) + record + bytes(80))!r}), {store})\n"
                 + f"bus.WriteBytes(Array[Byte]({list(struct.pack('<4I64sI', 1, 1, 1, 0, b'', 0))!r}), {media})\n"
                 + "print('PERSISTENT_SELECTOR_MAIN')\n")
             hook = temp / "media.py"
@@ -121,8 +125,12 @@ def run(bundle: Path, images: Path, runner_root: Path, output: Path) -> dict:
             reset = rows[choice]["reset"] & ~1
             halt = reset if choice == 0 else 0x900421b8
             commands += [f'cpu AddHook {hex(reset)} "print(\'PERSISTENT_PAYLOAD_RESET\')"',
-                f'cpu AddHook {hex(halt)} "print(\'PERSISTENT_PAYLOAD_HALT\'); cpu.IsHalted = True"',
-                'emulation RunFor "2.000000"', "pause", "auroraQspi.auroraNor ArrayDiagnostics",
+                f'cpu AddHook {hex(halt)} "print(\'PERSISTENT_PAYLOAD_HALT\'); cpu.IsHalted = True"']
+            if scenario == "choose-fdn":
+                commands += ['emulation RunFor "0.500000"', "pause", "gpioPortC OnGPIO 11 false",
+                    'emulation RunFor "0.040000"', "pause", "gpioPortC OnGPIO 11 true"]
+            commands += ['emulation RunFor "2.000000"', "pause", "auroraQspi.auroraNor ArrayDiagnostics",
+                "auroraQspi.auroraNor Diagnostics",
                 "auroraQspi.auroraNor ExportArray " + monitor_path(directory / "nor-after.bin"),
                 f'dump_file {hex(store)} 176 "{directory / "boot-store.bin"}"',
                 f'dump_file {hex(diagnostic)} 20 "{directory / "qspi.bin"}"',
@@ -140,8 +148,9 @@ def run(bundle: Path, images: Path, runner_root: Path, output: Path) -> dict:
             if completed.returncode or any(s in clean for s in ("There was an error", "No such command",
                     "Unhandled exception", "CPU abort", "Errors during compilation", "PythonException")):
                 raise ValueError("persistent runner failed: " + str(directory / "raw.log"))
-            positive = scenario in ("dirt", "repeat-dirt", "fdn")
-            if clean.splitlines().count("PERSISTENT_PAYLOAD_HALT") != int(positive):
+            positive = scenario in ("dirt", "repeat-dirt", "fdn", "choose-fdn", "repeat-fdn")
+            if (clean.splitlines().count("PERSISTENT_PAYLOAD_HALT") != int(positive)
+                    or clean.splitlines().count("PERSISTENT_PAYLOAD_RESET") != int(positive)):
                 raise ValueError("unexpected/missing payload entry: " + str(directory / "raw.log"))
             if clean.splitlines().count("PERSISTENT_SELECTOR_MAIN") != int(scenario != "bad-wrapper"):
                 raise ValueError("wrapper did not enter expected selector startup")
@@ -150,15 +159,22 @@ def run(bundle: Path, images: Path, runner_root: Path, output: Path) -> dict:
             after = (directory / "nor-after.bin").read_bytes()
             if after != initial or clean.splitlines().count("IS25LP064_ARRAY enabled=1 erase_commands=0 program_bytes=0") != 1:
                 raise ValueError("flash changed or writes occurred")
+            status = re.findall(r"(?m)^IS25LP064_STARTUP .*?status_writes=(\d+) .*?rejected_status_writes=(\d+)$", clean)
+            if status != [("0", "0")]: raise ValueError("unexpected flash status-register write")
             state = (directory / "boot-store.bin").read_bytes()
-            if scenario != "bad-wrapper" and struct.unpack_from("<I", state, 8)[0] != 0:
-                raise ValueError("automatic/menu boot wrote the choice")
-            if scenario == "fdn" and (directory / "ram.bin").read_bytes() != present[0]:
+            expected_writes = int(scenario == "choose-fdn")
+            if scenario != "bad-wrapper" and struct.unpack_from("<I", state, 8)[0] != expected_writes:
+                raise ValueError("choice write count differs")
+            if scenario == "choose-fdn":
+                saved = state[16:96]
+                if saved[12:76] != rows[0]["sha256"].encode() or zlib.crc32(saved[:76]) != struct.unpack_from("<I", saved, 76)[0]:
+                    raise ValueError("explicit choice did not persist a valid exact image identity")
+            if scenario in ("fdn", "choose-fdn", "repeat-fdn") and (directory / "ram.bin").read_bytes() != present[0]:
                 raise ValueError("RAM handoff bytes changed")
             if re.findall(r"(?m)^PERSISTENT_(?:CFSR|HFSR)\s+0x([0-9a-fA-F]+)$", clean) != ["00000000", "00000000"]:
                 raise ValueError("startup CPU fault")
             results.append({"scenario": scenario, "payload_entered": positive, "nor_sha256": sha(after),
-                "erase_commands": 0, "program_bytes": 0, "choice_writes": 0,
+                "erase_commands": 0, "program_bytes": 0, "choice_writes": expected_writes,
                 "raw_log_sha256": sha(raw.encode())})
             print("PASS " + scenario, flush=True)
     if authenticate_bundle(bundle) != (manifest, binary, boot) or inputs != identities("fdn"):
@@ -166,7 +182,8 @@ def run(bundle: Path, images: Path, runner_root: Path, output: Path) -> dict:
     report = {"schema": "aurora-persistent-boot-development-v1", "physical_qualified": False,
         "synthetic_transport": True, "bootloader_usb_update_executed": False,
         "source_commit": manifest["source_commit"], "selector_manifest_sha256": bundle.name,
-        "runtime": runtime, "model_inputs": inputs, "results": results}
+        "runtime": runtime, "model_inputs": inputs, "runner_sha256": sha(Path(__file__).read_bytes()),
+        "payloads": {rows[i]["filename"]: sha(data) for i, data in present.items()}, "results": results}
     (output / "report.json").write_text(json.dumps(report, sort_keys=True, indent=2) + "\n")
     return report
 

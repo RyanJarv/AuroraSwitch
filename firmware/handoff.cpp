@@ -110,6 +110,7 @@ namespace aurora_selector
             const std::uint8_t* staged;
             bool qspi_prepared = false;
             bool resident = false;
+            bool application_replaced = false;
 
             bool PrepareTarget()
             {
@@ -147,6 +148,7 @@ namespace aurora_selector
                     [this] { return Validate(); }, selector_qspi_diagnostic,
                     {image.size, QspiApplicationOffset
                         + static_cast<std::uint32_t>((image.size + 4095U) & ~std::size_t(4095U))});
+                application_replaced = selector_qspi_diagnostic.erase_attempts != 0;
                 if(result != QspiResult::Ready)
                 {
                     // Any attempted erase may have destroyed the installed selector.
@@ -283,7 +285,7 @@ namespace aurora_selector
         Platform<UsbTransport> platform{seed, transport, image, staged};
         if(!platform.PrepareTarget())
             return false;
-        return PrepareAndJump(platform, platform.qspi_prepared);
+        return PrepareAndJump(platform, platform.application_replaced);
     }
 #ifdef SELECTOR_VIRTUAL_TRANSPORT
     bool VirtualLaunch(daisy::DaisySeed& seed,
@@ -294,7 +296,7 @@ namespace aurora_selector
         Platform<BackedTransport> platform{seed, transport, image, staged};
         if(!platform.PrepareTarget())
             return false;
-        return PrepareAndJump(platform, platform.qspi_prepared);
+        return PrepareAndJump(platform, platform.application_replaced);
     }
 #endif
 }
