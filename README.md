@@ -54,10 +54,6 @@ Earlier exact-build virtual screens pass; physical reliability and stock USB
 recovery remain open. Fata's USB wavetable path is unverified. Unsupported
 versions or changed files are rejected.
 
-## Video
-
-https://github.com/user-attachments/assets/828c759e-82dc-492c-8cff-8abad066c41e
-
 ## More Info
 
 - [Online firmware reference](https://aurora-switch.ryanjarv.sh/): color lookup and controls.
