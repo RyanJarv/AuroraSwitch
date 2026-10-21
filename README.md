@@ -2,7 +2,10 @@
 
 Allows you to select which Aurora firmware you want to load when starting the module. This does not replace the official boot loader, to uninstall just change the file on the SD Card back to whatever you used before.
 
-**Note:** You may to avoid using this for performances until this is better tested.
+**Important**
+* *Constantly booting non-ram builds of firmware like Dirt Verb or changing the currently selected firmware can wear out flash faster than normal. I'd avoid using Dirt Verb or check back for an update if that's a concern. For context heavy use here would be loading Dirt Verb or changing the selected firmware 10+ times a day for 10+ years. Repeatedly booting firmware besides Dirt Verb (or other non-RAM builds) don't have this issue.*
+* You may to avoid using this for performances until this is better tested.
+
 
 ## Quick start
 
