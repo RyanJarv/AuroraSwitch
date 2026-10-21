@@ -5,7 +5,6 @@ Allows you to select which Aurora firmware you want to load when starting the mo
 **Important**
 * Constantly booting Dirt Verb (or other non-RAM builds) can wear out flash faster than normal. Avoid using Dirt Verb or check back for an update if that's a concern.
   * You shouldn't run into this unless you are loading Dirt Verb 10+ times a day for 10+ years.
-  * Repeatedly booting firmware besides Dirt Verb doesn't have this issue.
   * With AuroraSwitch, firmware besides Dirt Verb reduces flash writes which switching firmware because it loads off the USB directly. So this is kinda a non-issue in practice (unless you really like Dirt Verb I guess).
 * You may want to avoid using this for performances until this is better tested.
 
