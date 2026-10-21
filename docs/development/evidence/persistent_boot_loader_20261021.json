@@ -1,0 +1,193 @@
+{
+  "copy_guard_before_fix": {
+    "after_fix": "Hash the complete SRAM copy after DSB; the same injected corruption halts before selector entry.",
+    "fault": "Flip the last SRAM byte after copying and before the old checksum comparison.",
+    "observed": "Old source-byte hash allowed selector startup and payload handoff despite damaged SRAM.",
+    "raw_log_sha256": "83437ac092632a4a9cdf862461d149f41ff74750cfacf39b6b1607a95466a7a0",
+    "source_commit": "22439a1",
+    "virtual_manifest_sha256": "c855b34fce0a1c26cb74e67ad20b53c9e83f489ffcd5e4f86fa170af4bef52a1"
+  },
+  "date": "2026-10-21",
+  "development_only": true,
+  "host_tests": 74,
+  "limits": [
+    "The no-media stock-loader lane executes the exact loader from its reset vectors, through its terminal BLX and the resident wrapper to Dirt main.",
+    "Stock updater USB file enumeration/comparison, selector physical USB and physical power cycles are not exercised.",
+    "One status-register write comes from the unmodified loader; the resident path adds none before payload main.",
+    "All 13 cases preserve the complete 8-MiB array with zero erase/program commands in the observed window.",
+    "No new payload audio/control, physical QSPI timing/cache-gate, interrupted USB write or ordinary stock recovery qualification.",
+    "No hardware access, flashing, or mounted-drive changes performed."
+  ],
+  "linked_regressions": [
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "61aca74ac1b7a94263d883386d7298008bdcbb10411662b89918348c42cb4cce",
+      "payload_entered": false,
+      "program_bytes": 0,
+      "raw_log_sha256": "7cfb9c1d432b200cf727693d92a7fb1c51988cbbde02f18a878c7e7cd73b44ce",
+      "scenario": "bad-copy",
+      "stock_bootloader_executed": false,
+      "stock_status_writes": 0
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "61aca74ac1b7a94263d883386d7298008bdcbb10411662b89918348c42cb4cce",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_log_sha256": "b42c2603ee4e78ddc69ad0e2bb5fcf28177b5025bd889f6bfedb28c250b4670b",
+      "scenario": "loader-dirt",
+      "stock_bootloader_executed": true,
+      "stock_status_writes": 1
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "61aca74ac1b7a94263d883386d7298008bdcbb10411662b89918348c42cb4cce",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_log_sha256": "3308be914c2c18dc26e7633a62c1f3c660b96b25619015ef384bb8ce9ce4986f",
+      "scenario": "dirt",
+      "stock_bootloader_executed": false,
+      "stock_status_writes": 0
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "61aca74ac1b7a94263d883386d7298008bdcbb10411662b89918348c42cb4cce",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_log_sha256": "188cadd6aa9e7a05c863114f2c573e73fa72c47037067dc3f1208c5f5a2abc64",
+      "scenario": "repeat-dirt",
+      "stock_bootloader_executed": false,
+      "stock_status_writes": 0
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "61aca74ac1b7a94263d883386d7298008bdcbb10411662b89918348c42cb4cce",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_log_sha256": "51016f3a6c642fc7e5cd1ca202984bde33c709aea6492c59979e7807b2aeb99d",
+      "scenario": "fdn",
+      "stock_bootloader_executed": false,
+      "stock_status_writes": 0
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "61aca74ac1b7a94263d883386d7298008bdcbb10411662b89918348c42cb4cce",
+      "payload_entered": false,
+      "program_bytes": 0,
+      "raw_log_sha256": "107264756d1e0e90d7b6156b9bab44e57dd5a8a8c47c2c6197831db21e2bf9e8",
+      "scenario": "menu",
+      "stock_bootloader_executed": false,
+      "stock_status_writes": 0
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "61aca74ac1b7a94263d883386d7298008bdcbb10411662b89918348c42cb4cce",
+      "payload_entered": false,
+      "program_bytes": 0,
+      "raw_log_sha256": "237f26f8ba9a9364035d21eff0a3165ba4086a7ddb0a4ff08ef661236c5d1cb1",
+      "scenario": "bad-record",
+      "stock_bootloader_executed": false,
+      "stock_status_writes": 0
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "61aca74ac1b7a94263d883386d7298008bdcbb10411662b89918348c42cb4cce",
+      "payload_entered": false,
+      "program_bytes": 0,
+      "raw_log_sha256": "db69fb90aafcc25c5a643ef76684895d5806b6d53e8be7c11dfb81351c1ce11c",
+      "scenario": "unknown-record",
+      "stock_bootloader_executed": false,
+      "stock_status_writes": 0
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "61aca74ac1b7a94263d883386d7298008bdcbb10411662b89918348c42cb4cce",
+      "payload_entered": false,
+      "program_bytes": 0,
+      "raw_log_sha256": "6c454d04a766d698441611e2adb62adb32ddcf64d2f293acbbac1fb8e4df17c7",
+      "scenario": "bad-file",
+      "stock_bootloader_executed": false,
+      "stock_status_writes": 0
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "1097e73ce1fb6528c183de07a6fcc052e92cece54d1571fbe37979ece909ee68",
+      "payload_entered": false,
+      "program_bytes": 0,
+      "raw_log_sha256": "e2231d7d2b30b8b1d137a7a0462ed535ed0a99f71d1bc0249864fd1ebc5e63fb",
+      "scenario": "bad-resident",
+      "stock_bootloader_executed": false,
+      "stock_status_writes": 0
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "f6760122accced1d8ffa3abb380f17857772cc912b841d3fc5379c2d6ce4b7f1",
+      "payload_entered": false,
+      "program_bytes": 0,
+      "raw_log_sha256": "04b0894f41f52e3b4131a99d4ce044da60a0e712d094100e24a8242ca7f8ce7f",
+      "scenario": "bad-wrapper",
+      "stock_bootloader_executed": false,
+      "stock_status_writes": 0
+    },
+    {
+      "choice_writes": 1,
+      "erase_commands": 0,
+      "nor_sha256": "61aca74ac1b7a94263d883386d7298008bdcbb10411662b89918348c42cb4cce",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_log_sha256": "ad0a4cf88fb8a0805e47d9ae4fc335b6c06219e8387963f0c31463f9be2b1163",
+      "scenario": "choose-fdn",
+      "stock_bootloader_executed": false,
+      "stock_status_writes": 0
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "61aca74ac1b7a94263d883386d7298008bdcbb10411662b89918348c42cb4cce",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_log_sha256": "39dcccd6a545a06e8d0a9c0a0c2103a526373d82e9d425c3b54e41df68b9f54f",
+      "scenario": "repeat-fdn",
+      "stock_bootloader_executed": false,
+      "stock_status_writes": 0
+    }
+  ],
+  "local_private_evidence": ".deps/persistent-boot-loader-5fe19cd",
+  "observer_sha256": "4bb8995b581baa352e4271a53ea08a7e48f5a24bd8d2b23e61547ebfc33c28da",
+  "physical_qualified": false,
+  "previous_site_checkpoint": "persistent_boot_20261021.json",
+  "private_installer": {
+    "bytes": 209548,
+    "sha256": "e6356fa7e929ea73c26f8bb9ae30231f4e7e89cb43d639539542adcaa6790c08"
+  },
+  "private_installer_receipt_sha256": "5f9b149952b1220c7d0159e27f39da017b9da5c13f3e69c7c25f92384bb0ab13",
+  "raw_report_sha256": "3ce36f979fcfa81e389725ca066277c3b4bcae2a14d2aac21dacb67d207ae28f",
+  "runner_sha256": "2eb50071303cef9463513e32ec90202b166c8d90b1b5a0a3df38f26edd248ed1",
+  "schema": "aurora-persistent-boot-loader-checkpoint-v1",
+  "selector_manifest_sha256": "7c88f5f328f9bc973113ae140e1ff6d5b309af0ebe9af18594c82bdd8ec99820",
+  "site_changes": false,
+  "source_commit": "5fe19cd4fb4376927197580734e87b73e8e8a7fe",
+  "stock_loader_handoff": {
+    "bootloader_sha256": "b442456ab1c7f9689b73e57fb09ca55331d02760b54be28c10a207afed95f06e",
+    "entry": 2416279553,
+    "registers": {
+      "0x52005000": 4194305,
+      "0x52005014": 253292011,
+      "0xe000ed88": 15728640
+    },
+    "stack": 537001984,
+    "vtor": 2416181248
+  },
+  "virtual_manifest_sha256": "a37a549da2d9dd1c121efa70765fb33fd5d0c8a7471a347813aa34830b09e34d"
+}

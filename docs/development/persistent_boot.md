@@ -79,16 +79,26 @@ The separate `make package-virtual` companion produces a clearly named
 
 ## Development verification and physical boundary
 
-The [2026-10-21 checkpoint](evidence/persistent_boot_20261021.json) binds source
-`22439a1`, isolated real/synthetic package identities and the private installer.
-All 74 host tests, both isolated Arm packages, the browser smoke test, and 11
-linked virtual cases pass. The virtual cases include saving a new FDN choice,
-reusing that exact saved record on the next prepared startup, repeated Dirt
-startup, held-button override, and rejection of damaged/unknown records and
-payloads. Every case preserves the complete NOR array with zero erase/program
-or status writes in the tested window. Explicit FDN selection writes one USB
-choice record; automatic boots write none. Payload entry checks the complete
-32-KiB DMA arena and VTOR. Local raw records remain private under `.deps/`.
+The [stock-loader checkpoint](evidence/persistent_boot_loader_20261021.json)
+binds source `5fe19cd`, isolated real/synthetic packages and the private installer.
+All 74 host tests, both isolated Arm packages and 13 linked virtual cases pass.
+One case executes the pinned stock loader from its reset vectors through the
+resident wrapper and Dirt's real reset/constructors to `main`. Its captured QSPI
+mapping is reused for the prepared-startup cases. The unmodified loader makes
+one status-register write; the resident path adds none before payload `main`.
+Every case preserves the complete 8-MiB NOR array with zero erase/program
+commands. Explicit FDN selection writes one USB record; subsequent automatic
+startup consumes that saved record without writing. Entry checks the complete
+32-KiB DMA arena, installed image identity, stack, VTOR and terminal routine.
+
+A negative control exposed the earlier wrapper hashing source bytes instead of
+the SRAM copy. The corrected wrapper completes the copy, executes DSB and hashes
+the SRAM bytes before jumping. Injecting the same SRAM corruption now stops it
+before selector entry. Other cases cover repeated Dirt startup, held-button
+override, and damaged/unknown records and payloads. The
+[earlier checkpoint](evidence/persistent_boot_20261021.json) retains the original
+11-case and browser results; this follow-up changes no site files. Raw records
+remain private under `.deps/`.
 
 `make check` covers choice corruption/torn records, sequence wrap, changed-choice
 write suppression, launch authentication, menu override, reconnect behavior,
@@ -105,12 +115,13 @@ python3 scripts/check_persistent_boot.py \
   --output .deps/persistent-boot-check
 ```
 
-Its prepared loader-handoff entry is not a physical power-on or an execution of
-the updater's USB comparison. It checks the actual linked wrapper, selector,
-authentication and terminal launch, complete unchanged 8-MiB NOR and zero array
-erase/program commands, zero choice writes on automatic boots, and negative
-controls. Private dumps remain ignored. It does not qualify USB writes, flash
-timing/cache gates, payload settings behavior/audio, or ordinary stock recovery.
+The stock-loader case uses a no-media USB host model, then supplies synthetic
+files to the selector. It does not execute the updater's USB comparison or
+establish physical power-on behavior. The other cases use a prepared handoff.
+The lane checks the actual linked wrapper, selector, authentication and terminal
+launch, unchanged NOR, write suppression and negative controls. Private dumps
+remain ignored. It does not qualify physical USB writes, flash timing/cache
+gates, payload settings behavior/audio, or ordinary stock recovery.
 
 Before physical use, qualify the exact installer on hardware: initial stock
 installation, repeated Dirt boots, RAM/Dirt changes, held-button menu entry,
