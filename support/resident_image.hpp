@@ -1,10 +1,15 @@
 #pragma once
 #include "selector_constants.h"
+#include "../firmware/images.hpp"
 #include "qspi_image_programming.hpp"
 #include <cstring>
 
 namespace aurora_selector
 {
+    constexpr std::uint32_t DirtImageSize = ResidentPayload.size;
+    constexpr std::uint32_t QspiApplicationEnd = QspiApplicationOffset
+        + ((DirtImageSize + 4095U) & ~4095U);
+    constexpr QspiExtent DirtExtent{DirtImageSize, QspiApplicationEnd};
     inline std::uint32_t ResidentWord(const std::uint8_t* bytes)
     {
         return std::uint32_t(bytes[0]) | (std::uint32_t(bytes[1]) << 8)

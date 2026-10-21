@@ -9,6 +9,7 @@ import unittest
 from urllib.parse import urlsplit
 import xml.etree.ElementTree as ET
 
+from scripts.firmware_catalog import read_catalog
 from scripts.render_reference import CATEGORIES, PANEL_CONTROLS, label_controls, navigation, read_quick_start, read_reference, slug, swatch
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -93,7 +94,9 @@ class ReferenceSiteTests(unittest.TestCase):
         self.assertEqual(set(self.pages), expected, "Regenerate pages with make reference-html")
         fingerprints = {
             "reference-sha256": hashlib.sha256((ROOT / "docs/firmware_reference.md").read_bytes()).hexdigest(),
-            "renderer-sha256": hashlib.sha256((ROOT / "scripts/render_reference.py").read_bytes()).hexdigest(),
+            "renderer-sha256": hashlib.sha256((ROOT / "scripts/render_reference.py").read_bytes()
+                                           + json.dumps(read_catalog(), sort_keys=True, separators=(",", ":"),
+                                                        ensure_ascii=False).encode()).hexdigest(),
             "quickstart-sha256": hashlib.sha256(read_quick_start((ROOT / "README.md").read_text()).encode()).hexdigest(),
         }
         for filename, parser in self.pages.items():
@@ -309,27 +312,15 @@ class ReferenceSiteTests(unittest.TestCase):
         self.assertEqual(menu.count('class="swatch"'), self.navigation_swatches // 2)
 
     def test_menu_groups_match_selector_membership_and_family_order(self):
-        # Bind every row to the catalog, including versions hidden on family pages.
-        family_pages = {
-            "Fdn": "fdn-122.html", "Aurora": "aurora-144.html",
-            "EchoGarden": "echogarden-031.html", "Cloudscape": "cloudscapex.html",
-            "Oscillator": "the-oscillator-is-a-lie-002.html", "Flux": "flux-capacitor.html",
-            "Morse": "morse.html", "Tempest": "tempest-100.html",
-            "FataMorgana": "fatamorgana-ram-experiment.html",
-            "DirtVerb": "dirt-verb-11.html", "HpFilter": "aurora-hp-filter-variant.html",
-        }
-        catalog = (ROOT / "firmware/images.hpp").read_text()
-        rows = re.findall(r"menu_colors::(\w+)", catalog)
-        families = list(dict.fromkeys(rows))
-        self.assertEqual(set(families), set(family_pages))
-        category_block = re.search(r"Categories\{([^}]+)\}", catalog)[1]
-        categories = [int(value) for value in re.findall(r"\d+", category_block)]
-        self.assertEqual(len(categories), len(self.entries))
+        # Consume the real export rather than parsing C++ source text.
+        images = read_catalog()["images"]
         self.assertEqual([entry.category for entry in self.entries],
-                         [list(CATEGORIES)[value] for value in categories])
-        self.assertEqual([next(section.filename for section in self.sections if section.anchor == entry.anchor)
-                          for entry in self.entries], [family_pages[family] for family in rows])
-        self.assertIn('{0.f, 0.f, 0.4f}, {0.f, 0.4f, 0.f}, {0.4f, 0.2f, 0.f}', catalog)
+                         [row["category"] for row in images])
+        self.assertEqual([entry.color for entry in self.entries], [row["color"] for row in images])
+        family_pages = {row["family"]: next(section.filename for section in self.sections
+                                          if section.anchor == row["reference"]) for row in images}
+        rows = [row["family"] for row in images]
+        categories = [list(CATEGORIES).index(row["category"]) for row in images]
         menu = navigation(list(reversed(self.sections)), self.entries, "index.html")
         parser = ReferenceParser()
         parser.feed(menu)

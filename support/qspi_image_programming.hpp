@@ -9,12 +9,9 @@
 namespace aurora_selector
 {
     constexpr std::uint32_t QspiApplicationOffset = SELECTOR_QSPI_APPLICATION_OFFSET;
-    constexpr std::uint32_t DirtImageSize = 95196U;
-    constexpr std::uint32_t QspiApplicationEnd = SELECTOR_DIRT_ERASE_END;
     // Exact catalog admission belongs to the caller. The shared writer still
     // limits the destination to the application and reviewed staging maximum.
     struct QspiExtent { std::size_t size; std::uint32_t erase_end; };
-    constexpr QspiExtent DirtExtent{DirtImageSize, QspiApplicationEnd};
     constexpr std::uint32_t QspiMaximumEnd = SELECTOR_QSPI_MAXIMUM_END;
     enum class QspiResult : std::uint32_t
     { Rejected, InitializeFailed, EraseFailed, WriteFailed, ReadbackFailed, Ready };
@@ -30,7 +27,7 @@ namespace aurora_selector
     QspiResult ProgramQspiImage(Driver& driver, const std::uint8_t* staged,
                                std::size_t size, Authenticate authenticate,
                                volatile QspiDiagnostic& diagnostic,
-                               QspiExtent extent = DirtExtent)
+                               QspiExtent extent)
     {
         diagnostic.stage = diagnostic.erase_attempts = diagnostic.pages = 0;
         diagnostic.verified = diagnostic.result = 0;

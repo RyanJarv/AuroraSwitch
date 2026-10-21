@@ -23,13 +23,15 @@ int main(int argc, char** argv)
     if(argc != 3)
         return 2;
     std::string name = argv[1];
-    // Retain the historical probe interface while accepting every catalog file.
-    if(name == "fdn") name = "AR_FDN_v1_2_2.bin";
-    if(name == "spectral") name = "Aurora_v1_4_4.bin";
+    // Stable catalog IDs also preserve the historical fdn/spectral interface.
     const aurora_selector::Image* selected = nullptr;
-    for(const auto& candidate : aurora_selector::Images)
-        if(name == std::string(candidate.path).substr(std::string(candidate.path).find_last_of('/') + 1))
+    for(std::size_t i = 0; i < aurora_selector::ImageCount; ++i)
+    {
+        const auto& candidate = aurora_selector::Images[i];
+        if(name == aurora_selector::FirmwareCatalog[i].id
+           || name == std::string(candidate.path).substr(std::string(candidate.path).find_last_of('/') + 1))
             selected = &candidate;
+    }
     if(selected == nullptr)
         return 2;
     const auto& image = *selected;

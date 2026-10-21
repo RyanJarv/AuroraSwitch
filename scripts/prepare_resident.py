@@ -14,10 +14,13 @@ import subprocess
 import tempfile
 
 from selector_constants import CONSTANTS
+from firmware_catalog import resident_image
 from package import toolchain_identity
 from verify_images import authenticator, catalog
 
 ROOT = Path(__file__).resolve().parents[1]
+# Resolve the reviewed exception once per command, before any input processing.
+RESIDENT_PROFILE = resident_image()
 
 
 def sha(data: bytes) -> str:
@@ -119,8 +122,9 @@ def compose(dirt: bytes, selector: bytes, boot: bytes, addresses: dict[str, int]
     """Deterministic bounded layout; original Dirt authentication is the caller's job."""
     base, entry, metadata, image, capacity = (addresses[key] for key in
         ("BASE", "ENTRY", "METADATA", "IMAGE", "CAPACITY"))
-    dirt_vectors = (CONSTANTS["DTCM_END"], CONSTANTS["DIRT_RESET_PC"])
-    if (len(dirt) != 95196 or struct.unpack_from("<II", dirt) != dirt_vectors
+    profile = RESIDENT_PROFILE
+    dirt_vectors = (profile["stack"], profile["reset"])
+    if (len(dirt) != profile["bytes"] or struct.unpack_from("<II", dirt) != dirt_vectors
             or base != CONSTANTS["QSPI_APPLICATION_BASE"] or entry & 3 != 1 or metadata % 4 or image % 4
             or not 8 < len(selector) <= capacity <= CONSTANTS["RESIDENT_CAPACITY"] or not 0 < len(boot) <= 256
             or not base + len(dirt) <= (entry & ~1) < metadata < image
@@ -152,12 +156,13 @@ def prepare(bundle: Path, dirt_path: Path, output: Path) -> dict:
     manifest, selector, boot = authenticate_bundle(bundle)
     addresses = layout(manifest["source_commit"])
     with dirt_path.open("rb") as source:
-        dirt = source.read(95197)
+        profile = RESIDENT_PROFILE
+        dirt = source.read(profile["bytes"] + 1)
     with authenticator() as executable, tempfile.TemporaryDirectory(prefix="resident-dirt-check-") as temporary:
-        matches = [row for row in catalog(executable) if row["filename"] == "DirtVerb 1.1.bin"
+        matches = [row for row in catalog(executable) if row["filename"] == profile["filename"]
                    and row["bytes"] == len(dirt) and row["sha256"] == sha(dirt)]
         if len(matches) != 1: raise ValueError("unsupported or changed Dirt image")
-        private = Path(temporary) / "DirtVerb 1.1.bin"
+        private = Path(temporary) / profile["filename"]
         private.write_bytes(dirt)
         subprocess.run([str(executable), matches[0]["filename"], str(private)], check=True, capture_output=True)
     combined = compose(dirt, selector, boot, addresses)
@@ -168,15 +173,15 @@ def prepare(bundle: Path, dirt_path: Path, output: Path) -> dict:
                "source_commit": manifest["source_commit"], "selector_manifest_sha256": bundle.name,
                "selector_sha256": sha(selector), "dirt_original_sha256": sha(dirt),
                "wrapper_sha256": sha(boot), "layout": addresses,
-               "patch": {"offset": 4, "before": CONSTANTS["DIRT_RESET_PC"], "after": addresses["ENTRY"]},
+               "patch": {"offset": 4, "before": profile["reset"], "after": addresses["ENTRY"]},
                "files": {filename: {"bytes": len(combined), "sha256": sha(combined)},
-                         "aurora/DirtVerb 1.1.bin": {"bytes": len(dirt), "sha256": sha(dirt)}}}
+                         f"aurora/{profile['filename']}": {"bytes": len(dirt), "sha256": sha(dirt)}}}
     # Reauthenticate inputs before publishing; all output is exclusive creation.
     if authenticate_bundle(bundle) != (manifest, selector, boot):
         raise ValueError("selector bundle changed during preparation")
     output.mkdir(parents=True, exist_ok=False)
     (output / "aurora").mkdir()
-    for name, data in ((filename, combined), ("aurora/DirtVerb 1.1.bin", dirt)):
+    for name, data in ((filename, combined), (f"aurora/{profile['filename']}", dirt)):
         with (output / name).open("xb") as stream: stream.write(data)
     with (output / "resident.json").open("x") as stream:
         json.dump(receipt, stream, sort_keys=True, indent=2)

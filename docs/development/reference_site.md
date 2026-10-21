@@ -61,3 +61,10 @@ drawing, Back/Forward, mobile/dark layouts, keyboard access, and static fallback
 Repository **Settings → Pages → Source** must be **GitHub Actions**.
 Pushes to `main` deploy automatically; the workflow can also be run manually.
 The public URL is https://aurora-switch.ryanjarv.sh/.
+
+Navigation, family labels, palette colors and the Markdown lookup table come
+from the compiled catalog in `firmware/images.hpp`. `make reference-html`
+regenerates that table before rendering; control prose remains in Markdown.
+The host metadata exporter requires only a native C++17 compiler, no SDK or
+network setup. SPA freshness includes the exported catalog as well as the
+renderer, so catalog-only changes cannot reuse stale navigation data.

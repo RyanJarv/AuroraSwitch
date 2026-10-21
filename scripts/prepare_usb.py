@@ -14,13 +14,11 @@ import zipfile
 from prepare_payloads import prepare
 
 
-# Exact-byte authority stays in the firmware catalog, not in this URL list.
-DOWNLOADS = {
-    "Aurora_v1_4_4.bin": "https://www.qubitelectronix.com/s/Aurora_v1_4_4.zip",
-    "AR_FDN_v1_2_2.bin": "https://www.qubitelectronix.com/s/AR_FDN_v1_2_2.bin",
-    "flux-capacitor-0.3.0.bin": "https://github.com/DaveParr/aurora-flux-capacitor/releases/download/v0.3.0/flux-capacitor-0.3.0.bin",
-    "aurora-morse-0.2.0.bin": "https://github.com/DaveParr/Aurora-Morse/releases/download/v0.2.0/aurora-morse-0.2.0.bin",
-}
+# Support and the default-download subset are separate catalog decisions.
+from firmware_catalog import read_catalog
+
+DOWNLOADS = {row["filename"]: row["download"] for row in read_catalog()["images"]
+             if row["download"] is not None}
 
 
 def release_selector(tag: str, destination: Path) -> Path:

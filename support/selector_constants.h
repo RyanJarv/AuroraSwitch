@@ -27,9 +27,7 @@
 #define SELECTOR_QSPI_END 0x90800000
 #define SELECTOR_QSPI_APPLICATION_BASE 0x90040000
 #define SELECTOR_QSPI_APPLICATION_OFFSET 0x40000
-// Dirt's 95196 bytes occupy sectors through offset 0x57fff. The generic writer
-// is additionally bounded to 224 KiB and must not erase beyond offset 0x78000.
-#define SELECTOR_DIRT_ERASE_END 0x58000
+// Generic writer bounds: at most 224 KiB, ending at flash offset 0x78000.
 #define SELECTOR_QSPI_MAXIMUM_END 0x78000
 #define SELECTOR_QSPI_MAXIMUM_IMAGE_SIZE 0x38000
 // Synthetic transport backing memory only; this is not physical SDRAM setup.
@@ -61,17 +59,3 @@
 // PCA9685 address-pin bits; libDaisy ORs these with its I2C base address 0x40.
 #define SELECTOR_LED_DRIVER_A 0x00
 #define SELECTOR_LED_DRIVER_B 0x01
-
-// Authenticated vendor reset-vector words (including Thumb bit). These come
-// from the exact catalog images, not addresses chosen by the selector. Versions
-// sharing a reset PC still require their own complete size and SHA-256 identity.
-#define SELECTOR_FDN_RESET_PC 0x24000959
-#define SELECTOR_AURORA_RESET_PC 0x2400070d
-#define SELECTOR_ECHOGARDEN_RESET_PC 0x240017d1
-#define SELECTOR_CLOUDSCAPE_RESET_PC 0x24001959
-#define SELECTOR_OSCILLATOR_RESET_PC 0x24000959
-#define SELECTOR_FLUX_RESET_PC 0x24001675
-#define SELECTOR_MORSE_RESET_PC 0x24000f4d
-#define SELECTOR_TEMPEST_RESET_PC 0x240033f5
-#define SELECTOR_FATAMORGANA_RESET_PC 0x24000a49
-#define SELECTOR_DIRT_RESET_PC 0x90040959

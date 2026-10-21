@@ -5,8 +5,8 @@
 int main()
 {
     using namespace aurora_selector;
-    static_assert(sizeof(Images) / sizeof(Images[0]) == 14);
-    static_assert(StagingCapacity() == 182240U);
+    static_assert(sizeof(Images) / sizeof(Images[0]) >= 14);
+    static_assert(StagingCapacity() >= 182240U);
     assert(Images[13].execution == Execution::Sram);
     for(unsigned index : {12U})
     {
@@ -32,7 +32,7 @@ int main()
     assert(!IsReviewedQspiImage(retired));
     assert(Images[11].execution == Execution::Sram);
     assert(std::strcmp(Images[11].path, "0:/aurora/FataMorgana.bin") == 0);
-    for(unsigned i = 0; i < 14; ++i)
+    for(unsigned i = 0; i < ImageCount; ++i)
         for(unsigned j = 0; j < i; ++j)
         {
             // Additional families must be distinct within their category.

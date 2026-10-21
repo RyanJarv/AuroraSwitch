@@ -80,18 +80,35 @@ copying. Use a new output folder each time.
 
 ## Add firmware
 
-1. Pin the file/version, size, hash, and vectors. Review RAM layout, startup,
-   DMA use, inherited clocks/MPU, and persistent writes.
-2. Add its path and menu color to [images.hpp](../../firmware/images.hpp).
-   Reuse its family's `menu_colors` constant for every version; new families
-   need a distinct color within their category. The catalog test checks RGB
-   proportions to reject close colors, independent of brightness; check the
-   actual LEDs on hardware too. Keep identities and review staging changes.
-3. Extend catalog/authentication tests. Run `make check` and validate local
-   payloads with `prepare_payloads.py` or `make verify-images`.
-4. Commit and package. Test linked launch, controls/audio, copy, and DMA cleanup.
-   Handoff changes also need complete switching-cycle tests.
-5. Record exact builds and limits, then test physical launch and stock recovery.
+1. Measure a user-owned binary without admitting it:
+   `python3 scripts/inspect_firmware.py --execution sram /path/to/firmware.bin`
+   (use `qspi` only for a reviewed flash-execution image). This prints size,
+   SHA-256, vectors and existing catalog matches; it changes no files.
+2. Review RAM layout, startup, DMA, inherited clocks/MPU and persistent writes.
+   Add one `FirmwareCatalog` record in [images.hpp](../../firmware/images.hpp).
+   Keep its stable ID and all exact image identity fields together. Reuse an
+   existing family, or add a `Family` enum member and its `Families` record in
+   the same file: stable family ID, display name, category, palette color and
+   Markdown section anchor. Versions inherit color/category automatically.
+3. Add the control section in [firmware_reference.md](../firmware_reference.md).
+   Run `make reference-html` to regenerate the Markdown lookup table and site.
+   The compiled catalog drives navigation and the default USB download subset;
+   set `download` only when the image belongs in that reviewed automatic set.
+   Support, automatic downloading and physical qualification are separate.
+4. Run `make check`, `make test-sanitize` and the reference browser smoke test.
+   Existing launch contracts have a frozen fixture; generic invariants also
+   exercise a synthetic family addition without changing the loader. Colors
+   must remain distinct within each category; inspect physical LEDs too.
+5. Commit and package. Authenticate local payloads with `prepare_payloads.py`
+   or `make verify-images`; run affected linked launch, controls/audio, copy and
+   DMA cleanup checks. Handoff changes need complete switching-cycle tests.
+   Record exact builds and limits, then test physical launch and stock recovery.
+
+Ordinary SRAM additions need no selector/controller/handoff changes. QSPI
+programming takes an explicit checked extent. The single `resident` flag marks
+Dirt's reviewed reset-redirection exception; it does not make other QSPI images
+resident-compatible. Keep source-build recipes such as FataMorgana isolated
+until another image needs the same mechanism.
 
 Do not commit payloads. Host tests alone do not prove compatibility.
 Do not create a new emulator for a difficult image; defer it.
@@ -117,8 +134,9 @@ binaries. Documentation-only edits need link checks, not new emulator campaigns.
 ## Numeric constants
 
 [selector_constants.h](../../support/selector_constants.h) holds the hardware
-memory map, exact vendor reset vectors, binary-format markers, checksums and
-masks, with comments explaining their origins. C++, assembly, linker scripts
+memory map, binary-format markers, checksums and
+masks, with comments explaining their origins. Vendor vectors live beside
+their exact image identities in the firmware catalog. C++, assembly, linker scripts
 and Python tooling consume these definitions. Linker scripts are preprocessed
 into the build directory; changing the header also rebuilds the assembly blobs.
 Independent test expectations stay literal so a mistaken definition cannot

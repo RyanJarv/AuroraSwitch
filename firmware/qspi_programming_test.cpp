@@ -1,5 +1,5 @@
 // Synthetic fault injection for the writer's fixed bounds and complete readback.
-#include "../support/qspi_image_programming.hpp"
+#include "../support/resident_image.hpp"
 #include <array>
 #include <cassert>
 #include <cstring>
@@ -45,13 +45,13 @@ int main()
     volatile QspiDiagnostic diagnostic{};
     const auto good = [] { return true; };
     Driver driver;
-    assert(ProgramQspiImage(driver, bytes.data(), bytes.size(), good, diagnostic) == QspiResult::Ready);
+    assert(ProgramQspiImage(driver, bytes.data(), bytes.size(), good, diagnostic, DirtExtent) == QspiResult::Ready);
     assert(diagnostic.erase_attempts == 24 && diagnostic.pages == 372);
     assert(diagnostic.verified == bytes.size() && diagnostic.stage == 5);
     const auto installed = driver.nor;
     for(unsigned boot = 0; boot < 3; ++boot)
     {
-        assert(ProgramQspiImage(driver, bytes.data(), bytes.size(), good, diagnostic) == QspiResult::Ready);
+        assert(ProgramQspiImage(driver, bytes.data(), bytes.size(), good, diagnostic, DirtExtent) == QspiResult::Ready);
         assert(diagnostic.erase_attempts == 0 && diagnostic.pages == 0);
         assert(driver.nor == installed && driver.erase_count == 24 && driver.page_count == 372);
     }
@@ -67,12 +67,12 @@ int main()
         if(i == 2) failed.page_fail = 2;
         if(i == 3) failed.corrupt = true;
         if(i == 4) failed.unmapped = true;
-        assert(ProgramQspiImage(failed, bytes.data(), bytes.size(), good, diagnostic) != QspiResult::Ready);
+        assert(ProgramQspiImage(failed, bytes.data(), bytes.size(), good, diagnostic, DirtExtent) != QspiResult::Ready);
         assert(diagnostic.verified == 0);
     }
     Driver rejected;
-    assert(ProgramQspiImage(rejected, bytes.data(), bytes.size() - 1, good, diagnostic) == QspiResult::Rejected);
-    assert(ProgramQspiImage(rejected, bytes.data(), bytes.size(), [] { return false; }, diagnostic) == QspiResult::Rejected);
+    assert(ProgramQspiImage(rejected, bytes.data(), bytes.size() - 1, good, diagnostic, DirtExtent) == QspiResult::Rejected);
+    assert(ProgramQspiImage(rejected, bytes.data(), bytes.size(), [] { return false; }, diagnostic, DirtExtent) == QspiResult::Rejected);
     assert(rejected.erase_count == 0 && rejected.page_count == 0);
     // A second reviewed length must use its own rounded extent, not Dirt's.
     std::vector<std::uint8_t> fata(151420U, 0x42);
@@ -94,6 +94,6 @@ int main()
     assert(rejected.erase_count == 0 && rejected.page_count == 0);
     unsigned validations = 0;
     Driver changed;
-    assert(ProgramQspiImage(changed, bytes.data(), bytes.size(), [&] { return ++validations == 1; }, diagnostic)
+    assert(ProgramQspiImage(changed, bytes.data(), bytes.size(), [&] { return ++validations == 1; }, diagnostic, DirtExtent)
            == QspiResult::ReadbackFailed);
 }

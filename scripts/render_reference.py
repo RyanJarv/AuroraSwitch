@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate SPA content and direct-link HTML fallbacks from one reference."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import hashlib
 import html
 import json
@@ -13,14 +13,34 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "docs/firmware_reference.md"
 REPOSITORY = "https://github.com/RyanJarv/AuroraSwitch/blob/main/"
-COLORS = {
-    "Blue": "#3787ff", "Green": "#35bf58", "Cyan": "#32c9ce",
-    "Magenta": "#d855d5", "Amber": "#dc9a25", "Yellow": "#ead342",
-    "White": "#fff", "Red": "#e84444", "Azure": "#3ea7dc",
-    "Red-pink": "#e84b78",
-}
-CATEGORIES = {"Reverbs": "Blue", "Delays": "Green", "Synths / Other": "Amber"}
+if __package__:
+    from .firmware_catalog import read_catalog
+else:
+    from firmware_catalog import read_catalog
+
+COLORS = {row["name"]: row["css"] for row in read_catalog()["colors"]}
+CATEGORIES = {row["name"]: row["color"] for row in read_catalog()["categories"]}
 PANEL_CONTROLS = ("Warp", "Time", "Blur", "Reflect", "Mix", "Atmosphere", "Reverse", "Freeze", "Shift")
+
+
+def renderer_identity() -> str:
+    # Metadata changes must invalidate SPA data even when control prose stays put.
+    metadata = json.dumps(read_catalog(), sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+    return hashlib.sha256(Path(__file__).read_bytes() + metadata).hexdigest()
+
+
+def update_catalog_table(source: str) -> str:
+    """Regenerate the Markdown lookup from compiled metadata; preserve control prose."""
+    table = ("| Category | Selector color | Firmware | What it does | Availability |\n"
+             "| --- | --- | --- | --- | --- |\n")
+    for row in read_catalog()["images"]:
+        table += (f"| {row['category']} | {row['color']} | [{row['name']}](#{row['reference']}) "
+                  f"| {row['description']} | {row['availability']} |\n")
+    pattern = r"(?m)^\| Category \| Selector color.*?\n(?=\n)"
+    updated, count = re.subn(pattern, lambda _: table, source, flags=re.S)
+    if count != 1:
+        raise ValueError("Expected one firmware color lookup table")
+    return updated
 
 
 def read_quick_start(readme: str) -> str:
@@ -88,6 +108,7 @@ class Entry:
     description: str
     availability: str
     category: str
+    family_name: str = ""
 
 
 def read_reference(source: str) -> tuple[str, list[Section], list[Entry]]:
@@ -134,7 +155,12 @@ def read_reference(source: str) -> tuple[str, list[Section], list[Entry]]:
     }
     if unused:
         raise ValueError(f"Unlinked firmware sections: {sorted(unused)}")
-    return parts[0], sections, entries
+    expected = [Entry(row["color"], row["name"], row["reference"], row["description"],
+                      row["availability"], row["category"], row["family_name"])
+                for row in read_catalog()["images"]]
+    if entries != [replace(entry, family_name="") for entry in expected]:
+        raise ValueError("Reference table differs from compiled catalog; run make reference-html")
+    return parts[0], sections, expected
 
 
 def render_markdown(source: str, sections: list[Section], source_directory: Path = SOURCE.parent) -> str:
@@ -195,8 +221,7 @@ def navigation(sections: list[Section], entries: list[Entry], current: str) -> s
             section = by_anchor[anchor]
             color = next(entry.color for entry in entries if entry.anchor == anchor)
             active = ' aria-current="page"' if current == section.filename else ""
-            name = re.sub(r" \d+(?:\.\d+)+$", "", section.title)
-            name = name.removesuffix(" RAM experiment").replace("Aurora HP-filter variant", "Aurora HP-filter")
+            name = next(entry.family_name for entry in entries if entry.anchor == anchor)
             parts.append(f'<li><a href="{section.filename}"{active}><span>{html.escape(name)}</span>'
                          f'<small class="color-label">{swatch(color)}{html.escape(color)}</small></a></li>')
         parts.append('</ul></section>')
@@ -205,7 +230,7 @@ def navigation(sections: list[Section], entries: list[Entry], current: str) -> s
 
 def document(title: str, body: str, menu: str, digest: str, filename: str) -> str:
     """Render complete static pages; a small script enhances navigation afterward."""
-    renderer_digest = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    renderer_digest = renderer_identity()
     app_digest = hashlib.sha256((ROOT / "site/navigation.js").read_bytes()).hexdigest()
     style_digest = hashlib.sha256((ROOT / "site/style.css").read_bytes()).hexdigest()
     quickstart_digest = quick_start_digest()
@@ -315,7 +340,7 @@ def reference_data(pages: dict[str, str]) -> dict:
         data[filename] = {"title": html.unescape(title), "body": body}
     return {
         "reference_sha256": hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
-        "renderer_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "renderer_sha256": renderer_identity(),
         "quickstart_sha256": quick_start_digest(),
         "pages": data,
     }
@@ -323,6 +348,10 @@ def reference_data(pages: dict[str, str]) -> dict:
 
 if __name__ == "__main__":
     try:
+        source = SOURCE.read_text()
+        updated = update_catalog_table(source)
+        if updated != source:
+            SOURCE.write_text(updated)
         pages = render_pages()
         for filename, page in pages.items():
             (ROOT / "site" / filename).write_text(page)
