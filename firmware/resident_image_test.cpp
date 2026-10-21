@@ -2,10 +2,14 @@
 #include <cassert>
 #include <vector>
 using namespace aurora_selector;
-void word(std::uint8_t* bytes, std::uint32_t value)
-{ for(unsigned i = 0; i < 4; ++i) bytes[i] = value >> (8 * i); }
-int main()
-{
+
+void word(std::uint8_t* bytes, std::uint32_t value) {
+    for (unsigned i = 0; i < 4; ++i) {
+        bytes[i] = value >> (8 * i);
+    }
+}
+
+int main() {
     std::vector<std::uint8_t> mapped(0x91000, 0xff), original(DirtImageSize, 0x35);
     assert(!ResidentPresent(mapped.data()));
     std::copy(original.begin(), original.end(), mapped.begin());
@@ -13,8 +17,7 @@ int main()
     assert(ResidentPresent(mapped.data()));
     assert(ResidentDirtMatches(mapped.data(), original.data(), original.size()));
     // Only the reset word may differ, never stack, vectors, code or last byte.
-    for(const auto offset : {0U, 4U, 8U, 0x958U, DirtImageSize - 1U})
-    {
+    for (const auto offset : {0U, 4U, 8U, 0x958U, DirtImageSize - 1U}) {
         mapped[offset] ^= 1;
         assert(!ResidentDirtMatches(mapped.data(), original.data(), original.size()));
         mapped[offset] ^= 1;
@@ -31,12 +34,11 @@ int main()
     word(metadata + 8, ~32U);
     word(metadata + 12, ResidentChecksum(image, 32));
     assert(ResidentBootMatches(mapped.data(), boot, sizeof(boot)));
-    for(const auto offset : {boot_offset, SELECTOR_RESIDENT_METADATA - SELECTOR_RESIDENT_BASE,
-            SELECTOR_RESIDENT_METADATA - SELECTOR_RESIDENT_BASE + 4U,
-            SELECTOR_RESIDENT_METADATA - SELECTOR_RESIDENT_BASE + 8U,
-            SELECTOR_RESIDENT_METADATA - SELECTOR_RESIDENT_BASE + 12U,
-            SELECTOR_RESIDENT_IMAGE - SELECTOR_RESIDENT_BASE + 31U})
-    {
+    for (const auto offset : {boot_offset, SELECTOR_RESIDENT_METADATA - SELECTOR_RESIDENT_BASE,
+                              SELECTOR_RESIDENT_METADATA - SELECTOR_RESIDENT_BASE + 4U,
+                              SELECTOR_RESIDENT_METADATA - SELECTOR_RESIDENT_BASE + 8U,
+                              SELECTOR_RESIDENT_METADATA - SELECTOR_RESIDENT_BASE + 12U,
+                              SELECTOR_RESIDENT_IMAGE - SELECTOR_RESIDENT_BASE + 31U}) {
         mapped[offset] ^= 1;
         assert(!ResidentBootMatches(mapped.data(), boot, sizeof(boot)));
         mapped[offset] ^= 1;

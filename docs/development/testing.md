@@ -76,6 +76,26 @@ after each modeled reset. They reach Dirt main or FDN reset entry, with no audio
 continuation or physical reliability claim. Historical full audio-cycle records
 remain bound to their older exact candidates.
 
-The [readability cleanup record](evidence/readability_20261021.json) preserves
-the earlier cleanup checkpoint. Its formatting and comment changes are being
-reviewed separately; its functional selection and catalog simplifications remain.
+## Readability and formatting
+
+Comments should first explain the purpose in ordinary language. Keep hardware
+registers, memory regions and other technical details where they help someone
+make a safe change; explain unfamiliar terms alongside them.
+
+C++ uses the LLVM preset with four-space indentation, a 100-column limit,
+preserved include order and left-aligned pointer markers. Braces stay on the
+same line; short inline functions, enums and lambdas stay compact. The checked-in
+`.clang-format` is used with clang-format 19.1.7. Python uses `pyproject.toml`
+(Black 25.1.0). Run Black over `scripts/` and `tests/`; run clang-format over
+`firmware/`, `support/` and `tests/fakes/`, excluding the frozen
+`tests/fakes/file_media_before_refactor.hpp` oracle. Formatting tools are optional
+development dependencies, not requirements for building or testing.
+
+Keep formatting and comment edits separate from changes to control flow. A
+shorter implementation must still preserve authentication, I/O failure handling
+and handoff ordering. Use the existing production-boundary tests rather than
+adding assertions about whitespace or comments.
+
+The [readability cleanup record](evidence/readability_20261021.json) binds the
+formatting parity, temporary controller replay and linked boot checks to exact
+source revisions and development bundles.

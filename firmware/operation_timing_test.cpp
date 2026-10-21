@@ -2,8 +2,7 @@
 #include "../support/operation_timing.hpp"
 #include <cassert>
 
-int main()
-{
+int main() {
     volatile daisy_development::OperationTiming timing{};
     timing.Begin(100);
     assert(timing.completed == 0 && timing.elapsed_ms == 0);

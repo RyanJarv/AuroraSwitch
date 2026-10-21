@@ -4,14 +4,17 @@
 // preprocessed linker scripts and the Python build tools. Keep definitions as
 // integer literals so all four consumers read the same values.
 
-// STM32H750 DTCM: vectors must place an aligned stack within this 128 KiB bank.
-// The pinned Daisy startup uses its exclusive upper bound as the initial MSP.
+// Fast CPU-only RAM holds the firmware's stack (128 KiB DTCM). The startup
+// vector uses its upper end as the initial main stack pointer (MSP). The stack
+// grows downward, so that initial pointer can equal the end address.
 #define SELECTOR_DTCM_BASE 0x20000000
 #define SELECTOR_DTCM_END 0x20020000
-// AXI SRAM is the pinned BOOT_SRAM link/load address and vector-table base.
+// Main program RAM starts here. Both the selector and RAM-loaded firmware
+// are linked to run at this AXI SRAM address (Daisy BOOT_SRAM layout).
 #define SELECTOR_AXI_SRAM_BASE 0x24000000
-// Pinned libDaisy reserves the first 32 KiB of D2 SRAM for DMA. The remaining
-// SRAM1/2 holds staging; the terminal handoff clears only the DMA region.
+// Keep loaded firmware separate from peripheral transfer buffers. The SDK uses
+// the first 32 KiB of D2 SRAM for DMA, where peripherals read/write memory
+// directly. The rest of SRAM1/2 stages the image; the final jump clears DMA only.
 #define SELECTOR_DMA_BASE 0x30000000
 #define SELECTOR_DMA_END 0x30008000
 #define SELECTOR_STAGING_BASE 0x30008000
@@ -19,6 +22,7 @@
 // SRAM4 survives replacement of AXI code; reserve 1 KiB for the jump routine.
 #define SELECTOR_TRAMPOLINE_BASE 0x38000000
 #define SELECTOR_TRAMPOLINE_SIZE 1024
+// Tell the CPU where to find the new firmware's interrupt vectors: the
 // Cortex-M7 System Control Block vector-table offset register (VTOR).
 #define SELECTOR_VTOR_REGISTER 0xe000ed08
 // IS25LP064A memory mapping (8 MiB). The Daisy loader's application starts
@@ -44,12 +48,15 @@
 #define SELECTOR_RESIDENT_CAPACITY 0x78000
 // Little-endian ASCII "ASR1" identifies the wrapper metadata format.
 #define SELECTOR_WRAPPER_MAGIC 0x31525341
-// FNV-1a-32 detects a corrupted SRAM copy; whole-file SHA-256 grants admission.
+// Catch damage while copying the saved selector back into RAM (FNV-1a-32).
+// This fast checksum is not image authentication; full-file SHA-256 identifies
+// an approved firmware before launch.
 #define SELECTOR_FNV_OFFSET_BASIS 2166136261
 #define SELECTOR_FNV_PRIME 16777619
 // CRC-32/ISO-HDLC reflected polynomial used for the two USB boot records.
 #define SELECTOR_BOOT_CRC_POLYNOMIAL 0xedb88320
-// Exactly half of the uint32 generation space has ambiguous serial ordering.
+// Saved-choice generations wrap at 32 bits. A difference of half that range
+// cannot tell us which record is newer, so it must be treated as ambiguous.
 #define SELECTOR_GENERATION_HALF_RANGE 0x80000000
 // Word arithmetic mask, unavailable diagnostic sentinel, and NVIC write-one
 // masks have different meanings despite sharing the same numeric value.
