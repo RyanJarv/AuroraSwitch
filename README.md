@@ -1,6 +1,8 @@
 # AuroraSwitch
 
-Allows you to select which Aurora firmware you want to load when starting the module. This does not replace the official boot loader, to uninstall just change the file on the SD Card back to whatever you used before.
+Allows you to select which Aurora firmware you want to load when starting the module. This does not replace the official boot loader, to uninstall just change the file on the USB drive back to whatever you used before.
+
+Dirt Verb replaces the installed application. Returning to the selector requires ready USB media containing AuroraSwitch.bin in the drive's root; power cycling alone does not guarantee menu re-entry.
 
 **Note:** You may to avoid using this for performances until this is better tested.
 
