@@ -94,6 +94,9 @@ def run(bundle: Path, images: Path, runner_root: Path, output: Path) -> dict:
                 # model evidence that controller gating works electrically.
                 "sysbus WriteDoubleWord 0x52005000 1", "sysbus WriteDoubleWord 0x52005014 0x0f0035eb",
                 "cpu VectorTableOffset 0x90040000", "sysbus WriteDoubleWord 0xe000ed88 0x00f00000"]
+            dma = temp / "dirty-dma.bin"
+            dma.write_bytes(b"\xa5" * 32768)
+            commands.append("sysbus LoadBinary " + monitor_path(dma) + " 0x30000000")
             for port, pin in (("C", 11), ("B", 5), ("B", 6)):
                 commands.append(f"gpioPort{port} OnGPIO {pin} {'false' if scenario == 'menu' and port == 'B' else 'true'}")
             descriptors = {}
@@ -124,7 +127,12 @@ def run(bundle: Path, images: Path, runner_root: Path, output: Path) -> dict:
                 f'cpu AddHook {hex(wrapper_invalid)} "print(\'PERSISTENT_WRAPPER_REJECT\'); cpu.IsHalted = True"']
             reset = rows[choice]["reset"] & ~1
             halt = reset if choice == 0 else 0x900421b8
-            commands += [f'cpu AddHook {hex(reset)} "print(\'PERSISTENT_PAYLOAD_RESET\')"',
+            boundary = temp / "boundary.py"
+            boundary.write_text("data = machine.SystemBus.ReadBytes(0x30000000, 32768)\n"
+                + "assert len(data) == 32768 and all(byte == 0 for byte in data), 'DMA arena not cleared'\n"
+                + f"assert machine.SystemBus.ReadDoubleWord(0xe000ed08) == {0x24000000 if choice == 0 else 0x90040000}, 'wrong VTOR'\n"
+                + "print('PERSISTENT_DMA_ZERO')\nprint('PERSISTENT_PAYLOAD_RESET')\n")
+            commands += [f'cpu AddHook {hex(reset)} "exec(open(\'{boundary}\').read())"',
                 f'cpu AddHook {hex(halt)} "print(\'PERSISTENT_PAYLOAD_HALT\'); cpu.IsHalted = True"']
             if scenario == "choose-fdn":
                 commands += ['emulation RunFor "0.500000"', "pause", "gpioPortC OnGPIO 11 false",
@@ -150,7 +158,8 @@ def run(bundle: Path, images: Path, runner_root: Path, output: Path) -> dict:
                 raise ValueError("persistent runner failed: " + str(directory / "raw.log"))
             positive = scenario in ("dirt", "repeat-dirt", "fdn", "choose-fdn", "repeat-fdn")
             if (clean.splitlines().count("PERSISTENT_PAYLOAD_HALT") != int(positive)
-                    or clean.splitlines().count("PERSISTENT_PAYLOAD_RESET") != int(positive)):
+                    or clean.splitlines().count("PERSISTENT_PAYLOAD_RESET") != int(positive)
+                    or clean.splitlines().count("PERSISTENT_DMA_ZERO") != int(positive)):
                 raise ValueError("unexpected/missing payload entry: " + str(directory / "raw.log"))
             if clean.splitlines().count("PERSISTENT_SELECTOR_MAIN") != int(scenario != "bad-wrapper"):
                 raise ValueError("wrapper did not enter expected selector startup")
