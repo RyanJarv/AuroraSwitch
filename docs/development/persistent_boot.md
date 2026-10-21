@@ -44,6 +44,8 @@ authenticated reset PC; all its other vectors/code/data addresses stay fixed.
 It performs no application erase/program. A detected resident mismatch refuses
 launch rather than erasing the dispatcher. An ordinary nonresident Dirt launch
 also skips erase/program when its complete authenticated image already matches.
+The resident path retains the loader's live memory-mapped QSPI configuration
+instead of calling SDK initialization, which would issue status-register writes.
 
 The root installer never changes when a firmware is selected. With healthy
 reads and identical root/flash bytes, the pinned stock updater's existing byte

@@ -134,4 +134,13 @@ int main()
     missing.remember_fail = true;
     missing_selector.Update(false, false, true, [] {});
     assert(missing.launches == 0 && missing_selector.GetState() == Controller::State::Error);
+    FakeMedia changed_boot;
+    changed_boot.ready = true;
+    changed_boot.saved = 0;
+    changed_boot.present[0] = true;
+    changed_boot.reject_launch_auth = true;
+    Controller changed_auto(changed_boot);
+    changed_auto.Update(false, false, false, [] {});
+    assert(changed_boot.launches == 0 && changed_boot.remembers == 0);
+    assert(changed_auto.GetState() == Controller::State::Error);
 }

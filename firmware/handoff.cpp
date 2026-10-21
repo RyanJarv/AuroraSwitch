@@ -29,6 +29,17 @@ namespace aurora_selector
 {
     namespace
     {
+        // A resident wrapper arrives through the loader's QSPI execution path.
+        // Keep that live mapping: SDK Init issues flash status-register writes
+        // even when the application array does not need programming.
+        const std::uint8_t* InheritedQspiData()
+        {
+            if((QUADSPI->CR & QUADSPI_CR_EN) == 0
+               || (QUADSPI->CCR & QUADSPI_CCR_FMODE) != QUADSPI_CCR_FMODE)
+                return nullptr;
+            __DSB();
+            return reinterpret_cast<const std::uint8_t*>(0x90040000U);
+        }
         // Same pin/device configuration as pinned DaisySeed, without audio Init.
         struct QspiDriver
         {
@@ -109,8 +120,12 @@ namespace aurora_selector
                 if(!IsReviewedQspiImage(image) || !Validate())
                     return false;
                 QspiDriver driver{seed.qspi};
-                if(!driver.Initialize()) return false;
-                const auto* mapped = driver.MappedData();
+                const auto* mapped = InheritedQspiData();
+                if(mapped == nullptr)
+                {
+                    if(!driver.Initialize()) return false;
+                    mapped = driver.MappedData();
+                }
                 if(ResidentPresent(mapped))
                 {
                     // A local composite stays installed. Never repair it by
@@ -155,7 +170,7 @@ namespace aurora_selector
                 if(staged_valid && qspi_prepared)
                 {
                     QspiDriver driver{seed.qspi};
-                    const auto* mapped = driver.MappedData();
+                    const auto* mapped = resident ? InheritedQspiData() : driver.MappedData();
                     return resident ? ResidentDirtMatches(mapped, staged, image.size)
                         && ResidentBootMatches(mapped, selector_resident_boot_start,
                             selector_resident_boot_end - selector_resident_boot_start)

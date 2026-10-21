@@ -86,6 +86,9 @@ def run(bundle: Path, images: Path, runner_root: Path, output: Path) -> dict:
                 "machine LoadPlatformDescription " + monitor_path(platform),
                 "auroraQspi.auroraNor ArraySubset true",
                 "sysbus LoadBinary " + monitor_path(nor) + " 0x90000000",
+                # Prepared loader handoff: inherited memory-mapped QSPI, not
+                # model evidence that controller gating works electrically.
+                "sysbus WriteDoubleWord 0x52005000 1", "sysbus WriteDoubleWord 0x52005014 0x0f0035eb",
                 "cpu VectorTableOffset 0x90040000", "sysbus WriteDoubleWord 0xe000ed88 0x00f00000"]
             for port, pin in (("C", 11), ("B", 5), ("B", 6)):
                 commands.append(f"gpioPort{port} OnGPIO {pin} {'false' if scenario == 'menu' and port == 'B' else 'true'}")
