@@ -1,6 +1,6 @@
 // This position-independent blob is copied into the local composite installer,
 // not executed at its linked SRAM address. Dirt's reset vector points here.
-#include "../support/resident_layout.h"
+#include "../support/selector_constants.h"
 .syntax unified
 .cpu cortex-m7
 .thumb
@@ -12,7 +12,7 @@ selector_resident_boot_start:
     cpsid i
     ldr r0, =SELECTOR_RESIDENT_METADATA
     ldr r2, [r0]
-    ldr r3, =0x31525341 // ASR1
+    ldr r3, =SELECTOR_WRAPPER_MAGIC // ASR1
     cmp r2, r3
     bne resident_invalid
     ldr r2, [r0, #4]
@@ -27,9 +27,9 @@ selector_resident_boot_start:
     bne resident_invalid
     ldr r7, [r0, #12]
     ldr r0, =SELECTOR_RESIDENT_IMAGE
-    ldr r1, =0x24000000
-    ldr r5, =2166136261
-    ldr r6, =16777619
+    ldr r1, =SELECTOR_AXI_SRAM_BASE
+    ldr r5, =SELECTOR_FNV_OFFSET_BASIS
+    ldr r6, =SELECTOR_FNV_PRIME
     mov r8, r2
 resident_copy:
     ldrb r3, [r0], #1
@@ -39,7 +39,7 @@ resident_copy:
     dsb sy
 // Validate the SRAM bytes that will execute, not the flash bytes just read.
 resident_readback_start:
-    ldr r0, =0x24000000
+    ldr r0, =SELECTOR_AXI_SRAM_BASE
     mov r2, r8
 resident_readback:
     ldrb r3, [r0], #1
@@ -49,9 +49,9 @@ resident_readback:
     bne resident_readback
     cmp r5, r7
     bne resident_invalid
-    ldr r4, =0x24000000
+    ldr r4, =SELECTOR_AXI_SRAM_BASE
     ldr r5, [r4]
-    ldr r3, =0x20020000
+    ldr r3, =SELECTOR_DTCM_END
     cmp r5, r3
     bne resident_invalid
     ldr r6, [r4, #4]
@@ -63,7 +63,7 @@ resident_readback:
     bhs resident_invalid
     dsb sy
     isb sy
-    ldr r3, =0xe000ed08
+    ldr r3, =SELECTOR_VTOR_REGISTER
     str r4, [r3]
     movs r0, #0
     msr control, r0

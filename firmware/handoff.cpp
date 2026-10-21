@@ -34,7 +34,7 @@ namespace aurora_selector
                || (QUADSPI->CCR & QUADSPI_CCR_FMODE) != QUADSPI_CCR_FMODE)
                 return nullptr;
             __DSB();
-            return reinterpret_cast<const std::uint8_t*>(0x90040000U);
+            return reinterpret_cast<const std::uint8_t*>(SELECTOR_QSPI_APPLICATION_BASE);
         }
         // Same pin/device configuration as pinned DaisySeed, without audio Init.
         struct QspiDriver
@@ -188,8 +188,8 @@ namespace aurora_selector
                 SysTick->VAL = 0;
                 for(unsigned bank = 0; bank < 8; ++bank)
                 {
-                    NVIC->ICER[bank] = 0xffffffffU;
-                    NVIC->ICPR[bank] = 0xffffffffU;
+                    NVIC->ICER[bank] = SELECTOR_NVIC_ALL_INTERRUPTS;
+                    NVIC->ICPR[bank] = SELECTOR_NVIC_ALL_INTERRUPTS;
                 }
                 SCB->ICSR = SCB_ICSR_PENDSTCLR_Msk | SCB_ICSR_PENDSVCLR_Msk;
                 // Preserve the loader's MPU regions. BOOT_SRAM seed.Init skips
@@ -215,7 +215,7 @@ namespace aurora_selector
                 const auto end = reinterpret_cast<std::uintptr_t>(blob_end);
                 const auto ram = reinterpret_cast<std::uintptr_t>(selector_trampoline_ram);
                 const auto limit = reinterpret_cast<std::uintptr_t>(selector_trampoline_limit);
-                if(end <= begin || ram != 0x38000000U || limit <= ram
+                if(end <= begin || ram != SELECTOR_TRAMPOLINE_BASE || limit <= ram
                    || end - begin > limit - ram)
                     return false;
                 std::memcpy(selector_trampoline_ram, blob, end - begin);
@@ -240,11 +240,11 @@ namespace aurora_selector
                 {
                     // A resident image redirects only the power-on reset word.
                     // Explicit Dirt launch uses its authenticated original PC.
-                    entry(reinterpret_cast<const std::uint8_t*>(0x90040000U),
+                    entry(reinterpret_cast<const std::uint8_t*>(SELECTOR_QSPI_APPLICATION_BASE),
                           resident ? reinterpret_cast<std::uint8_t*>(image.vectors.reset) : nullptr, 0);
                     Fatal();
                 }
-                entry(staged, reinterpret_cast<std::uint8_t*>(0x24000000U), image.size);
+                entry(staged, reinterpret_cast<std::uint8_t*>(SELECTOR_AXI_SRAM_BASE), image.size);
                 Fatal();
             }
         };

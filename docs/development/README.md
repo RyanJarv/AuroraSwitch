@@ -113,3 +113,14 @@ Do not create a new emulator for a difficult image; defer it.
 
 Historical records stay in `history/`. Do not transfer their results to changed
 binaries. Documentation-only edits need link checks, not new emulator campaigns.
+
+## Numeric constants
+
+[selector_constants.h](../../support/selector_constants.h) holds the hardware
+memory map, exact vendor reset vectors, binary-format markers, checksums and
+masks, with comments explaining their origins. C++, assembly, linker scripts
+and Python tooling consume these definitions. Linker scripts are preprocessed
+into the build directory; changing the header also rebuilds the assembly blobs.
+Independent test expectations stay literal so a mistaken definition cannot
+change both implementation and oracle. Historical resident bundles still read
+their layout from their sealed source commit, including the old header path.

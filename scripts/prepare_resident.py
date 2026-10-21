@@ -13,6 +13,7 @@ import struct
 import subprocess
 import tempfile
 
+from selector_constants import CONSTANTS
 from package import toolchain_identity
 from verify_images import authenticator, catalog
 
@@ -27,11 +28,17 @@ def layout(source_commit: str) -> dict[str, int]:
     """Read the bundle's immutable source layout, never the working-tree header."""
     if not isinstance(source_commit, str) or not re.fullmatch(r"[0-9a-f]{40}", source_commit):
         raise ValueError("invalid selector source commit")
-    try:
-        text = subprocess.check_output(["git", "--no-replace-objects", "-C", str(ROOT), "show",
-            source_commit + ":support/resident_layout.h"], text=True, stderr=subprocess.PIPE)
-    except subprocess.CalledProcessError as error:
-        raise ValueError("bundle source layout unavailable; fetch its source commit first") from error
+    # Older sealed candidates predate the shared constants header. Read either
+    # path from that exact commit; a malformed current header never falls back.
+    for path in ("support/selector_constants.h", "support/resident_layout.h"):
+        try:
+            text = subprocess.check_output(["git", "--no-replace-objects", "-C", str(ROOT), "show",
+                source_commit + ":" + path], text=True, stderr=subprocess.PIPE)
+            break
+        except subprocess.CalledProcessError:
+            continue
+    else:
+        raise ValueError("bundle source layout unavailable; fetch its source commit first")
     definitions = re.findall(r"^#define SELECTOR_RESIDENT_(\w+) (0x[0-9a-fA-F]+)$", text, re.M)
     required = {"BASE", "ENTRY", "METADATA", "IMAGE", "CAPACITY"}
     if len(definitions) != len(required) or {name for name, _ in definitions} != required:
@@ -40,9 +47,9 @@ def layout(source_commit: str) -> dict[str, int]:
 
 
 def checksum(data: bytes) -> int:
-    value = 2166136261
+    value = CONSTANTS["FNV_OFFSET_BASIS"]
     for byte in data:
-        value = ((value ^ byte) * 16777619) & 0xffffffff
+        value = ((value ^ byte) * CONSTANTS["FNV_PRIME"]) & CONSTANTS["U32_MASK"]
     return value
 
 
@@ -98,7 +105,7 @@ def authenticate_bundle(bundle: Path) -> tuple[dict, bytes, bytes]:
         if len(matches) != 1 or len(matches[0]) < 3:
             raise ValueError("missing/ambiguous resident wrapper symbol: " + name)
         try:
-            return int(matches[0][2], 16) - 0x24000000
+            return int(matches[0][2], 16) - CONSTANTS["AXI_SRAM_BASE"]
         except ValueError as error:
             raise ValueError("invalid resident wrapper symbol: " + name) from error
     start, end = address("selector_resident_boot_start"), address("selector_resident_boot_end")
@@ -112,15 +119,18 @@ def compose(dirt: bytes, selector: bytes, boot: bytes, addresses: dict[str, int]
     """Deterministic bounded layout; original Dirt authentication is the caller's job."""
     base, entry, metadata, image, capacity = (addresses[key] for key in
         ("BASE", "ENTRY", "METADATA", "IMAGE", "CAPACITY"))
-    if (len(dirt) != 95196 or struct.unpack_from("<II", dirt) != (0x20020000, 0x90040959)
-            or base != 0x90040000 or entry & 3 != 1 or metadata % 4 or image % 4
-            or not 8 < len(selector) <= capacity <= 0x78000 or not 0 < len(boot) <= 256
+    dirt_vectors = (CONSTANTS["DTCM_END"], CONSTANTS["DIRT_RESET_PC"])
+    if (len(dirt) != 95196 or struct.unpack_from("<II", dirt) != dirt_vectors
+            or base != CONSTANTS["QSPI_APPLICATION_BASE"] or entry & 3 != 1 or metadata % 4 or image % 4
+            or not 8 < len(selector) <= capacity <= CONSTANTS["RESIDENT_CAPACITY"] or not 0 < len(boot) <= 256
             or not base + len(dirt) <= (entry & ~1) < metadata < image
             or (entry & ~1) + len(boot) > metadata
-            or metadata + 16 > image or image + capacity > 0x90800000):
+            or metadata + 16 > image or image + capacity > CONSTANTS["QSPI_END"]):
         raise ValueError("resident input/layout bounds")
     stack, reset = struct.unpack_from("<II", selector)
-    if stack != 0x20020000 or not reset & 1 or not 0x24000008 <= reset < 0x24000000 + len(selector):
+    sram_base = CONSTANTS["AXI_SRAM_BASE"]
+    if (stack != CONSTANTS["DTCM_END"] or not reset & 1
+            or not sram_base + 8 <= reset < sram_base + len(selector)):
         raise ValueError("selector reset/stack vectors")
     combined = bytearray(b"\xff" * (image - base + len(selector)))
     combined[:len(dirt)] = dirt
@@ -128,7 +138,8 @@ def compose(dirt: bytes, selector: bytes, boot: bytes, addresses: dict[str, int]
     offset = (entry & ~1) - base
     combined[offset:offset + len(boot)] = boot
     struct.pack_into("<4I", combined, metadata - base,
-                     0x31525341, len(selector), len(selector) ^ 0xffffffff, checksum(selector))
+                     CONSTANTS["WRAPPER_MAGIC"], len(selector),
+                     len(selector) ^ CONSTANTS["U32_MASK"], checksum(selector))
     combined[image - base:] = selector
     assert combined[:4] == dirt[:4] and combined[8:len(dirt)] == dirt[8:]
     return bytes(combined)
@@ -156,7 +167,7 @@ def prepare(bundle: Path, dirt_path: Path, output: Path) -> dict:
                "source_commit": manifest["source_commit"], "selector_manifest_sha256": bundle.name,
                "selector_sha256": sha(selector), "dirt_original_sha256": sha(dirt),
                "wrapper_sha256": sha(boot), "layout": addresses,
-               "patch": {"offset": 4, "before": 0x90040959, "after": addresses["ENTRY"]},
+               "patch": {"offset": 4, "before": CONSTANTS["DIRT_RESET_PC"], "after": addresses["ENTRY"]},
                "files": {filename: {"bytes": len(combined), "sha256": sha(combined)},
                          "aurora/DirtVerb 1.1.bin": {"bytes": len(dirt), "sha256": sha(dirt)}}}
     # Reauthenticate inputs before publishing; all output is exclusive creation.

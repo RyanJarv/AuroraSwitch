@@ -17,7 +17,7 @@ volatile VirtualBootStore selector_virtual_boot_store{1, 0, 0, 0, {}};
 namespace
 {
     daisy_development::BackedImageReader reader(selector_virtual_media,
-        reinterpret_cast<const std::uint8_t*>(0xc0000000U), aurora_selector::StagingCapacity());
+        reinterpret_cast<const std::uint8_t*>(SELECTOR_VIRTUAL_FILE_BASE), aurora_selector::StagingCapacity());
     int record_slot = -1;
     bool writing = false;
 }
@@ -63,8 +63,8 @@ namespace aurora_selector
     bool MediaTransport::Sync() { return Ready(); }
     bool MediaTransport::Close() { return record_slot < 0 ? reader.Close() : Ready(); }
     // No FatFs result is claimed by a synthetic transport.
-    std::uint32_t MediaTransport::Result() { return 0xffffffffU; }
-    std::uint32_t MediaTransport::SuccessResult() { return 0xffffffffU; }
+    std::uint32_t MediaTransport::Result() { return SELECTOR_DIAGNOSTIC_UNAVAILABLE; }
+    std::uint32_t MediaTransport::SuccessResult() { return SELECTOR_DIAGNOSTIC_UNAVAILABLE; }
     bool MediaTransport::Unmount() { return Ready(); }
     void MediaTransport::Stop() { selector_virtual_media.ready = 0; }
 }

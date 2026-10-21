@@ -1,4 +1,5 @@
 #pragma once
+#include "selector_constants.h"
 
 // Narrow application writer: driver operations retain their real return values.
 // The adapter must authenticate staging and expose actual mapped NOR readback.
@@ -7,14 +8,14 @@
 
 namespace aurora_selector
 {
-    constexpr std::uint32_t QspiApplicationOffset = 0x40000U;
+    constexpr std::uint32_t QspiApplicationOffset = SELECTOR_QSPI_APPLICATION_OFFSET;
     constexpr std::uint32_t DirtImageSize = 95196U;
-    constexpr std::uint32_t QspiApplicationEnd = 0x58000U;
+    constexpr std::uint32_t QspiApplicationEnd = SELECTOR_DIRT_ERASE_END;
     // Exact catalog admission belongs to the caller. The shared writer still
     // limits the destination to the application and reviewed staging maximum.
     struct QspiExtent { std::size_t size; std::uint32_t erase_end; };
     constexpr QspiExtent DirtExtent{DirtImageSize, QspiApplicationEnd};
-    constexpr std::uint32_t QspiMaximumEnd = 0x78000U;
+    constexpr std::uint32_t QspiMaximumEnd = SELECTOR_QSPI_MAXIMUM_END;
     enum class QspiResult : std::uint32_t
     { Rejected, InitializeFailed, EraseFailed, WriteFailed, ReadbackFailed, Ready };
 
@@ -37,7 +38,7 @@ namespace aurora_selector
             diagnostic.result = static_cast<std::uint32_t>(result);
             return result;
         };
-        if(staged == nullptr || size < 8 || size > 0x38000U || size != extent.size
+        if(staged == nullptr || size < 8 || size > SELECTOR_QSPI_MAXIMUM_IMAGE_SIZE || size != extent.size
            || extent.erase_end != QspiApplicationOffset + ((size + 4095U) & ~std::size_t(4095U))
            || extent.erase_end > QspiMaximumEnd || !authenticate())
             return finish(QspiResult::Rejected);

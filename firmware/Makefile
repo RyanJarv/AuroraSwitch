@@ -47,9 +47,15 @@ check-pins:
 	@test -z "$$(git -C $(MBEDTLS_ROOT) status --porcelain --untracked-files=no)"
 
 include $(SYSTEM_FILES_DIR)/Makefile
-LDFLAGS += -Tstaging_reserve.ld -Ttrampoline_reserve.ld
+# Share numeric definitions with C++ and assembly; ld itself has no C preprocessor.
+SELECTOR_LINKER_SCRIPTS = $(addprefix $(BUILD_DIR)/,staging_reserve.ld trampoline_reserve.ld)
+LDFLAGS += $(addprefix -T,$(SELECTOR_LINKER_SCRIPTS))
+$(SELECTOR_LINKER_SCRIPTS): $(BUILD_DIR)/%.ld: %.ld ../support/selector_constants.h | $(BUILD_DIR)
+	$(CC) -E -P -x c $< -o $@
+# Upstream assembly rules do not emit header dependencies.
+$(addprefix $(BUILD_DIR)/,copy_jump.o resident_boot.o): ../support/selector_constants.h
 # The upstream rules omit library/linker inputs and the included build rules.
 # Recompile for SDK flag changes; relink for rebuilt archives or memory layouts.
 $(OBJECTS): $(SYSTEM_FILES_DIR)/Makefile
-$(BUILD_DIR)/$(TARGET).elf: $(LIBDAISY_DIR)/build/libdaisy.a $(LDSCRIPT) staging_reserve.ld trampoline_reserve.ld
+$(BUILD_DIR)/$(TARGET).elf: $(LIBDAISY_DIR)/build/libdaisy.a $(LDSCRIPT) $(SELECTOR_LINKER_SCRIPTS)
 all: check-pins

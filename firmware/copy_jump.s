@@ -1,3 +1,4 @@
+#include "../support/selector_constants.h"
 .syntax unified
 .cpu cortex-m7
 .thumb
@@ -28,8 +29,8 @@ copy_byte:
     // Staging begins at 0x30008000, outside this arena. Teardown has already
     // reset bus masters and cleaned/disabled caches. Do not erase live
     // selector data earlier; this stackless terminal phase never returns.
-    ldr r0, =0x30000000
-    ldr r1, =0x30008000
+    ldr r0, =SELECTOR_DMA_BASE
+    ldr r1, =SELECTOR_DMA_END
     movs r3, #0
 clear_dma_word:
     str r3, [r0], #4
@@ -37,7 +38,7 @@ clear_dma_word:
     bne clear_dma_word
     dsb sy
     isb sy
-    ldr r3, =0xe000ed08
+    ldr r3, =SELECTOR_VTOR_REGISTER
     str r4, [r3]
     ldr r5, [r4]
     ldr r6, [r4, #4]
@@ -74,8 +75,8 @@ selector_qspi_jump_start:
     cpsid i
     mov r4, r0
     mov r6, r1
-    ldr r0, =0x30000000
-    ldr r1, =0x30008000
+    ldr r0, =SELECTOR_DMA_BASE
+    ldr r1, =SELECTOR_DMA_END
     movs r3, #0
 qspi_clear_dma_word:
     str r3, [r0], #4
@@ -83,7 +84,7 @@ qspi_clear_dma_word:
     bne qspi_clear_dma_word
     dsb sy
     isb sy
-    ldr r3, =0xe000ed08
+    ldr r3, =SELECTOR_VTOR_REGISTER
     str r4, [r3]
     ldr r5, [r4]
     cmp r6, #0

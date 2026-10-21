@@ -1,4 +1,5 @@
 #pragma once
+#include "selector_constants.h"
 
 // Structural checks for a caller-pinned application base, not image identity.
 #include <cstddef>
@@ -34,7 +35,7 @@ namespace daisy_development
         const auto stack = word(0U);
         const auto reset = word(4U);
         const auto entry = reset & ~1U;
-        if(stack <= 0x20000000U || stack > 0x20020000U
+        if(stack <= SELECTOR_DTCM_BASE || stack > SELECTOR_DTCM_END
            || (stack & 7U) != 0U || (reset & 1U) == 0U
            || entry < base
            || std::uint64_t(entry) + 2U > std::uint64_t(base) + size)
@@ -47,6 +48,6 @@ namespace daisy_development
     inline bool ReadSramImageVectors(const std::uint8_t* bytes, std::size_t size,
                                     std::size_t capacity, SramImageVectors& result)
     {
-        return ReadImageVectors(bytes, size, capacity, 0x24000000U, result);
+        return ReadImageVectors(bytes, size, capacity, SELECTOR_AXI_SRAM_BASE, result);
     }
 }

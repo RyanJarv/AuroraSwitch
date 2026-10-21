@@ -51,6 +51,25 @@ class ResidentLayoutTests(unittest.TestCase):
         (self.root / "support/resident_layout.h").unlink()
         self.assertEqual(resident.layout(self.revision), expected)
 
+    def test_shared_header_migration_preserves_old_source_layout(self):
+        expected = resident.layout(self.revision)
+        shared = self.root / "support/selector_constants.h"
+        shared.write_text(HEADER)
+        self.git("rm", "support/resident_layout.h")
+        self.git("add", "support/selector_constants.h")
+        self.git("commit", "--quiet", "-m", "move constants")
+        revision = self.git("rev-parse", "HEAD")
+        shared.write_text("dirty shared header")
+        self.assertEqual(resident.layout(revision), expected)
+        self.assertEqual(resident.layout(self.revision), expected)
+
+    def test_malformed_shared_header_never_falls_back_to_legacy(self):
+        (self.root / "support/selector_constants.h").write_text("invalid definitions")
+        self.git("add", "support/selector_constants.h")
+        self.git("commit", "--quiet", "-m", "malformed shared constants")
+        with self.assertRaisesRegex(ValueError, "layout definitions"):
+            resident.layout(self.git("rev-parse", "HEAD"))
+
     def test_replace_refs_cannot_change_the_bound_layout(self):
         changed = self.commit_header(HEADER.replace("0x90059000", "0x9005a000"))
         self.git("replace", self.revision, changed)

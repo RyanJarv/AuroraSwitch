@@ -27,7 +27,7 @@ namespace aurora_selector
         {
             crc ^= record[i];
             for(unsigned bit = 0; bit < 8; ++bit)
-                crc = (crc >> 1) ^ ((0U - (crc & 1U)) & 0xedb88320U);
+                crc = (crc >> 1) ^ ((0U - (crc & 1U)) & SELECTOR_BOOT_CRC_POLYNOMIAL);
         }
         return ~crc;
     }
@@ -61,9 +61,9 @@ namespace aurora_selector
         {
             const auto delta = RecordWord(records[1], 8) - RecordWord(records[0], 8);
             // Equal/conflicting and half-range sequences have no safe ordering.
-            if((delta == 0 && records[0] != records[1]) || delta == 0x80000000U)
+            if((delta == 0 && records[0] != records[1]) || delta == SELECTOR_GENERATION_HALF_RANGE)
                 return {-1, -2, 0};
-            slot = delta != 0 && delta < 0x80000000U ? 1 : 0;
+            slot = delta != 0 && delta < SELECTOR_GENERATION_HALF_RANGE ? 1 : 0;
         }
         return slot < 0 ? BootChoice{} : BootChoice{RecordChoice(records[slot]), slot, RecordWord(records[slot], 8)};
     }

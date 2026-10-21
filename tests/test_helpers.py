@@ -117,7 +117,11 @@ class HelperTests(unittest.TestCase):
     def test_linked_inputs_invalidate_incremental_build(self):
         """Exercise Make dependencies without an Arm compiler or SDK checkout."""
         with tempfile.TemporaryDirectory(prefix="aurora-make-tests-") as directory:
-            root = Path(directory)
+            root = Path(directory) / "firmware"
+            root.mkdir()
+            constants = root.parent / "support/selector_constants.h"
+            constants.parent.mkdir()
+            shutil.copyfile(ROOT / "support/selector_constants.h", constants)
             core = root / "sdk/libs/libDaisy/core"
             core.mkdir(parents=True)
             archive = core.parent / "build/libdaisy.a"
@@ -128,23 +132,28 @@ class HelperTests(unittest.TestCase):
             upstream = core / "Makefile"
             # Match the pinned upstream dependency structure, not its compiler.
             upstream.write_text(
-                "OBJECTS = $(BUILD_DIR)/probe.o\n"
+                "OBJECTS = $(addprefix $(BUILD_DIR)/,probe.o copy_jump.o resident_boot.o)\n"
                 "LDSCRIPT = $(SYSTEM_FILES_DIR)/sram.lds\n"
                 "$(BUILD_DIR)/probe.o: probe.cpp Makefile\n"
                 "\t@echo compile-probe\n"
+                "$(BUILD_DIR)/copy_jump.o: copy_jump.s Makefile\n"
+                "\t@echo compile-assembly\n"
+                "$(BUILD_DIR)/resident_boot.o: resident_boot.s Makefile\n"
+                "\t@echo compile-assembly\n"
                 "$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile\n"
                 "\t@echo link-selector -o $@\n")
             shutil.copyfile(ROOT / "firmware/Makefile", root / "Makefile")
-            for name in ("probe.cpp", "staging_reserve.ld", "trampoline_reserve.ld"):
+            for name in ("probe.cpp", "copy_jump.s", "resident_boot.s", "staging_reserve.ld", "trampoline_reserve.ld"):
                 (root / name).write_text("synthetic input\n")
             builds = ((0, "build-experimental-dma", "AuroraSwitch"),
                       (1, "build-virtual-experimental-dma", "AuroraSwitchVirtual"))
             for virtual, build, target in builds:
                 folder = root / build
                 folder.mkdir()
-                (folder / "probe.o").write_bytes(b"synthetic object")
+                for name in ("probe.o", "copy_jump.o", "resident_boot.o", "staging_reserve.ld", "trampoline_reserve.ld"):
+                    (folder / name).write_bytes(b"synthetic build output")
                 (folder / f"{target}.elf").write_bytes(b"synthetic ELF")
-            for path in root.rglob("*"):
+            for path in root.parent.rglob("*"):
                 if path.is_file():
                     os.utime(path, (1000, 1000))
             for virtual, build, target in builds:
@@ -155,7 +164,8 @@ class HelperTests(unittest.TestCase):
                 baseline = subprocess.run(command, cwd=root, capture_output=True, text=True)
                 self.assertEqual(baseline.returncode, 0, baseline.stderr)
                 self.assertNotIn("link-selector", baseline.stdout)
-                for changed in (archive, linker, upstream):
+                for changed in (archive, linker, upstream, Path("../support/selector_constants.h"),
+                                Path("staging_reserve.ld"), Path("trampoline_reserve.ld")):
                     with self.subTest(virtual=virtual, changed=changed.name):
                         result = subprocess.run(command + ["-W", str(changed)],
                                                 cwd=root, capture_output=True, text=True)
@@ -163,6 +173,9 @@ class HelperTests(unittest.TestCase):
                         self.assertIn("link-selector", result.stdout)
                         if changed == upstream:
                             self.assertIn("compile-probe", result.stdout)
+                        if changed == Path("../support/selector_constants.h"):
+                            self.assertEqual(result.stdout.count("compile-assembly"), 2)
+                            self.assertEqual(result.stdout.count("-E -P -x c"), 2)
 
     def test_synthetic_objects_cannot_share_installable_directory(self):
         result = subprocess.run(["make", "-n", "-C", str(ROOT / "firmware"),

@@ -72,7 +72,7 @@ namespace
         aurora_selector::FileReader reader{transport, load_diagnostic};
         load_diagnostic.attempts = load_diagnostic.attempts + 1U;
         load_diagnostic.selection = index;
-        load_diagnostic.staging_result = 0xffffffffU;
+        load_diagnostic.staging_result = SELECTOR_DIAGNOSTIC_UNAVAILABLE;
         load_diagnostic.fatfs_result = transport.SuccessResult();
         load_diagnostic.file_size = 0;
         load_diagnostic.bytes_read = 0;
@@ -139,7 +139,7 @@ int main()
     led_config.speed = daisy::I2CHandle::Config::Speed::I2C_1MHZ;
     led_config.mode = daisy::I2CHandle::Config::Mode::I2C_MASTER;
     i2c.Init(led_config);
-    leds.Init(i2c, {0x00, 0x01}, aurora::led_dma_buffer_a, aurora::led_dma_buffer_b);
+    leds.Init(i2c, {SELECTOR_LED_DRIVER_A, SELECTOR_LED_DRIVER_B}, aurora::led_dma_buffer_a, aurora::led_dma_buffer_b);
     for(int channel = 0; channel < 32; ++channel)
         leds.SetLed(channel, 0.f);
 

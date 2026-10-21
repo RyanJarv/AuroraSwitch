@@ -6,6 +6,7 @@ import struct
 import subprocess
 import tempfile
 
+from selector_constants import CONSTANTS
 from package import digest, toolchain_identity
 from setup_dependencies import ROOT, PINS, DAISY, git, setup
 
@@ -25,9 +26,9 @@ def check_vectors(data: bytes) -> None:
     """Match the selector's minimum image extent and the pinned staging contract."""
     if not 16 <= len(data) <= 181888:
         raise ValueError("payload probe exceeds staging bounds or is too short")
-    base = 0x24000000
+    base = CONSTANTS["AXI_SRAM_BASE"]
     stack, reset = struct.unpack_from("<II", data)
-    if stack != 0x20020000 or not reset & 1 or not base <= reset < base + len(data):
+    if stack != CONSTANTS["DTCM_END"] or not reset & 1 or not base <= reset < base + len(data):
         raise ValueError("payload probe vector contract mismatch")
 
 
