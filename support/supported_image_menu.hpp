@@ -37,6 +37,12 @@ namespace daisy_development
 
         bool HasSelection() const { return available_[selected_]; }
         std::size_t Selected() const { return selected_; }
+        bool Select(std::size_t index)
+        {
+            if(index >= Count || !available_[index]) return false;
+            selected_ = index;
+            return true;
+        }
         void Next()
         {
             if(!HasSelection()) return;

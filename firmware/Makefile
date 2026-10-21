@@ -19,7 +19,7 @@ $(error Use BUILD_DIR=$(EXPECTED_BUILD_DIR) for this transport)
 endif
 # Preserve link order for stable exact-image diagnostic bindings.
 CPP_SOURCES = handoff.cpp selector.cpp
-ASM_SOURCES = copy_jump.s
+ASM_SOURCES = copy_jump.s resident_boot.s
 override APP_TYPE := BOOT_SRAM
 USE_FATFS = 1
 CPP_STANDARD = -std=gnu++17

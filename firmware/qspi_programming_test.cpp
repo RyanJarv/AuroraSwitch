@@ -48,6 +48,13 @@ int main()
     assert(ProgramQspiImage(driver, bytes.data(), bytes.size(), good, diagnostic) == QspiResult::Ready);
     assert(diagnostic.erase_attempts == 24 && diagnostic.pages == 372);
     assert(diagnostic.verified == bytes.size() && diagnostic.stage == 5);
+    const auto installed = driver.nor;
+    for(unsigned boot = 0; boot < 3; ++boot)
+    {
+        assert(ProgramQspiImage(driver, bytes.data(), bytes.size(), good, diagnostic) == QspiResult::Ready);
+        assert(diagnostic.erase_attempts == 0 && diagnostic.pages == 0);
+        assert(driver.nor == installed && driver.erase_count == 24 && driver.page_count == 372);
+    }
     for(unsigned i = 0; i < QspiApplicationOffset; ++i) assert(driver.nor[i] == 0x5a);
     for(unsigned i = QspiApplicationEnd; i < driver.nor.size(); ++i) assert(driver.nor[i] == 0x5a);
     for(unsigned i = QspiApplicationOffset + bytes.size(); i < QspiApplicationEnd; ++i)

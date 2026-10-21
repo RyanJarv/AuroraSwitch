@@ -12,6 +12,12 @@ struct FakeMedia
     std::array<bool, sizeof(aurora_selector::Images) / sizeof(aurora_selector::Images[0])> present{};
     unsigned attempts = 0, launches = 0, last_launch = 0;
     unsigned discovery_starts = 0, discovery_ends = 0;
+    int saved = -1;
+    bool remember_fail = false;
+    unsigned remembers = 0;
+
+    int BootChoice() { return saved; }
+    bool Remember(unsigned index) { ++remembers; saved = index; return !remember_fail; }
 
     bool Ready() const { return ready; }
     void BeginDiscovery() { ++discovery_starts; }
@@ -99,4 +105,33 @@ int main()
     interrupted_selector.Update(false, false, true, [] {});
     assert(interrupted_selector.GetState() == Controller::State::Waiting);
     assert(!interrupted_selector.Menu().HasSelection() && interrupted.launches == 0);
+
+    for(bool menu : {false, true})
+    {
+        FakeMedia boot;
+        boot.ready = true;
+        boot.saved = 2;
+        boot.present[0] = boot.present[2] = true;
+        Controller automatic(boot);
+        if(menu) automatic.RequestMenu();
+        automatic.Update(false, false, false, [] {});
+        assert(boot.launches == (menu ? 0U : 1U));
+        assert(boot.remembers == 0); // Automatic startup never writes the saved choice.
+        if(!menu) assert(boot.last_launch == 2 && boot.attempts == boot.present.size() + 1);
+        boot.ready = false;
+        automatic.Update(false, false, false, [] {});
+        boot.ready = true;
+        automatic.Update(false, false, false, [] {});
+        assert(boot.launches == (menu ? 0U : 1U));
+    }
+    FakeMedia missing;
+    missing.ready = true;
+    missing.saved = 2;
+    missing.present[0] = true;
+    Controller missing_selector(missing);
+    missing_selector.Update(false, false, false, [] {});
+    assert(missing.launches == 0 && missing_selector.GetState() == Controller::State::Selected);
+    missing.remember_fail = true;
+    missing_selector.Update(false, false, true, [] {});
+    assert(missing.launches == 0 && missing_selector.GetState() == Controller::State::Error);
 }

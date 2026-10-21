@@ -44,6 +44,19 @@ namespace aurora_selector
         diagnostic.stage = 1;
         if(!driver.Initialize())
             return finish(QspiResult::InitializeFailed);
+        // An identical authenticated application needs neither erase nor program.
+        const auto* existing = driver.MappedData();
+        if(existing == nullptr) return finish(QspiResult::ReadbackFailed);
+        bool identical = true;
+        for(std::size_t offset = 0; offset < size; ++offset)
+            if(existing[offset] != staged[offset]) { identical = false; break; }
+        if(identical)
+        {
+            if(!authenticate()) return finish(QspiResult::ReadbackFailed);
+            diagnostic.verified = size;
+            diagnostic.stage = 5;
+            return finish(QspiResult::Ready);
+        }
         diagnostic.stage = 2;
         for(auto offset = QspiApplicationOffset; offset < extent.erase_end; offset += 4096U)
         {

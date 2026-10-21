@@ -2,6 +2,7 @@
 #include "aurora.h"
 #include "images.hpp"
 #include "selector_controller.hpp"
+#include "../support/boot_choice.hpp"
 #include "../support/read_only_image_staging.hpp"
 #include "../support/media_initialization.hpp"
 #include "../support/operation_timing.hpp"
@@ -11,6 +12,14 @@
 // by the virtual runner at SDRAM base; this build never initializes real USB.
 extern "C" {
 volatile daisy_development::BackedImageDescriptor selector_virtual_media{};
+// Synthetic persistence transport: raw records and I/O outcomes, never a
+// host-selected launch index. The guest decodes/adopts choices itself.
+struct VirtualBootStore
+{
+    std::uint32_t version, present, writes, fail_writes;
+    std::uint8_t records[2][80];
+};
+volatile VirtualBootStore selector_virtual_boot_store{1, 0, 0, 0, {}};
 }
 #endif
 #include "mbedtls/sha256.h"
@@ -47,6 +56,8 @@ namespace
         void EndDiscovery();
         bool Authenticate(unsigned index);
         bool Launch(unsigned index);
+        int BootChoice();
+        bool Remember(unsigned index);
     };
     SelectorMedia media;
     aurora_selector::SelectorController<SelectorMedia> controller(media);
@@ -68,6 +79,57 @@ namespace
     bool MediaReady() { return aurora::usb.GetReady(); }
     void PumpMedia() { aurora::usb.Process(); }
 #endif
+
+    struct BootStore
+    {
+        bool healthy = true;
+        bool Healthy() const { return healthy; }
+        bool Read(unsigned slot, aurora_selector::BootRecord& record)
+        {
+#ifdef SELECTOR_VIRTUAL_TRANSPORT
+            if(selector_virtual_boot_store.version != 1
+               || !(selector_virtual_boot_store.present & (1U << slot))) return false;
+            for(unsigned i = 0; i < record.size(); ++i)
+                record[i] = selector_virtual_boot_store.records[slot][i];
+            return true;
+#else
+            if(!MediaReady()) { healthy = false; return false; }
+            const char* path = slot == 0 ? "0:/aurora/boot-a.dat" : "0:/aurora/boot-b.dat";
+            const auto opened = f_open(&selector_file, path, FA_READ);
+            if(opened != FR_OK)
+            {
+                if(opened != FR_NO_FILE && opened != FR_NO_PATH) healthy = false;
+                return false;
+            }
+            UINT count = 0;
+            const bool size_valid = f_size(&selector_file) == record.size();
+            if(size_valid && (f_read(&selector_file, record.data(), record.size(), &count) != FR_OK
+                             || count != record.size())) healthy = false;
+            if(f_close(&selector_file) != FR_OK || !MediaReady()) healthy = false;
+            return healthy && size_valid;
+#endif
+        }
+        bool Write(unsigned slot, const aurora_selector::BootRecord& record)
+        {
+#ifdef SELECTOR_VIRTUAL_TRANSPORT
+            selector_virtual_boot_store.writes = selector_virtual_boot_store.writes + 1U;
+            if(selector_virtual_boot_store.version != 1 || selector_virtual_boot_store.fail_writes)
+                return false;
+            for(unsigned i = 0; i < record.size(); ++i)
+                selector_virtual_boot_store.records[slot][i] = record[i];
+            selector_virtual_boot_store.present = selector_virtual_boot_store.present | (1U << slot);
+            return true;
+#else
+            if(!MediaReady()) return false;
+            const char* path = slot == 0 ? "0:/aurora/boot-a.dat" : "0:/aurora/boot-b.dat";
+            if(f_open(&selector_file, path, FA_WRITE | FA_CREATE_ALWAYS) != FR_OK) return false;
+            UINT count = 0;
+            const bool valid = f_write(&selector_file, record.data(), record.size(), &count) == FR_OK
+                && count == record.size() && f_sync(&selector_file) == FR_OK;
+            return f_close(&selector_file) == FR_OK && valid && MediaReady();
+#endif
+        }
+    };
 
     // Freeze shows load status; Reverse shows the current catalog selection.
     void SetStatus(float r, float g, float b)
@@ -175,6 +237,16 @@ namespace
     void SelectorMedia::BeginDiscovery() { discovery_timing.Begin(daisy::System::GetNow()); }
     void SelectorMedia::EndDiscovery() { discovery_timing.Finish(daisy::System::GetNow()); }
     bool SelectorMedia::Authenticate(unsigned index) { return AuthenticateFile(index); }
+    int SelectorMedia::BootChoice()
+    {
+        BootStore store;
+        return aurora_selector::ReadBootChoice(store).index;
+    }
+    bool SelectorMedia::Remember(unsigned index)
+    {
+        BootStore store;
+        return aurora_selector::RememberBootChoice(store, index);
+    }
     bool SelectorMedia::Launch(unsigned index)
     {
 #ifdef SELECTOR_VIRTUAL_TRANSPORT
@@ -232,6 +304,7 @@ int main()
 #endif
 
     std::uint32_t last_control = daisy::System::GetNow();
+    const std::uint32_t buttons_started = last_control;
     while(true)
     {
         if(media_initialization != daisy_development::MediaInitialization::Ready)
@@ -251,6 +324,9 @@ int main()
         next_button.Debounce();
         load_button.Debounce();
         category_button.Debounce();
+        if(category_button.RawState() && next_button.RawState()) controller.RequestMenu();
+        // Allow a stable held combination before the first possible autoboot.
+        if(now - buttons_started < 30U) continue;
         const bool category_changed = category_button.FallingEdge();
         const bool selection_changed = next_button.FallingEdge();
         controller.Update(category_changed, selection_changed,

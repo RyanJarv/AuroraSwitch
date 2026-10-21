@@ -66,8 +66,12 @@ The lit arc shows the position within the category:
 Only available files appear. Selection changes take priority over simultaneous
 Freeze presses; no separate verification approval is retained.
 
-Power cycle to return to the menu. After changing files, reconnect the drive
-to rescan. Every launch rereads and verifies the selected file.
+Current source remembers the last chosen firmware on the USB drive and starts
+it on the next boot. **Hold Shift + Reverse at power-on** to open the menu.
+Keep the drive connected. A missing, changed, or invalid saved image leaves the
+menu open. Selecting a different firmware requires a writable drive; the same
+choice is not rewritten. After changing files, reconnect the drive to rescan.
+Every launch rereads and verifies the selected file.
 Morse needs an external Freeze-gate clock and Mix above zero.
 
 Colors are fixed per firmware family across versions and installs. Keep one
@@ -127,6 +131,11 @@ Only Dirt uses QSPI; HP-filter still launches from RAM. QSPI launching replaces
 the installed application. Returning to the selector depends on ready USB media
 containing its root BIN. Do not treat reset alone
 as guaranteed menu re-entry or recovery.
+
+The development [resident installer](development/persistent_boot.md) keeps Dirt
+and the selector installed together, avoiding those application rewrites.
+It is built locally from your own exact Dirt BIN; it is not a release download
+and has not been physically qualified.
 
 With the pinned GNU Arm 10 toolchain on PATH:
 

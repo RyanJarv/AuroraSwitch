@@ -36,6 +36,12 @@ class HelperTests(unittest.TestCase):
     def test_selector_with_replaced_media(self):
         self.compile_and_run("selector_controller_test")
 
+    def test_persistent_boot_choice(self):
+        self.compile_and_run("boot_choice_test")
+
+    def test_resident_image_bounds_and_exact_patch(self):
+        self.compile_and_run("resident_image_test")
+
     def test_catalog_colors_and_capacity(self):
         self.compile_and_run("catalog_test")
 

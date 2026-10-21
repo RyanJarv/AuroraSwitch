@@ -26,7 +26,9 @@ For the current source build:
 
 The older published release uses Reverse → Freeze → Shift instead.
 
-Power cycle to return to the selector.
+The current source remembers the chosen firmware on USB and starts it on the
+next boot. **Hold Shift + Reverse at power-on** to open the menu. Keep the USB
+drive connected. Missing or invalid saved files leave the menu open.
 
 Other supported firmware BINs go in the same `aurora/` folder. Files shared on
 Discord must be added manually. See the [user guide](docs/user_guide.md).

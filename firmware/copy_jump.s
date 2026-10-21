@@ -61,7 +61,8 @@ invalid_length:
     .ltorg
 selector_copy_jump_end:
 
-// Separate terminal blob: R0 is the verified, memory-mapped QSPI vector base.
+// R0 is the verified QSPI vector base; R1 optionally holds the authenticated
+// original reset PC when a resident image redirects its power-on reset word.
 // No relocation/copy. Selector SRAM remains intact; runtime cleanup is shared.
 .balign 4
 .global selector_qspi_jump_blob_start
@@ -72,6 +73,7 @@ selector_qspi_jump_blob_start:
 selector_qspi_jump_start:
     cpsid i
     mov r4, r0
+    mov r6, r1
     ldr r0, =0x30000000
     ldr r1, =0x30008000
     movs r3, #0
@@ -84,7 +86,10 @@ qspi_clear_dma_word:
     ldr r3, =0xe000ed08
     str r4, [r3]
     ldr r5, [r4]
+    cmp r6, #0
+    bne qspi_reset_selected
     ldr r6, [r4, #4]
+qspi_reset_selected:
     movs r0, #0
     msr control, r0
     msr basepri, r0

@@ -14,8 +14,11 @@ namespace aurora_selector
 
         explicit SelectorController(Media& media) : media_(media), menu_(Categories) {}
 
+        void RequestMenu() { boot_pending_ = false; }
+
         void FailInitialization()
         {
+            RequestMenu();
             menu_.Clear();
             state_ = State::Error;
         }
@@ -24,6 +27,8 @@ namespace aurora_selector
                                             bool selection_changed,
                                             bool load_pressed, Loading loading)
         {
+            if(category_changed || selection_changed) RequestMenu();
+            bool automatic = false;
             const bool media_ready = media_.Ready();
             if(!media_ready)
             {
@@ -43,6 +48,13 @@ namespace aurora_selector
                 selected_ = static_cast<unsigned>(menu_.Selected());
                 state_ = !media_.Ready() ? State::Waiting
                     : menu_.HasSelection() ? State::Selected : State::Empty;
+                if(boot_pending_)
+                {
+                    boot_pending_ = false; // One attempt; reconnect never launches unexpectedly.
+                    const int choice = media_.BootChoice();
+                    automatic = choice >= 0 && media_.Ready() && menu_.Select(choice);
+                    selected_ = static_cast<unsigned>(menu_.Selected());
+                }
             }
             media_was_ready_ = media_.Ready();
             if(category_changed || selection_changed)
@@ -53,12 +65,13 @@ namespace aurora_selector
                 state_ = !media_.Ready() ? State::Waiting
                     : menu_.HasSelection() ? State::Selected : State::Empty;
             }
-            if(load_pressed && !category_changed && !selection_changed
+            if((load_pressed || automatic) && !category_changed && !selection_changed
                && media_.Ready() && menu_.HasSelection())
             {
                 state_ = State::Loading;
                 loading();
                 if(!media_.Authenticate(selected_) || !media_.Ready()
+                   || (!automatic && !media_.Remember(selected_)) || !media_.Ready()
                    || !media_.Launch(selected_))
                     state_ = State::Error;
             }
@@ -75,5 +88,6 @@ namespace aurora_selector
         unsigned selected_ = 0;
         State state_ = State::Waiting;
         bool media_was_ready_ = false;
+        bool boot_pending_ = true;
     };
 }

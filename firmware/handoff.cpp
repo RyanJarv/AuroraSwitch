@@ -5,6 +5,7 @@
 #include "mbedtls/sha256.h"
 #include <cstring>
 #include "../support/qspi_image_programming.hpp"
+#include "../support/resident_image.hpp"
 extern "C" {
 volatile aurora_selector::QspiDiagnostic selector_qspi_diagnostic{};
 }
@@ -20,6 +21,8 @@ extern "C"
     extern std::uint8_t selector_trampoline_limit[];
     extern const std::uint8_t selector_qspi_jump_blob_start[];
     extern const std::uint8_t selector_qspi_jump_end[];
+    extern const std::uint8_t selector_resident_boot_start[];
+    extern const std::uint8_t selector_resident_boot_end[];
 }
 
 namespace aurora_selector
@@ -30,8 +33,10 @@ namespace aurora_selector
         struct QspiDriver
         {
             daisy::QSPIHandle& qspi;
+            bool initialized = false;
             bool Initialize()
             {
+                if(initialized) return true;
                 daisy::QSPIHandle::Config config{};
                 config.device = daisy::QSPIHandle::Config::IS25LP064A;
                 config.mode = daisy::QSPIHandle::Config::MEMORY_MAPPED;
@@ -41,7 +46,8 @@ namespace aurora_selector
                 config.pin_config.io3 = dsy_pin(DSY_GPIOF, 6);
                 config.pin_config.clk = dsy_pin(DSY_GPIOF, 10);
                 config.pin_config.ncs = dsy_pin(DSY_GPIOG, 6);
-                return qspi.Init(config) == daisy::QSPIHandle::OK;
+                initialized = qspi.Init(config) == daisy::QSPIHandle::OK;
+                return initialized;
             }
             bool EraseSector(std::uint32_t offset)
             { return qspi.EraseSector(offset) == daisy::QSPIHandle::OK; }
@@ -92,6 +98,7 @@ namespace aurora_selector
             const Image& image;
             const std::uint8_t* staged;
             bool qspi_prepared = false;
+            bool resident = false;
 
             bool PrepareTarget()
             {
@@ -102,6 +109,25 @@ namespace aurora_selector
                 if(!IsReviewedQspiImage(image) || !Validate())
                     return false;
                 QspiDriver driver{seed.qspi};
+                if(!driver.Initialize()) return false;
+                const auto* mapped = driver.MappedData();
+                if(ResidentPresent(mapped))
+                {
+                    // A local composite stays installed. Never repair it by
+                    // erasing Dirt's vectors or the resident dispatcher.
+                    selector_qspi_diagnostic.stage = selector_qspi_diagnostic.erase_attempts = 0;
+                    selector_qspi_diagnostic.pages = selector_qspi_diagnostic.verified = 0;
+                    selector_qspi_diagnostic.result = static_cast<std::uint32_t>(QspiResult::ReadbackFailed);
+                    if(!ResidentDirtMatches(mapped, staged, image.size)
+                       || !ResidentBootMatches(mapped, selector_resident_boot_start,
+                           selector_resident_boot_end - selector_resident_boot_start)
+                       || !Validate()) return false;
+                    resident = qspi_prepared = true;
+                    selector_qspi_diagnostic.verified = image.size;
+                    selector_qspi_diagnostic.stage = 5;
+                    selector_qspi_diagnostic.result = static_cast<std::uint32_t>(QspiResult::Ready);
+                    return true;
+                }
                 const auto result = ProgramQspiImage(driver, staged, image.size,
                     [this] { return Validate(); }, selector_qspi_diagnostic,
                     {image.size, QspiApplicationOffset
@@ -130,7 +156,10 @@ namespace aurora_selector
                 {
                     QspiDriver driver{seed.qspi};
                     const auto* mapped = driver.MappedData();
-                    return mapped != nullptr && std::memcmp(mapped, staged, image.size) == 0;
+                    return resident ? ResidentDirtMatches(mapped, staged, image.size)
+                        && ResidentBootMatches(mapped, selector_resident_boot_start,
+                            selector_resident_boot_end - selector_resident_boot_start)
+                        : mapped != nullptr && std::memcmp(mapped, staged, image.size) == 0;
                 }
                 return staged_valid;
             }
@@ -219,7 +248,10 @@ namespace aurora_selector
                     reinterpret_cast<std::uintptr_t>(selector_trampoline_ram) | 1U);
                 if(image.execution == Execution::Qspi)
                 {
-                    entry(reinterpret_cast<const std::uint8_t*>(0x90040000U), nullptr, 0);
+                    // A resident image redirects only the power-on reset word.
+                    // Explicit Dirt launch uses its authenticated original PC.
+                    entry(reinterpret_cast<const std::uint8_t*>(0x90040000U),
+                          resident ? reinterpret_cast<std::uint8_t*>(image.vectors.reset) : nullptr, 0);
                     Fatal();
                 }
                 entry(staged, reinterpret_cast<std::uint8_t*>(0x24000000U), image.size);
