@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -17,12 +18,37 @@ class HelperTests(unittest.TestCase):
             executable = Path(directory) / source
             command = [os.environ.get("CXX", "c++"), "-std=c++17", "-Wall", "-Wextra", "-Werror"]
             if os.environ.get("AURORA_HOST_SANITIZERS") == "1":
-                command += ["-g", "-fsanitize=address,undefined", "-fno-omit-frame-pointer"]
+                command += ["-g", "-fsanitize=address,undefined", "-fno-sanitize-recover=all",
+                            "-fno-omit-frame-pointer"]
             if usb:
                 command += ["-I" + str(ROOT / "tests/fakes"), str(ROOT / "firmware/media_usb.cpp")]
             command += [str(ROOT / "firmware" / (source + ".cpp")), "-o", str(executable)]
             subprocess.run(command, check=True)
             subprocess.run([str(executable)], check=True)
+
+    def test_sanitizer_gate_rejects_undefined_behavior(self):
+        with tempfile.TemporaryDirectory(prefix="aurora-ubsan-negative-") as directory:
+            root = Path(directory)
+            (root / "firmware").mkdir()
+            (root / "firmware/ub_probe.cpp").write_text(
+                "#include <climits>\n"
+                "int main() { volatile int value = INT_MAX; "
+                "volatile int overflow = value + 1; (void)overflow; }\n")
+            execute = subprocess.run
+
+            def capture(*args, **kwargs):
+                # Run the actual compiler and executable; retain their output so
+                # neither a compilation error nor an unrelated crash can pass.
+                kwargs.update(capture_output=True, text=True)
+                return execute(*args, **kwargs)
+
+            with mock.patch(__name__ + ".ROOT", root), mock.patch.dict(os.environ, {
+                "AURORA_HOST_SANITIZERS": "1", "UBSAN_OPTIONS": "halt_on_error=0",
+            }), mock.patch.object(subprocess, "run", side_effect=capture):
+                with self.assertRaises(subprocess.CalledProcessError) as failure:
+                    self.compile_and_run("ub_probe")
+            self.assertEqual(len(failure.exception.cmd), 1)  # Execution, not compilation.
+            self.assertIn("runtime error: signed integer overflow", failure.exception.stderr)
 
     def test_production_usb_file_policy(self):
         self.assertEqual(hashlib.sha256((ROOT / "tests/fakes/file_media_before_refactor.hpp").read_bytes()).hexdigest(),

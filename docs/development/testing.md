@@ -6,6 +6,12 @@ UndefinedBehaviorSanitizer. CI runs both commands and compiles both Arm
 transports using the existing pinned Docker toolchain. A native C++17 compiler and
 its sanitizer runtime are required; no module or vendor payloads are needed.
 
+Sanitizer findings terminate the native probe with a failing exit status. A
+signed-overflow negative control exercises the actual compile/run helper in both
+test commands, including with `UBSAN_OPTIONS=halt_on_error=0`. It requires the
+specific runtime diagnostic and a failed executable; compiler errors and
+unrelated crashes cannot satisfy the check.
+
 ## Shared production code
 
 `selector_controller.hpp` owns selection, discovery and automatic-launch policy.
