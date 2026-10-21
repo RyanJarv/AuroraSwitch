@@ -1,0 +1,132 @@
+{
+  "browser_smoke": "pass: mobile, dark, keyboard, no JavaScript and data failures",
+  "date": "2026-10-21",
+  "development_only": true,
+  "host_tests": 74,
+  "limits": [
+    "Synthetic USB and saved files; prepared loader handoff, not a complete power cycle.",
+    "Stock updater root comparison is supported by prior linked/source review, not executed here.",
+    "Dirt runs through genuine reset and constructors to main; FDN stops at its genuine reset entry.",
+    "Complete 8-MiB NOR equality and zero array erase/program/status writes are checked before payload main.",
+    "No new audio/control, physical USB, interrupted write, QSPI cache/timing, or stock recovery qualification.",
+    "No hardware access, flashing, or mounted-drive changes performed."
+  ],
+  "linked_regressions": [
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "4ced4615158f6d35b6cb48985f0e69fde9e1a28f13d25c6372082a55f06f71d0",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_log_sha256": "4888776cc252be09bce96063bb48996b1efb57e6deedcd3c9adb6204333b3c5d",
+      "scenario": "dirt"
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "4ced4615158f6d35b6cb48985f0e69fde9e1a28f13d25c6372082a55f06f71d0",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_log_sha256": "1c558b2ff10a737856bd0a3103d30dbd9eb05984d1e710a4a525c8657b2acd9e",
+      "scenario": "repeat-dirt"
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "4ced4615158f6d35b6cb48985f0e69fde9e1a28f13d25c6372082a55f06f71d0",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_log_sha256": "03581d5860ee2506fb56862fc89fa2bf07fa413b8f1f8b8b01cf1cc17ae81902",
+      "scenario": "fdn"
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "4ced4615158f6d35b6cb48985f0e69fde9e1a28f13d25c6372082a55f06f71d0",
+      "payload_entered": false,
+      "program_bytes": 0,
+      "raw_log_sha256": "930f6534a7b5478f9a70577e03260deeb720ef317ca0a88feb1f3afbaea655f5",
+      "scenario": "menu"
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "4ced4615158f6d35b6cb48985f0e69fde9e1a28f13d25c6372082a55f06f71d0",
+      "payload_entered": false,
+      "program_bytes": 0,
+      "raw_log_sha256": "075518967c84acc1255ff11e84430c555de59ea637a7780090d0ac60ef4ad265",
+      "scenario": "bad-record"
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "4ced4615158f6d35b6cb48985f0e69fde9e1a28f13d25c6372082a55f06f71d0",
+      "payload_entered": false,
+      "program_bytes": 0,
+      "raw_log_sha256": "bd350efea4cb123fbff0a4dfa8518f77b0c465800a82fa84eda0a6d72ffeb825",
+      "scenario": "unknown-record"
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "4ced4615158f6d35b6cb48985f0e69fde9e1a28f13d25c6372082a55f06f71d0",
+      "payload_entered": false,
+      "program_bytes": 0,
+      "raw_log_sha256": "30348765970a70258e8b904854ab9f85016518ab5242cfae1479e8625515bf21",
+      "scenario": "bad-file"
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "39b03205255d10c5af69ed3f10fae298a4e7e84f5bd863f388315e6036586886",
+      "payload_entered": false,
+      "program_bytes": 0,
+      "raw_log_sha256": "f33a97a3f006e1b5d274e2dd4e4b5352bce33c90ebabae2c86250b56819d8907",
+      "scenario": "bad-resident"
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "08fb75773fcee3674eb6baae39cc5eab93702978c0cd595e8d1e52f2fc5c3c35",
+      "payload_entered": false,
+      "program_bytes": 0,
+      "raw_log_sha256": "50a272e13c89068e6b0e05eff05565df33bef90640147bc527f9c0120b920a73",
+      "scenario": "bad-wrapper"
+    },
+    {
+      "choice_writes": 1,
+      "erase_commands": 0,
+      "nor_sha256": "4ced4615158f6d35b6cb48985f0e69fde9e1a28f13d25c6372082a55f06f71d0",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_log_sha256": "335d5c64a7ad11e7b9aaf202ae3655729cb3e062ecb122c8f149ab98537d3720",
+      "scenario": "choose-fdn"
+    },
+    {
+      "choice_writes": 0,
+      "erase_commands": 0,
+      "nor_sha256": "4ced4615158f6d35b6cb48985f0e69fde9e1a28f13d25c6372082a55f06f71d0",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_log_sha256": "af45ea9732ad960f04c28da3fca9a5ed8c4c316120f23fcc1ef3a7bfb67df654",
+      "scenario": "repeat-fdn"
+    }
+  ],
+  "local_private_evidence": ".deps/persistent-boot-22439a1",
+  "negative_before_fix": {
+    "after_fix": "Unknown latest choice leaves menu open; explicit choice replaces it.",
+    "log_sha256": "fe10c1144ea4ae9e9f7e969599db84dc378e34cf31e990c78311e9d038f48aaf",
+    "observation": "Newer intact record with unknown catalog hash incorrectly fell back to an older firmware.",
+    "source_before_fix": "35c522e"
+  },
+  "physical_qualified": false,
+  "private_installer_bytes": 209528,
+  "private_installer_receipt_sha256": "2a6013dc6f884042155b01ef3ea8157a829435bb5697c493515b2d17bff3df9e",
+  "private_installer_sha256": "3ba3d22df77e89589277294fec49e476c4d84d0d62df82d1fd4831344ada7b86",
+  "raw_report_sha256": "4917da0e8e0003345b8ed9bef5aab1a4979e38c5e9d27016ba2c726ed2ba7d02",
+  "runner_sha256": "e379c7bd9091dd740d3cf9a17107f2cb64d2243f1c401b840e5a00bba30a3785",
+  "schema": "aurora-persistent-boot-checkpoint-v1",
+  "selector_manifest_sha256": "f76e56fe756a53b0a8a0e39041ea6abdc211c5dbd1c203c483e8014e9b453d36",
+  "source_commit": "22439a1da00492cc28edab8401a6d04e37f254d4",
+  "virtual_manifest_sha256": "c855b34fce0a1c26cb74e67ad20b53c9e83f489ffcd5e4f86fa170af4bef52a1"
+}

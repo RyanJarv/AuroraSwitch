@@ -79,6 +79,17 @@ The separate `make package-virtual` companion produces a clearly named
 
 ## Development verification and physical boundary
 
+The [2026-10-21 checkpoint](evidence/persistent_boot_20261021.json) binds source
+`22439a1`, isolated real/synthetic package identities and the private installer.
+All 74 host tests, both isolated Arm packages, the browser smoke test, and 11
+linked virtual cases pass. The virtual cases include saving a new FDN choice,
+reusing that exact saved record on the next prepared startup, repeated Dirt
+startup, held-button override, and rejection of damaged/unknown records and
+payloads. Every case preserves the complete NOR array with zero erase/program
+or status writes in the tested window. Explicit FDN selection writes one USB
+choice record; automatic boots write none. Payload entry checks the complete
+32-KiB DMA arena and VTOR. Local raw records remain private under `.deps/`.
+
 `make check` covers choice corruption/torn records, sequence wrap, changed-choice
 write suppression, launch authentication, menu override, reconnect behavior,
 exact resident matching, bounded layout, and private-output guards.
