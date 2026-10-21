@@ -31,10 +31,14 @@ namespace aurora_selector
         }
         return ~crc;
     }
+    inline bool RecordValid(const BootRecord& record)
+    {
+        return std::memcmp(record.data(), "AURBOOT1", 8) == 0
+            && RecordWord(record, 76) == RecordCrc(record);
+    }
     inline int RecordChoice(const BootRecord& record)
     {
-        if(std::memcmp(record.data(), "AURBOOT1", 8) != 0
-           || RecordWord(record, 76) != RecordCrc(record)) return -1;
+        if(!RecordValid(record)) return -1;
         for(unsigned i = 0; i < sizeof(Images) / sizeof(Images[0]); ++i)
             if(std::memcmp(record.data() + 12, Images[i].sha256, 64) == 0)
                 return static_cast<int>(i);
@@ -48,25 +52,26 @@ namespace aurora_selector
     template<class Store> BootChoice ReadBootChoice(Store& store)
     {
         BootRecord records[2]{};
-        int choices[2]{-1, -1};
+        bool valid[2]{};
         for(unsigned slot = 0; slot < 2; ++slot)
-            if(store.Read(slot, records[slot])) choices[slot] = RecordChoice(records[slot]);
+            if(store.Read(slot, records[slot])) valid[slot] = RecordValid(records[slot]);
         if(!store.Healthy()) return {};
-        int slot = choices[0] >= 0 ? 0 : choices[1] >= 0 ? 1 : -1;
-        if(choices[0] >= 0 && choices[1] >= 0)
+        int slot = valid[0] ? 0 : valid[1] ? 1 : -1;
+        if(valid[0] && valid[1])
         {
             const auto delta = RecordWord(records[1], 8) - RecordWord(records[0], 8);
             // Equal/conflicting and half-range sequences have no safe ordering.
-            if((delta == 0 && records[0] != records[1]) || delta == 0x80000000U) return {};
+            if((delta == 0 && records[0] != records[1]) || delta == 0x80000000U)
+                return {-1, -2, 0};
             slot = delta != 0 && delta < 0x80000000U ? 1 : 0;
         }
-        return slot < 0 ? BootChoice{} : BootChoice{choices[slot], slot, RecordWord(records[slot], 8)};
+        return slot < 0 ? BootChoice{} : BootChoice{RecordChoice(records[slot]), slot, RecordWord(records[slot], 8)};
     }
     template<class Store> bool RememberBootChoice(Store& store, unsigned index)
     {
         if(index >= sizeof(Images) / sizeof(Images[0])) return false;
         const auto previous = ReadBootChoice(store);
-        if(!store.Healthy()) return false;
+        if(!store.Healthy() || previous.slot == -2) return false;
         if(previous.index == static_cast<int>(index)) return true; // No write on repeat boots.
         BootRecord record{};
         std::memcpy(record.data(), "AURBOOT1", 8);

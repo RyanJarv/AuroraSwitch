@@ -60,4 +60,21 @@ int main()
     wrap.read_fail = true;
     assert(ReadBootChoice(wrap).index == -1);
     assert(!RememberBootChoice(wrap, 2) && wrap.writes == 2);
+    Store unknown;
+    assert(RememberBootChoice(unknown, 0));
+    assert(RememberBootChoice(unknown, 1));
+    // A newer intact record for firmware removed from the catalog must not
+    // silently choose the older firmware. A manual choice can replace it.
+    unknown.records[1][12] = '!';
+    RecordWord(unknown.records[1], 76, RecordCrc(unknown.records[1]));
+    assert(ReadBootChoice(unknown).index == -1);
+    assert(RememberBootChoice(unknown, 2));
+    assert(ReadBootChoice(unknown).index == 2);
+    Store ambiguous;
+    assert(RememberBootChoice(ambiguous, 0));
+    assert(RememberBootChoice(ambiguous, 1));
+    RecordWord(ambiguous.records[1], 8, 1);
+    RecordWord(ambiguous.records[1], 76, RecordCrc(ambiguous.records[1]));
+    assert(ReadBootChoice(ambiguous).index == -1);
+    assert(!RememberBootChoice(ambiguous, 2) && ambiguous.writes == 2);
 }
