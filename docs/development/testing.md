@@ -19,7 +19,9 @@ menu and handoff sequence. The FatFs test boundary supplies in-memory files and
 read/write/sync/close/disconnect failures; it does not emulate a USB controller.
 Tests cover bounded reads, corrupt records, changed/repeat saves, no automatic
 save/retry loops, missing firmware and cleanup-time staged-byte rejection.
-The exact-image authenticator also checks user-supplied originals locally.
+Three mutation controls remove CRC checking, repeat suppression or save readback;
+the corresponding native assertions must fail. The exact-image authenticator
+also checks user-supplied originals locally.
 
 Virtual integration code and commands belong in their owning repository.
 Production-binary execution with modeled filesystem calls must be distinguished

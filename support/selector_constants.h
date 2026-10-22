@@ -25,12 +25,6 @@
 // Tell the CPU where to find the new firmware's interrupt vectors: the
 // Cortex-M7 System Control Block vector-table offset register (VTOR).
 #define SELECTOR_VTOR_REGISTER 0xe000ed08
-// IS25LP064A memory mapping (8 MiB). The Daisy loader's application starts
-// 256 KiB into flash, preserving the loader-owned settings/calibration area.
-#define SELECTOR_QSPI_BASE 0x90000000
-#define SELECTOR_QSPI_END 0x90800000
-#define SELECTOR_QSPI_APPLICATION_BASE 0x90040000
-#define SELECTOR_QSPI_APPLICATION_OFFSET 0x40000
 // CRC-32/ISO-HDLC reflected polynomial used for saved-choice records.
 #define SELECTOR_BOOT_CRC_POLYNOMIAL 0xedb88320
 // Word arithmetic and NVIC write-one masks have different meanings despite
@@ -41,7 +35,5 @@
 #define SELECTOR_LED_DRIVER_A 0x00
 #define SELECTOR_LED_DRIVER_B 0x01
 
-// Pinned stock updater reads/erases application files in 64-KiB blocks.
-#define SELECTOR_UPDATER_BLOCK_SIZE 65536
 // USB choice format: eight version bytes, catalog SHA-256 text, CRC-32.
 #define SELECTOR_CHOICE_FILE_SIZE 76
