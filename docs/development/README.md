@@ -1,60 +1,36 @@
 # Development
 
-Keep the loader small. Reuse the pinned SDK, libDaisy, FatFs, and SHA-256 code.
-Comment non-obvious files, types, and functions briefly: purpose, key invariants,
-and their role in the loader. Skip obvious names; explain why, not each statement.
-
-## Build and test
-
-Requires Git, GNU Make, Python 3, C/C++ compilers and GNU Arm Embedded
-**10-2020-q4-major** on PATH. Published releases need none of these tools.
+Build the USB-backed RAM selector in the base checkout. Development artifacts
+are not physically qualified releases.
 
 ```sh
-git clone https://github.com/RyanJarv/AuroraSwitch.git && cd AuroraSwitch
-make -j2 build
+make setup
 make check
+make test-sanitize
+make build
 make package
 ```
 
-See `make help` for virtual build targets. Never install virtual firmware.
-Packaging requires clean committed source; it records inputs and checks ELF/BIN
-agreement. It does not prove runtime behavior.
+Use GNU Arm 10-2020-q4-major on PATH. `make package` fresh-builds clean committed
+source and pinned dependencies, seals only our ELF/BIN/MAP and manifest under
+`dist/<manifest-sha256>/`, and checks source drift. It creates no Git worktree
+and performs no installation. Generated reports stay ignored.
 
-From a checkout, `make download-release USB_DIR="/Volumes/AURORA"` automates
-checked release/public-firmware downloads and copying; it needs `gh` and host
-compilers, but no Arm compiler. `scripts/prepare_payloads.py --output prepared
-local-firmware/AR_FDN_v1_2_2.bin` optionally verifies a user-supplied file before
-copying. Use a new output folder each time.
+See [architecture](architecture.md), [tests](testing.md), [release packaging](releases.md),
+[USB choice](persistent_boot.md), [failure priorities](failure_modes.md) and the
+[physical gate](recovery_release_gate.md).
 
 ## Add firmware
 
-1. Pin the file/version, size, hash, and vectors. Review RAM layout, startup,
-   DMA use, inherited clocks/MPU, and persistent writes.
-2. Add its path and menu color to [images.hpp](../../firmware/images.hpp).
-   Reuse its family's `menu_colors` constant for every version; new families
-   need a distinct color. Keep existing identities and review staging changes.
-3. Extend catalog/authentication tests. Run `make check` and validate local
-   payloads with `prepare_payloads.py` or `make verify-images`.
-4. Commit and package. Test linked launch, controls/audio, copy, and DMA cleanup.
-   Handoff changes also need complete switching-cycle tests.
-5. Record exact builds and limits, then test physical launch and stock recovery.
+Add exact identity, RAM vectors, filename, family/category/color and source link
+in `firmware/images.hpp`; document controls in `docs/firmware_reference.md`.
+Host tools and menu derive from this catalog. Do not add per-image loading modes.
+Reject flash-running images. Inspect unknown files with
+`python3 scripts/inspect_firmware.py --execution sram /path/to/file.bin`; inspection
+measures identity but grants no support.
 
-Do not commit payloads. Host tests alone do not prove compatibility.
-Do not create a new emulator for a difficult image; defer it.
-
-## Working notes
-
-- [Firmware onboarding record](firmware_onboarding.md): older versions, Tempest,
-  and the FataMorgana RAM experiment. Intake is not supported-image evidence.
-- [Architecture](architecture.md): source map, memory, and handoff.
-- [QSPI branch review](branch_review_20261007.md): tooling fixes and remaining test boundaries.
-- [Builds and releases](releases.md): tag workflow and build-only CI.
-- [Verification status](verification.md) and [active checklist](reliability_campaign.md#active-checklist).
-- [Recovery checks](recovery_release_gate.md) and [optional timing diagnostics](load_timing.md).
-- [QSPI feasibility](qspi_feasibility.md): updater boundaries and Dirt Verb implementation.
-- [Additional-image checkpoint](qspi_additional_images.md): current
-  Dirt/HP-filter scope and historical QSPI Fata evidence.
-- [Seven-image checkpoint](checkpoints/public_releases_20261006.md) and [machine-readable evidence](evidence/public_releases_20261006.json) (history).
-
-Historical records stay in `history/`. Do not transfer their results to changed
-binaries. Documentation-only edits need link checks, not new emulator campaigns.
+Review linked memory bounds, startup, persistent storage and preservation of the
+selector's application area. Keep originals unchanged and obtain them separately
+from authors. FataMorgana's reviewed RAM build is an explicit source-build image;
+its USB tables remain separate. Run affected authentication/handoff checks and
+regenerate the [reference site](reference_site.md).

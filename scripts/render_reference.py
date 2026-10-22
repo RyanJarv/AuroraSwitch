@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate SPA content and direct-link HTML fallbacks from one reference."""
+"""Generate complete static HTML pages from one reference."""
 
 from dataclasses import dataclass
 import hashlib
@@ -13,14 +13,50 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "docs/firmware_reference.md"
 REPOSITORY = "https://github.com/RyanJarv/AuroraSwitch/blob/main/"
-COLORS = {
-    "Blue": "#3787ff", "Green": "#35bf58", "Cyan": "#32c9ce",
-    "Magenta": "#d855d5", "Amber": "#dc9a25", "Yellow": "#ead342",
-    "White": "#fff", "Pale red": "#ec9292", "Azure": "#3ea7dc",
-    "Red-pink": "#e84b78", "Lime": "#81d43b",
-}
-CATEGORIES = {"Reverbs": "Blue", "Delays": "Green", "Synths / Other": "Amber"}
-PANEL_CONTROLS = ("Warp", "Time", "Blur", "Reflect", "Mix", "Atmosphere", "Reverse", "Freeze", "Shift")
+if __package__:
+    from .firmware_catalog import read_catalog
+else:
+    from firmware_catalog import read_catalog
+
+COLORS = {row["name"]: row["css"] for row in read_catalog()["colors"]}
+CATEGORIES = {row["name"]: row["color"] for row in read_catalog()["categories"]}
+PANEL_CONTROLS = (
+    "Warp",
+    "Time",
+    "Blur",
+    "Reflect",
+    "Mix",
+    "Atmosphere",
+    "Reverse",
+    "Freeze",
+    "Shift",
+)
+
+
+def renderer_identity() -> str:
+    # Metadata changes must invalidate generated pages even when control prose stays put.
+    metadata = json.dumps(
+        read_catalog(), sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode()
+    return hashlib.sha256(Path(__file__).read_bytes() + metadata).hexdigest()
+
+
+def update_catalog_table(source: str) -> str:
+    """Regenerate the Markdown lookup from compiled metadata; preserve control prose."""
+    table = (
+        "| Category | Selector color | Firmware | What it does | Availability |\n"
+        "| --- | --- | --- | --- | --- |\n"
+    )
+    for row in read_catalog()["images"]:
+        table += (
+            f"| {row['category']} | {row['color']} | [{row['name']}](#{row['reference']}) "
+            f"| {row['description']} | {row['availability']} |\n"
+        )
+    pattern = r"(?m)^\| Category \| Selector color.*?\n(?=\n)"
+    updated, count = re.subn(pattern, lambda _: table, source, flags=re.S)
+    if count != 1:
+        raise ValueError("Expected one firmware color lookup table")
+    return updated
 
 
 def read_quick_start(readme: str) -> str:
@@ -38,6 +74,7 @@ def quick_start_digest() -> str:
 
 def label_controls(content: str) -> str:
     """Number table control names against the drawing without duplicating functions."""
+
     def label(match: re.Match) -> str:
         cell = match[1]
         text = html.unescape(re.sub(r"<[^>]+>", "", cell))
@@ -46,7 +83,7 @@ def label_controls(content: str) -> str:
         if not numbers:
             return match[0]
         badges = "".join(f'<span class="control-number">{number}</span>' for number in numbers)
-        return f'<tr><td>{badges} {cell}</td>'
+        return f"<tr><td>{badges} {cell}</td>"
 
     return re.sub(r"<tr>\s*<td>(.*?)</td>", label, content, flags=re.S)
 
@@ -85,57 +122,60 @@ class Entry:
     color: str
     name: str
     anchor: str
-    description: str
     availability: str
     category: str
+    family_name: str
 
 
-def read_reference(source: str) -> tuple[str, list[Section], list[Entry]]:
-    """Use the category/color table as the navigation catalog; reject stale links."""
+def read_reference(source: str) -> tuple[list[Section], list[Entry]]:
+    """Build navigation from the catalog and require matching documentation."""
     parts = re.split(r"^## (.+)\n", source, flags=re.M)
     sections = [Section(parts[i], parts[i + 1]) for i in range(1, len(parts), 2)]
     by_anchor = {section.anchor: section for section in sections}
     if len(by_anchor) != len(sections):
         raise ValueError("Duplicate reference section")
-    if len({section.filename for section in sections if section.filename != "index.html"}) != len(sections) - 1:
+    if (
+        len({section.filename for section in sections if section.filename != "index.html"})
+        != len(sections) - 1
+    ):
         raise ValueError("Duplicate reference page")
     for required in ("color-lookup", "outside-the-selector-catalog"):
         if required not in by_anchor:
             raise ValueError(f"Missing reference section: {required}")
-    entries = []
-    for line in by_anchor["color-lookup"].markdown.splitlines():
-        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
-        if not line.startswith("|") or cells[0] in ("Category", "---"):
-            continue
-        if len(cells) != 5:
-            raise ValueError(f"Malformed color row: {line}")
-        category, color, link, description, availability = cells
-        match = re.fullmatch(r"\[([^]]+)\]\(#([\w-]+)\)", link)
-        if category not in CATEGORIES or color not in COLORS or availability not in ("Release", "Development") or not match:
-            raise ValueError(f"Invalid color row: {line}")
-        if match[2] not in by_anchor or by_anchor[match[2]].filename == "index.html":
-            raise ValueError(f"Missing firmware section: {link}")
-        entries.append(Entry(color, match[1], match[2], description, availability, category))
-    if not entries:
-        raise ValueError("Missing selector colors")
-    # Versions share one family page/color; unrelated families cannot share it.
+    # The table is generated from this same catalog. Do not parse it back into
+    # a second catalog with its own rules for firmware names, colors and groups.
+    entries = [
+        Entry(
+            row["color"],
+            row["name"],
+            row["reference"],
+            row["availability"],
+            row["category"],
+            row["family_name"],
+        )
+        for row in read_catalog()["images"]
+    ]
     for entry in entries:
-        for other in entries:
-            if (entry.anchor == other.anchor) != (entry.color == other.color):
-                raise ValueError("Inconsistent family or duplicate selector colors")
-            if entry.anchor == other.anchor and entry.category != other.category:
-                raise ValueError("Inconsistent family category")
-    if len({entry.name for entry in entries}) != len(entries):
-        raise ValueError("Duplicate firmware version")
-    unused = set(by_anchor) - {entry.anchor for entry in entries} - {
-        "color-lookup", "outside-the-selector-catalog",
-    }
+        if entry.anchor not in by_anchor:
+            raise ValueError(f"Missing firmware section: {entry.anchor}")
+    unused = (
+        set(by_anchor)
+        - {entry.anchor for entry in entries}
+        - {
+            "color-lookup",
+            "outside-the-selector-catalog",
+        }
+    )
     if unused:
         raise ValueError(f"Unlinked firmware sections: {sorted(unused)}")
-    return parts[0], sections, entries
+    if source != update_catalog_table(source):
+        raise ValueError("Reference table differs from compiled catalog; run make reference-html")
+    return sections, entries
 
 
-def render_markdown(source: str, sections: list[Section], source_directory: Path = SOURCE.parent) -> str:
+def render_markdown(
+    source: str, sections: list[Section], source_directory: Path = SOURCE.parent
+) -> str:
     """Use GitHub GFM, resolving source-relative links for the shared website."""
     by_anchor = {section.anchor: section for section in sections}
 
@@ -154,12 +194,15 @@ def render_markdown(source: str, sections: list[Section], source_directory: Path
     response = subprocess.run(
         ["gh", "api", "markdown", "--input", "-"],
         input=json.dumps({"text": source, "mode": "gfm"}),
-        text=True, capture_output=True, check=True,
+        text=True,
+        capture_output=True,
+        check=True,
     )
     return re.sub(
         r"<h([1-6])>(.*?)</h\1>",
         lambda m: f'<h{m[1]} id="{slug(m[2])}">{m[2]}</h{m[1]}>',
-        response.stdout, flags=re.S,
+        response.stdout,
+        flags=re.S,
     )
 
 
@@ -172,10 +215,12 @@ def version_list(section: Section, entries: list[Entry]) -> str:
     """Show version differences without repeating the family name or color."""
     if len(entries) < 2:
         return ""
-    versions = [html.escape(entry.name.removeprefix(section.title).strip())
-                + (" (development)" if entry.availability == "Development" else "")
-                for entry in entries]
-    return '<span class="version-list">' + " · ".join(versions) + '</span>'
+    versions = [
+        html.escape(entry.name.removeprefix(section.title).strip())
+        + (" (development)" if entry.availability == "Development" else "")
+        for entry in entries
+    ]
+    return '<span class="version-list">' + " · ".join(versions) + "</span>"
 
 
 def navigation(sections: list[Section], entries: list[Entry], current: str) -> str:
@@ -183,31 +228,37 @@ def navigation(sections: list[Section], entries: list[Entry], current: str) -> s
     active = ' aria-current="page"' if current == "index.html" else ""
     parts = [f'<a class="index-link" href="index.html"{active}>Overview</a>']
     by_anchor = {section.anchor: section for section in sections}
+    families = {}
+    for entry in entries:
+        families.setdefault(entry.anchor, entry)
     for category, category_color in CATEGORIES.items():
-        parts.append(f'<section class="category-group" style="--category-color:{COLORS[category_color]}">'
-                     f'<h2>{swatch(category_color)}{html.escape(category)}'
-                     f'<small>{category_color}</small></h2><ul>')
+        parts.append(
+            f'<section class="category-group" style="--category-color:{COLORS[category_color]}">'
+            f"<h2>{swatch(category_color)}{html.escape(category)}"
+            f"<small>{category_color}</small></h2><ul>"
+        )
         # Older versions remain on their family page rather than adding menu rows.
-        families = dict.fromkeys(entry.anchor for entry in entries if entry.category == category)
-        for anchor in families:
+        for anchor, entry in families.items():
+            if entry.category != category:
+                continue
             section = by_anchor[anchor]
-            color = next(entry.color for entry in entries if entry.anchor == anchor)
+            color = entry.color
             active = ' aria-current="page"' if current == section.filename else ""
-            name = re.sub(r" \d+(?:\.\d+)+$", "", section.title)
-            name = name.removesuffix(" RAM experiment").replace("Aurora HP-filter variant", "Aurora HP-filter")
-            parts.append(f'<li><a href="{section.filename}"{active}><span>{html.escape(name)}</span>'
-                         f'<small class="color-label">{swatch(color)}{html.escape(color)}</small></a></li>')
-        parts.append('</ul></section>')
+            name = entry.family_name
+            parts.append(
+                f'<li><a href="{section.filename}"{active}><span>{html.escape(name)}</span>'
+                f'<small class="color-label">{swatch(color)}{html.escape(color)}</small></a></li>'
+            )
+        parts.append("</ul></section>")
     return "\n".join(parts)
 
 
 def document(title: str, body: str, menu: str, digest: str, filename: str) -> str:
-    """Render complete static pages; a small script enhances navigation afterward."""
-    renderer_digest = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
-    app_digest = hashlib.sha256((ROOT / "site/navigation.js").read_bytes()).hexdigest()
+    """Render complete static pages with ordinary accessible links."""
+    renderer_digest = renderer_identity()
     style_digest = hashlib.sha256((ROOT / "site/style.css").read_bytes()).hexdigest()
     quickstart_digest = quick_start_digest()
-    return f'''<!doctype html>
+    return f"""<!doctype html>
 <!-- Generated by scripts/render_reference.py; edit docs/firmware_reference.md. -->
 <html lang="en">
 <head>
@@ -219,7 +270,6 @@ def document(title: str, body: str, menu: str, digest: str, filename: str) -> st
 <meta name="description" content="AuroraSwitch startup categories, firmware colors and controls.">
 <title>{html.escape(title)} · AuroraSwitch</title>
 <link rel="stylesheet" href="style.css?v={style_digest}">
-<script type="module" src="navigation.js?v={app_digest}" data-reference="reference.json?v={digest}-{renderer_digest}-{quickstart_digest}"></script>
 </head>
 <body data-page="{filename}">
 <a class="skip-link" href="#main">Skip to controls</a>
@@ -249,43 +299,55 @@ def document(title: str, body: str, menu: str, digest: str, filename: str) -> st
 </div>
 </body>
 </html>
-'''
+"""
 
 
 def render_pages() -> dict[str, str]:
     """Keep one source of control facts while generating short, direct-link pages."""
     source = SOURCE.read_text()
-    _, sections, entries = read_reference(source)
+    sections, entries = read_reference(source)
     digest = hashlib.sha256(SOURCE.read_bytes()).hexdigest()
     rendered = render_markdown(source, sections)
     parts = re.split(r'(<h2 id="[^"]+">.*?</h2>)', rendered, flags=re.S)
     if len(parts) != 1 + 2 * len(sections):
         raise ValueError("Rendered sections do not match Markdown sections")
     bodies = {section.anchor: parts[2 * i + 2] for i, section in enumerate(sections)}
-    home = '''<p class="home-intro">AuroraSwitch · Firmware for your Aurora</p>
-'''
+    home = """<p class="home-intro">AuroraSwitch · Firmware for your Aurora</p>
+"""
     home += '<nav class="category-overview" aria-label="Firmware categories">'
-    home += navigation(sections, entries, "index.html") + '</nav>'
+    home += navigation(sections, entries, "index.html") + "</nav>"
     home += '<section class="setup-guide">'
-    home += render_markdown(read_quick_start((ROOT / "README.md").read_text()), [], ROOT) + '</section>'
+    home += (
+        render_markdown(read_quick_start((ROOT / "README.md").read_text()), [], ROOT) + "</section>"
+    )
     home += '<p class="beta-status">Beta · Limited testing. Keep original Aurora firmware for recovery.</p>'
-    pages = {"index.html": document("Firmware reference", home, navigation(sections, entries, "index.html"), digest, "index.html")}
+    pages = {
+        "index.html": document(
+            "Firmware reference",
+            home,
+            navigation(sections, entries, "index.html"),
+            digest,
+            "index.html",
+        )
+    }
     for section in sections:
         versions = [entry for entry in entries if entry.anchor == section.anchor]
         if not versions:
             continue
         content = bodies[section.anchor]
         # Each page starts at h1; source h3 control groups become its h2 landmarks.
-        content = re.sub(r'<(/?)h3\b', r'<\1h2', content)
-        content = content.replace('<h2 id="details-and-sources">Details and sources</h2>',
-                                  '<h2 id="details-and-sources">Details &amp; sources</h2>')
+        content = re.sub(r"<(/?)h3\b", r"<\1h2", content)
+        content = content.replace(
+            '<h2 id="details-and-sources">Details and sources</h2>',
+            '<h2 id="details-and-sources">Details &amp; sources</h2>',
+        )
         content = label_controls(content)
         # The leading link-only paragraph supplies page actions without a second catalog.
-        actions, content = content.lstrip().split('</p>', 1)
-        actions = actions.replace('<br>', '')
-        if not re.fullmatch(r'<p>(?:<a\b[^>]*>[^<]+</a>\s*)+', actions):
+        actions, content = content.lstrip().split("</p>", 1)
+        actions = actions.replace("<br>", "")
+        if not re.fullmatch(r"<p>(?:<a\b[^>]*>[^<]+</a>\s*)+", actions):
             raise ValueError(f"Expected leading download links: {section.filename}")
-        actions = actions.removeprefix('<p>').replace('<a ', '<a class="download-button" ')
+        actions = actions.removeprefix("<p>").replace("<a ", '<a class="download-button" ')
         body = f'<div class="firmware-heading"><h1 id="{section.anchor}">{html.escape(section.title)}</h1>'
         body += f'<div class="firmware-downloads">{actions}</div></div>'
         color = versions[0].color
@@ -294,38 +356,32 @@ def render_pages() -> dict[str, str]:
         body += f'<p class="firmware-meta"><span class="category-label">{swatch(category_color)}{html.escape(category)}</span>'
         body += f'<span class="color-label">{swatch(color)}{color}</span>{version_list(section, versions)}</p>'
         # The original drawing maps physical positions; all functions remain in Markdown.
-        intro, separator, controls = content.partition('<h2 ')
+        intro, separator, controls = content.partition("<h2 ")
         body += intro
-        body += '''<div class="control-layout"><figure class="panel-map">
+        body += """<div class="control-layout"><figure class="panel-map">
 <img src="aurora-panel.svg" width="280" height="580" alt="Aurora panel: knobs 1 Warp, 2 Time, 3 Blur, 4 Reflect, 5 Mix, 6 Atmosphere; buttons 7 Reverse, 8 Freeze, 9 Shift.">
-</figure><div class="control-tables">'''
-        body += separator + controls + '</div></div>'
-        pages[section.filename] = document(section.title, body, navigation(sections, entries, section.filename), digest, section.filename)
+</figure><div class="control-tables">"""
+        body += separator + controls + "</div></div>"
+        pages[section.filename] = document(
+            section.title,
+            body,
+            navigation(sections, entries, section.filename),
+            digest,
+            section.filename,
+        )
     return pages
-
-
-def reference_data(pages: dict[str, str]) -> dict:
-    """Reuse generated bodies verbatim; never maintain a second controls source."""
-    data = {}
-    for filename, page in pages.items():
-        title = re.search(r"<title>(.*?)</title>", page, re.S)[1]
-        body = re.search(r'<main id="main">\n(.*?)\n</main>', page, re.S)[1]
-        data[filename] = {"title": html.unescape(title), "body": body}
-    return {
-        "reference_sha256": hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
-        "renderer_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-        "quickstart_sha256": quick_start_digest(),
-        "pages": data,
-    }
 
 
 if __name__ == "__main__":
     try:
+        source = SOURCE.read_text()
+        updated = update_catalog_table(source)
+        if updated != source:
+            SOURCE.write_text(updated)
         pages = render_pages()
         for filename, page in pages.items():
             (ROOT / "site" / filename).write_text(page)
-        (ROOT / "site/reference.json").write_text(json.dumps(reference_data(pages), ensure_ascii=False, indent=2) + "\n")
-        print(f"Updated SPA content and {len(pages)} direct-link fallbacks.")
+        print(f"Updated {len(pages)} static reference pages.")
     except subprocess.CalledProcessError as error:
         sys.stderr.write(error.stderr)
         raise SystemExit(error.returncode) from error

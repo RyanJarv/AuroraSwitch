@@ -1,22 +1,7 @@
 # Compilation only. Deliberately no local programming targets or bootloader BIN.
-VIRTUAL_TRANSPORT ?= 0
-ifeq ($(filter $(VIRTUAL_TRANSPORT),0 1),)
-$(error VIRTUAL_TRANSPORT must be 0 or 1)
-endif
-ifeq ($(VIRTUAL_TRANSPORT),1)
-TARGET = AuroraSwitchVirtual
-EXPECTED_BUILD_DIR = build-virtual-experimental-dma
-C_DEFS += -DSELECTOR_VIRTUAL_TRANSPORT
-else
 TARGET = AuroraSwitch
-EXPECTED_BUILD_DIR = build-experimental-dma
-endif
-BUILD_DIR ?= $(EXPECTED_BUILD_DIR)
-# Keep real/synthetic objects isolated; upstream assigns BUILD_DIR itself.
+BUILD_DIR ?= build-experimental-dma
 override BUILD_DIR := $(BUILD_DIR)
-ifneq ($(BUILD_DIR),$(EXPECTED_BUILD_DIR))
-$(error Use BUILD_DIR=$(EXPECTED_BUILD_DIR) for this transport)
-endif
 # Preserve link order for stable exact-image diagnostic bindings.
 CPP_SOURCES = handoff.cpp selector.cpp
 ASM_SOURCES = copy_jump.s
@@ -46,9 +31,15 @@ check-pins:
 	@test -z "$$(git -C $(MBEDTLS_ROOT) status --porcelain --untracked-files=no)"
 
 include $(SYSTEM_FILES_DIR)/Makefile
-LDFLAGS += -Tstaging_reserve.ld -Ttrampoline_reserve.ld
+# Share numeric definitions with C++ and assembly; ld itself has no C preprocessor.
+SELECTOR_LINKER_SCRIPTS = $(addprefix $(BUILD_DIR)/,staging_reserve.ld trampoline_reserve.ld)
+LDFLAGS += $(addprefix -T,$(SELECTOR_LINKER_SCRIPTS))
+$(SELECTOR_LINKER_SCRIPTS): $(BUILD_DIR)/%.ld: %.ld ../support/selector_constants.h | $(BUILD_DIR)
+	$(CC) -E -P -x c $< -o $@
+# Upstream assembly rules do not emit header dependencies.
+$(addprefix $(BUILD_DIR)/,copy_jump.o): ../support/selector_constants.h
 # The upstream rules omit library/linker inputs and the included build rules.
 # Recompile for SDK flag changes; relink for rebuilt archives or memory layouts.
 $(OBJECTS): $(SYSTEM_FILES_DIR)/Makefile
-$(BUILD_DIR)/$(TARGET).elf: $(LIBDAISY_DIR)/build/libdaisy.a $(LDSCRIPT) staging_reserve.ld trampoline_reserve.ld
+$(BUILD_DIR)/$(TARGET).elf: $(LIBDAISY_DIR)/build/libdaisy.a $(LDSCRIPT) $(SELECTOR_LINKER_SCRIPTS)
 all: check-pins

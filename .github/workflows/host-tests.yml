@@ -7,4 +7,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - run: make test
+      - run: make check
+      - run: make test-sanitize
+  arm-builds:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Compile USB-backed selector with the pinned SDK/toolchain
+        run: sh scripts/docker_build.sh make build
