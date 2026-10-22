@@ -1,10 +1,8 @@
-// Panel menu and read-only loading; handoff.cpp owns irreversible launch.
+// Panel menu and USB loading; handoff.cpp owns irreversible launch.
 #include "daisy_seed.h"
 #include "images.hpp"
 #include "selector_controller.hpp"
-#include "../support/choice_journal.hpp"
-#include "../support/flash_bundle.hpp"
-#include "flash_driver.hpp"
+#include "usb_files.hpp"
 #include "mbedtls/sha256.h"
 #include "handoff.hpp"
 
@@ -12,25 +10,28 @@ namespace {
 daisy::DaisySeed seed;
 daisy::Switch next_button, load_button;
 daisy::Switch category_button;
-aurora_selector::ChoiceFlashDriver flash_driver{seed.qspi};
+daisy::USBHostHandle usb;
+DMA_BUFFER_MEM_SECTION daisy::FatFSInterface filesystem;
+bool usb_initialized = false;
 using LedDriver = daisy::LedDriverPca9685<2, true>;
 LedDriver leds;
 DMA_BUFFER_MEM_SECTION LedDriver::DmaBuffer led_dma_a, led_dma_b;
 __attribute__((section(".selector_staging"),
                aligned(32))) std::uint8_t staged[aurora_selector::StagingCapacity()];
-struct InstalledFirmware {
-    bool Open(std::array<bool, aurora_selector::ImageCount>& installed);
+struct UsbFirmware {
+    bool Ready() { return usb_initialized && usb.GetReady(); }
+    bool Open(std::array<bool, aurora_selector::ImageCount>& present);
     bool Authenticate(unsigned index);
     bool Launch(unsigned index);
     int BootChoice();
     bool Remember(unsigned index);
     void SaveWarning();
 };
-InstalledFirmware firmware;
-aurora_selector::SelectorController<InstalledFirmware> controller(firmware);
+UsbFirmware firmware;
+aurora_selector::SelectorController<UsbFirmware> controller(firmware);
 using aurora_selector::Color;
 using aurora_selector::GetColor;
-using State = aurora_selector::SelectorController<InstalledFirmware>::State;
+using State = aurora_selector::SelectorController<UsbFirmware>::State;
 // Freeze shows load status; Reverse shows the current catalog selection.
 void SetStatus(const std::array<float, 3>& status) {
     // SDK LED_FREEZE wiring: channels 3, 4, 5.
@@ -56,46 +57,35 @@ void SetStatus(const std::array<float, 3>& status) {
     leds.SwapBuffersAndTransmit();
 }
 
-// Stage only the requested image; success authenticates the current RAM copy.
-bool InstalledFirmware::Authenticate(unsigned index) {
-    // A failed journal operation may leave QSPI unavailable. Do not read
-    // a source slot until memory-mapped reads are restored.
-    const auto* original = aurora_selector::InstalledImage(
-        aurora_selector::MappedFlash(), SELECTOR_QSPI_END - SELECTOR_QSPI_BASE, index);
-    if (!original)
+// Mounting and scanning happen on insertion or an explicit retry, not each tick.
+bool UsbFirmware::Open(std::array<bool, aurora_selector::ImageCount>& present) {
+    f_mount(nullptr, filesystem.GetUSBPath(), 0);
+    if (!Ready() || f_mount(&filesystem.GetUSBFileSystem(), filesystem.GetUSBPath(), 1) != FR_OK)
         return false;
-    const auto& image = aurora_selector::Images[index];
-    std::memcpy(staged, original, image.size);
-    std::uint8_t digest[32]{};
-    return mbedtls_sha256_ret(staged, image.size, digest, 0) == 0 &&
-           aurora_selector::VerifyImage(staged, image.size, image, digest);
-}
-
-bool InstalledFirmware::Open(std::array<bool, aurora_selector::ImageCount>& installed) {
-    const auto* flash = aurora_selector::MappedFlash();
-    if (!flash)
-        return false;
-    for (unsigned i = 0; i < installed.size(); ++i)
-        installed[i] = aurora_selector::InstalledImage(
-                           flash, SELECTOR_QSPI_END - SELECTOR_QSPI_BASE, i) != nullptr;
+    aurora_selector::DiscoverFiles(present);
     return true;
 }
-
-int InstalledFirmware::BootChoice() {
-    aurora_selector::ChoiceJournal<aurora_selector::ChoiceFlashDriver> journal{flash_driver};
-    return journal.Load().index;
+bool UsbFirmware::Authenticate(unsigned index) {
+    if (!Ready() || !aurora_selector::ReadOriginal(index, staged, sizeof(staged)))
+        return false;
+    std::uint8_t digest[32]{};
+    return mbedtls_sha256_ret(staged, aurora_selector::Images[index].size, digest, 0) == 0 &&
+           aurora_selector::VerifyImage(staged, aurora_selector::Images[index].size,
+                                        aurora_selector::Images[index], digest);
 }
-bool InstalledFirmware::Remember(unsigned index) {
-    aurora_selector::ChoiceJournal<aurora_selector::ChoiceFlashDriver> journal{flash_driver};
-    return journal.Save(index);
+int UsbFirmware::BootChoice() {
+    return aurora_selector::ReadChoice();
 }
-void InstalledFirmware::SaveWarning() {
+bool UsbFirmware::Remember(unsigned index) {
+    return Ready() && aurora_selector::WriteChoice(index);
+}
+void UsbFirmware::SaveWarning() {
     // Brief red Freeze LED: this launch will not be remembered reliably.
     // Keep interrupts running until the ordinary checked handoff takes over.
     SetStatus(GetColor(Color::Red).rgb);
     daisy::System::Delay(500);
 }
-bool InstalledFirmware::Launch(unsigned index) {
+bool UsbFirmware::Launch(unsigned index) {
     return aurora_selector::LaunchFirmware(seed, index, staged);
 }
 } // namespace
@@ -129,9 +119,18 @@ int main() {
     for (int channel = 0; channel < 32; ++channel)
         leds.SetLed(channel, 0.f);
 
+    // Initialize USB only. DaisySeed/Hardware::Init would also initialize QSPI
+    // and calibration storage; those side effects do not belong in a selector.
+    daisy::USBHostHandle::Config usb_config;
+    usb_initialized =
+        filesystem.Init(daisy::FatFSInterface::Config::MEDIA_USB) == daisy::FatFSInterface::OK &&
+        usb.Init(usb_config) == daisy::USBHostHandle::Result::OK;
+
     std::uint32_t last_control = daisy::System::GetNow();
     const std::uint32_t buttons_started = last_control;
     while (true) {
+        if (usb_initialized)
+            usb.Process();
         const auto now = daisy::System::GetNow();
         if (now == last_control)
             continue;

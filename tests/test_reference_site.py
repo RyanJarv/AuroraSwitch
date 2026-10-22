@@ -152,23 +152,15 @@ class ReferenceSiteTests(unittest.TestCase):
     def test_index_has_grouped_firmware_and_compact_install_directions(self):
         parser = self.pages["index.html"]
         self.assertEqual(parser.swatches, self.navigation_swatches * 3 // 2)
-        self.assertEqual(len(self.entries), 14)
+        self.assertEqual(len(self.entries), 13)
         page = (SITE / "index.html").read_text()
         body = re.search(r'<main id="main">\n(.*?)\n</main>', page, re.S)[1]
         self.assertIn('id="quick-start"', body)
         self.assertIn('id="select-firmware"', body)
-        for url in (
-            "https://github.com/RyanJarv/AuroraSwitch/blob/v0.1.0/README.md",
-            "https://www.qubitelectronix.com/s/Aurora_v1_4_4.zip",
-            "https://www.qubitelectronix.com/s/AR_FDN_v1_2_2.bin",
-        ):
-            self.assertIn(f'href="{url}"', body)
-        self.assertNotIn("git clone", body)
-        self.assertNotIn("make download-release", body)
-        self.assertIn("as the only BIN", body)
-        self.assertIn("unzip first", body)
+        self.assertIn("USB is required", body)
+        self.assertIn("only root BIN", body)
         self.assertIn("verify, remember and launch", body)
-        self.assertIn("older published release", body)
+        self.assertNotIn("preparer", body)
         self.assertIn('class="category-overview"', body)
         self.assertIn('<section class="setup-guide">', body)
         self.assertNotIn("Choose your sound", body)
@@ -184,15 +176,14 @@ class ReferenceSiteTests(unittest.TestCase):
                 self.assertEqual(body.count(f'href="{section.filename}"'), 1)
 
     def test_additional_images_are_development_only_and_ram_fata_is_unique(self):
-        for name, color in (("Dirt Verb 1.1", "Red-pink"), ("Aurora HP-filter variant", "Yellow")):
+        for name, color in (("Aurora HP-filter variant", "Yellow"),):
             entry = next(entry for entry in self.entries if entry.name == name)
             self.assertEqual(entry.color, color)
             self.assertEqual(entry.availability, "Development")
         fata = [entry for entry in self.entries if "FataMorgana" in entry.name]
         self.assertEqual(len(fata), 1)
         self.assertIn("RAM", fata[0].name)
-        dirt = (SITE / "dirt-verb-11.html").read_text()
-        self.assertIn("Physical handoff and stock USB recovery remain unverified", dirt)
+        self.assertFalse((SITE / "dirt-verb-11.html").exists())
 
     def test_firmware_pages_have_control_headings_and_version_labels(self):
         for section in self.sections:

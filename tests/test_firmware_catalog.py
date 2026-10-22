@@ -38,7 +38,7 @@ class FirmwareCatalogTests(unittest.TestCase):
             lambda d: d["images"][0].update(sha256="invalid"),
             lambda d: d["images"][0].update(download="http://unsafe.example/image.bin"),
             lambda d: d["images"][7].update(color="Blue", rgb=[0, 0, 0.4]),
-            lambda d: d["images"][0].update(resident=True),
+            lambda d: d["images"][0].update(execution="qspi"),
         )
         for mutate in mutations:
             data = copy.deepcopy(original)
@@ -71,7 +71,7 @@ class FirmwareCatalogTests(unittest.TestCase):
                 ),
                 (
                     "FirmwareCatalog",
-                    '{Family::Synthetic, "synthetic-v1", "Synthetic v1", "Test firmware", false, nullptr, false, '
+                    '{Family::Synthetic, "synthetic-v1", "Synthetic v1", "Test firmware", false, nullptr, '
                     '{"synthetic.bin", "' + "a" * 64 + '", 200000U, {0x20020000U, 0x24000009U}}},',
                 ),
             ):
@@ -87,7 +87,7 @@ class FirmwareCatalogTests(unittest.TestCase):
                     catalog = firmware_catalog.read_catalog()
             finally:
                 firmware_catalog.read_catalog.cache_clear()
-            self.assertEqual(len(catalog["images"]), 15)
+            self.assertEqual(len(catalog["images"]), 14)
             self.assertEqual(catalog["staging_capacity"], 200000)
             self.assertEqual(catalog["images"][-1]["category"], "Delays")
             self.assertEqual(catalog["images"][-1]["rgb"], [0, 0, 0.4])

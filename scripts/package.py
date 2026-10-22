@@ -1,7 +1,6 @@
 """Seal a clean development ELF/BIN/MAP bundle; never package vendor firmware."""
 
 from pathlib import Path
-import argparse
 import hashlib
 import json
 import os
@@ -130,9 +129,8 @@ def seal(build: Path, commit: str, tools: dict, tool_directory: Path) -> Path:
         )
         if converted.read_bytes() != payload[f"{target}.bin"]:
             raise RuntimeError("ELF/BIN identity mismatch")
-    # Historical manifest keys describe fixed handoff invariants, not build options.
     manifest = {
-        "schema": "aurora-switch-development-bundle-v1",
+        "schema": "aurora-switch-selector-build-v2",
         "development_only": True,
         "physical_qualified": False,
         "source_commit": commit,
@@ -140,9 +138,9 @@ def seal(build: Path, commit: str, tools: dict, tool_directory: Path) -> Path:
             "method": "fresh-isolated-tracked-checkouts",
             "toolchain": tools,
             "configuration": {
-                "EXPERIMENTAL_HANDOFF": 1,
-                "DMA_ARENA_CLEANUP": 1,
-                "VIRTUAL_TRANSPORT": 0,
+                "application": "BOOT_SRAM",
+                "storage": "usb",
+                "dma_arena_cleanup": True,
             },
         },
         "files": {
@@ -190,13 +188,4 @@ def seal(build: Path, commit: str, tools: dict, tool_directory: Path) -> Path:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--preparer", action="store_true", help="export the offline browser preparer"
-    )
-    args = parser.parse_args()
-    result = package()
-    if args.preparer:
-        from prepare_bundle import export_preparer
-
-        export_preparer(result, result.parent / (result.name + "-preparer.html"))
+    package()

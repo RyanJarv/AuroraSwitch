@@ -1,20 +1,14 @@
-// Hardware adapter for exact-image RAM and QSPI handoff.
+// Hardware adapter for exact-image RAM handoff.
 #include "handoff.hpp"
 #include "handoff_sequence.hpp"
 #include "mbedtls/sha256.h"
 #include <cstring>
-#include "flash_driver.hpp"
-#include "../support/resident_image.hpp"
 
 extern "C" {
 extern const std::uint8_t selector_copy_jump_blob_start[];
 extern const std::uint8_t selector_copy_jump_end[];
 extern std::uint8_t selector_trampoline_ram[];
 extern std::uint8_t selector_trampoline_limit[];
-extern const std::uint8_t selector_qspi_jump_blob_start[];
-extern const std::uint8_t selector_qspi_jump_end[];
-extern const std::uint8_t selector_resident_boot_start[];
-extern const std::uint8_t selector_resident_boot_end[];
 }
 
 namespace aurora_selector {
@@ -30,13 +24,7 @@ struct Platform {
             mbedtls_sha256_ret(staged, image.size, digest, 0) != 0 ||
             !VerifyImage(staged, image.size, image, digest))
             return false;
-        if (image.execution == Execution::Sram)
-            return true;
-        const auto* flash = MappedFlash();
-        const auto* application = flash ? flash + QspiApplicationOffset : nullptr;
-        return ResidentDirtMatches(application, staged, image.size) &&
-               ResidentBootMatches(application, selector_resident_boot_start,
-                                   selector_resident_boot_end - selector_resident_boot_start);
+        return true;
     }
     void MaskInterrupts() { __disable_irq(); }
     void ResetBusMasters() {
@@ -85,10 +73,6 @@ struct Platform {
     bool InstallTrampoline() {
         const std::uint8_t* blob = selector_copy_jump_blob_start;
         const std::uint8_t* blob_end = selector_copy_jump_end;
-        if (image.execution == Execution::Qspi) {
-            blob = selector_qspi_jump_blob_start;
-            blob_end = selector_qspi_jump_end;
-        }
         const auto begin = reinterpret_cast<std::uintptr_t>(blob);
         const auto end = reinterpret_cast<std::uintptr_t>(blob_end);
         const auto ram = reinterpret_cast<std::uintptr_t>(selector_trampoline_ram);
@@ -113,13 +97,6 @@ struct Platform {
         using Entry = void (*)(const std::uint8_t*, std::uint8_t*, std::size_t);
         auto entry =
             reinterpret_cast<Entry>(reinterpret_cast<std::uintptr_t>(selector_trampoline_ram) | 1U);
-        if (image.execution == Execution::Qspi) {
-            // A resident image redirects only the power-on reset word.
-            // Explicit Dirt launch uses its authenticated original PC.
-            entry(reinterpret_cast<const std::uint8_t*>(SELECTOR_QSPI_APPLICATION_BASE),
-                  reinterpret_cast<std::uint8_t*>(image.vectors.reset), 0);
-            Fatal();
-        }
         entry(staged, reinterpret_cast<std::uint8_t*>(SELECTOR_AXI_SRAM_BASE), image.size);
         Fatal();
     }

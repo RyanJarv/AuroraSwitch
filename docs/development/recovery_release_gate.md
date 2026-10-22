@@ -1,36 +1,29 @@
-# Developer note: recovery
+# Physical recovery release gate
 
-Status: **not yet verified**. Keep public releases as drafts until this is tested.
+**Unverified. Local tests only are currently authorized.** Virtual passes and USB
+readback do not qualify physical installation, handoff or recovery. Do not access
+hardware or stage drives without a new authorized task.
 
-Do not leave the module permanently broken. Supported use must remain recoverable
-by installing original Aurora through the normal USB updater.
+Before physical testing, retain an authenticated selector candidate, exact stock
+restoration image, full flash/configuration/calibration baseline and a backup of
+the test drive. Record exact hashes and distinguish stock/vendor effects from
+additional effects caused by AuroraSwitch. Never treat vendor writes also present
+stock as selector faults, but investigate changes introduced by our handoff.
 
-This gate covers additional risks introduced by AuroraSwitch. Compare
-vendor-owned writes with equivalent stock operation; normal vendor behavior is
-not something the selector must prevent. See the
-[failure-mode scope](failure_modes.md#scope-risks-introduced-by-auroraswitch).
+When separately authorized:
 
-Before release:
+- Install only the selector through the ordinary stock USB updater.
+- Test connected-drive automatic boot, held Shift + Reverse menu, press/release
+  behavior, supported firmware audio/buttons and absence/reinsertion of USB.
+- Verify changed USB choices persist; automatic/repeat choices do not write.
+  Interrupt a choice save: invalid records must open the menu, with no loop.
+- Interrupt selector installation during representative erase/program phases.
+  Restore through ordinary USB without requiring a functioning application/menu.
+- Also restore stock with an unusable selector/application; prove recovery is
+  independent of selector buttons or code. Check calibration, internal bootloader,
+  reserved data and protection configuration against the retained baseline.
+- Exercise vendor settings/workloads relevant to preserving the installed selector
+  and compare lasting effects against equivalent stock operation.
 
-- Record the existing bootloader identity, boot/protection configuration,
-  calibration and relevant settings before changing hardware state. Keep backups
-  and readbacks private. Compare again after installation, selector operation
-  and restoration, attributing expected vendor writes against stock behavior.
-- Install the complete private bundle through the ordinary USB updater.
-- Boot without a drive, including the last saved Dirt and RAM choices.
-- Hold Shift + Reverse at power-on, change a selection, then power cycle.
-- Interrupt selection-journal writes and confirm the old or new complete choice survives.
-- Interrupt bundle installation during representative erase/program phases,
-  then restore stock through the ordinary USB updater. Record which phases were
-  actually exercised; manual power cuts do not prove every interruption timing.
-- Verify USB restoration when the selector/application cannot start. Enter the
-  stock loader through its hardware recovery path; recovery must not depend on
-  reaching the selector menu or executing application code.
-- Test both official launch directions, reset/re-entry, and corrupt bundled images.
-- Restore stock through USB and check controls, audio, and calibrated behavior.
-- Record the exact builds, hardware, and results. Check for unexplained changes
-  to the bootloader, calibration, or other persistent state.
-
-If recovery needs ST-Link, ROM DFU, opening the module, recalibration, or internal
-backups, stop and fix the cause or remove the affected support. Software tests
-alone cannot establish physical recovery. Do not promise it is guaranteed.
+Report failures and incomplete tests explicitly. A recoverable crash alone is not
+lasting damage; loss of calibration, added wear or ordinary USB recovery is.

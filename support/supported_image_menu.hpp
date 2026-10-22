@@ -11,7 +11,7 @@ template <std::size_t Count> class SupportedImageMenu {
 
   public:
     explicit SupportedImageMenu(std::array<unsigned, Count> categories) : categories_(categories) {}
-    // Presence comes from the installed slots. Payload bytes
+    // Presence comes from catalog files on USB. Payload bytes
     // are authenticated separately, immediately before a requested launch.
     void SetInstalled(const std::array<bool, Count>& installed) {
         available_ = installed;

@@ -1,23 +1,21 @@
 # Source map
 
-The installed layout and launch contract are in [How it works](../how_it_works.md).
+See [How it works](../how_it_works.md) for the design and memory contract.
 
 | Source | Responsibility |
 | --- | --- |
-| `firmware/images.hpp` | Exact supported identities and shared presentation metadata |
-| `support/flash_bundle.hpp` | Stateless catalog-slot lookup and vector-based menu presence |
-| `firmware/selector.cpp` | Panel, staged authentication and storage adapter |
-| `firmware/selector_controller.hpp` | Startup, remembered boot and manual selection |
-| `support/choice_journal.hpp` | Exact saved identity, CRC and two-sector append/recycle persistence |
-| `firmware/flash_driver.hpp` | Inherited mapping and choice-only hardware writes |
+| `firmware/images.hpp` | Exact RAM image identities and shared presentation metadata |
+| `firmware/selector.cpp` | Minimal hardware initialization, USB host, panel and authentication |
+| `firmware/selector_controller.hpp` | Startup, one-shot automatic launch and explicit retries |
+| `firmware/usb_files.hpp` | Concrete FatFs discovery, bounded reads and checked choice-file saves |
+| `support/usb_choice.hpp` | Version/hash/CRC choice format, independent of menu positions |
 | `firmware/handoff_sequence.hpp` | Validation and cleanup ordering |
-| `firmware/handoff.cpp` | Peripheral cleanup and final SRAM/QSPI entry |
-| `firmware/copy_jump.s` | Stackless copy, DMA clearing, VTOR/MSP and terminal jump |
-| `firmware/resident_boot.s` | Power-on copy and check of the selector |
-| `scripts/sealed_bundle.py` | Immutable build authentication and source-bound layout |
-| `scripts/prepare_bundle.py` | Offline preparer export and reference assembly |
-| `scripts/bundle_preparer.html` | Local input authentication and single-file assembly |
+| `firmware/handoff.cpp` | Peripheral cleanup, staged-byte rechecks and trampoline validation |
+| `firmware/copy_jump.s` | Stackless RAM copy, DMA clearing, VTOR/MSP and terminal jump |
+| `support/selector_constants.h` | Shared hardware bounds and binary-format constants |
+| `scripts/package.py`, `scripts/sealed_bundle.py` | Reproducible selector-only build and authentication |
 
-The linker fragments reserve staging and separate SRAM4 jump code. The selector
-has no filesystem, USB transport, synthetic-media build or runtime application
-programmer. Linked tests execute the production build with modeled NOR.
+The linker reserves staging and SRAM4. USB/FatFs transfer buffers use the DMA
+arena because USB DMA cannot reach DTCM. No transport macros or alternate
+firmware modes exist for tests; native tests supply the FatFs boundary and
+virtualization lives in its owning repository.

@@ -45,7 +45,7 @@ def validate_catalog(data: dict) -> dict:
         if any(
             not isinstance(value, str) or not value or any(ord(c) < 32 for c in value)
             for key, value in row.items()
-            if key not in ("bytes", "stack", "reset", "resident", "download", "rgb", "slot_offset")
+            if key not in ("bytes", "stack", "reset", "download", "rgb")
         ):
             raise ValueError("firmware labels must be nonempty printable text")
         if (
@@ -60,7 +60,7 @@ def validate_catalog(data: dict) -> dict:
             raise ValueError("firmware SHA-256 must have 64 lowercase hexadecimal characters")
         if not 16 <= row["bytes"] <= 480 * 1024:
             raise ValueError("firmware size is outside the supported bounds")
-        if row["execution"] not in ("sram", "qspi"):
+        if row["execution"] != "sram":
             raise ValueError("unknown firmware execution target")
         if row["availability"] not in ("Release", "Development"):
             raise ValueError("unknown firmware availability")
@@ -68,8 +68,6 @@ def validate_catalog(data: dict) -> dict:
             raise ValueError("unknown firmware category")
         if row["color"] not in colors or row["rgb"] != colors[row["color"]]["rgb"]:
             raise ValueError("firmware color must match the catalog palette")
-        if type(row["resident"]) is not bool:
-            raise ValueError("firmware resident flag must be a boolean")
         if row["download"] is not None and not row["download"].startswith("https://"):
             raise ValueError("firmware download must use HTTPS")
         family = tuple(row[key] for key in ("family_name", "reference", "category", "color"))
@@ -83,9 +81,6 @@ def validate_catalog(data: dict) -> dict:
             if key in mapping and mapping[key] != row["family"]:
                 raise ValueError("duplicate family reference or category color")
             mapping[key] = row["family"]
-    resident = [row for row in data["images"] if row["resident"]]
-    if len(resident) != 1 or resident[0]["execution"] != "qspi":
-        raise ValueError("exactly one reviewed QSPI resident image is required")
     return data
 
 
@@ -108,7 +103,3 @@ def read_catalog() -> dict:
             check=True,
         )
         return validate_catalog(json.loads(subprocess.check_output([str(executable)], text=True)))
-
-
-def resident_image() -> dict:
-    return next(row for row in read_catalog()["images"] if row["resident"])

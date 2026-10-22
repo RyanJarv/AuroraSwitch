@@ -4,8 +4,9 @@ BUILD_DIR ?= build-experimental-dma
 override BUILD_DIR := $(BUILD_DIR)
 # Preserve link order for stable exact-image diagnostic bindings.
 CPP_SOURCES = handoff.cpp selector.cpp
-ASM_SOURCES = copy_jump.s resident_boot.s
+ASM_SOURCES = copy_jump.s
 override APP_TYPE := BOOT_SRAM
+USE_FATFS = 1
 CPP_STANDARD = -std=gnu++17
 SDK_ROOT ?= ../.deps/Aurora-SDK
 MBEDTLS_ROOT ?= ../.deps/mbedtls
@@ -36,7 +37,7 @@ LDFLAGS += $(addprefix -T,$(SELECTOR_LINKER_SCRIPTS))
 $(SELECTOR_LINKER_SCRIPTS): $(BUILD_DIR)/%.ld: %.ld ../support/selector_constants.h | $(BUILD_DIR)
 	$(CC) -E -P -x c $< -o $@
 # Upstream assembly rules do not emit header dependencies.
-$(addprefix $(BUILD_DIR)/,copy_jump.o resident_boot.o): ../support/selector_constants.h
+$(addprefix $(BUILD_DIR)/,copy_jump.o): ../support/selector_constants.h
 # The upstream rules omit library/linker inputs and the included build rules.
 # Recompile for SDK flag changes; relink for rebuilt archives or memory layouts.
 $(OBJECTS): $(SYSTEM_FILES_DIR)/Makefile

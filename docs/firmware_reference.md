@@ -16,18 +16,16 @@
 | Synths / Other | White | [Morse 0.1.0](#morse--white) | Three-pattern rhythmic VCA | Development |
 | Synths / Other | Red | [Tempest 1.0.0](#tempest-100--red) | Multi-bank distortion | Development |
 | Synths / Other | Azure | [FataMorgana RAM experiment](#fatamorgana-ram-experiment--azure) | Dual wavetable synthesizer | Development |
-| Reverbs | Red-pink | [Dirt Verb 1.1](#dirt-verb-11--red-pink) | Driven reverb with chorus and pitch shifting | Development |
 | Reverbs | Yellow | [Aurora HP-filter variant](#aurora-hp-filter-variant--yellow) | Spectral reverb with dry-input high-pass | Development |
 
 Current source build: **Shift** → category, **Reverse** → firmware,
 **Freeze** → verify and launch. Category colors: blue reverbs, green delays,
 amber synths/other.
 The older published release uses Reverse → Freeze → Shift.
-Hold **Shift + Reverse at power-on** for the menu. Normal selector boot needs no USB. [Setup guide](user_guide.md).
+Hold **Shift + Reverse at power-on** for the menu. USB is required to launch firmware, including automatic boot. [Setup guide](user_guide.md).
 
-Dirt Verb and HP-filter are included in current source builds, not
-the older published release. Virtual screening is not physical compatibility or
-recovery testing. FataMorgana uses our RAM build; its duplicate QSPI option is retired.
+The HP-filter variant is a source-build addition. Virtual screening is not physical
+compatibility or recovery testing. FataMorgana uses the reviewed RAM build.
 
 ## FDN 1.2.2 — Blue
 
@@ -417,47 +415,13 @@ No selector color; these cannot launch with the published RAM selector.
 - **HSO, tape-delay WIP and Phazr:** mentioned in community notes, but not onboarded;
   controls and compatibility are not covered here.
 
-## Dirt Verb 1.1 — Red-pink
-
-[Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
-
-Driven reverb with optional chorus and pitch shifting. Only the exact
-`DirtVerb 1.1.bin` is supported by the current source build.
-
-### Knobs
-
-| Panel knob | Function |
-| --- | --- |
-| Warp | Decay / feedback |
-| Time | Overdrive |
-| Blur | Damping |
-| Reflect | Chorus rate |
-| Mix | Dry/wet balance |
-| Atmosphere | Pitch-shifter mix |
-
-### Buttons
-
-| Button | Function |
-| --- | --- |
-| Reverse | Toggle chorus |
-| Freeze | Toggle pitch shifting |
-
-### Details and sources
-
-- Running LEDs: gold at infinite feedback; white when overdrive is bypassed;
-  red increases with drive. These are not selector menu colors.
-- Shift, CV and gate behavior is not documented in the supplied author notes.
-- Launch reuses installed Dirt without programming application flash.
-  Hold **Shift + Reverse at power-on** to return to the menu.
-- Controls come from community-supplied author notes, not a reviewed source build.
-  Physical handoff and stock USB recovery remain unverified.
 
 ## Aurora HP-filter variant — Yellow
 
 [Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
 
 Stock Aurora controls with two shifted changes. Add the exact supplied
-`Aurora_v1-4-6_hpfilt.bin` to the offline preparer.
+`Aurora_v1-4-6_hpfilt.bin` in the USB `aurora/` folder.
 
 ### Shifted controls
 

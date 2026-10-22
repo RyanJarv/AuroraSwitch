@@ -5,6 +5,7 @@ struct Media {
     bool ready = true, reject = false, fail_remember = false, fail_launch = false;
     int saved = -1;
     unsigned opens = 0, auth = 0, launches = 0, writes = 0, warnings = 0, last = 0;
+    bool Ready() const { return ready; }
     bool Open(std::array<bool, aurora_selector::ImageCount>& installed) {
         ++opens;
         installed = present;
@@ -16,6 +17,8 @@ struct Media {
     }
     int BootChoice() { return saved; }
     bool Remember(unsigned i) {
+        if (saved == static_cast<int>(i))
+            return true;
         ++writes;
         if (fail_remember)
             return false;
@@ -68,6 +71,9 @@ int main() {
     m.saved = 0;
     tick(c, false, false, true);
     assert(m.launches == 2 && m.warnings == 1 && m.writes == 2);
+    for (unsigned idle = 0; idle < 1000; ++idle)
+        tick(c);
+    assert(m.writes == 2 && m.warnings == 1 && m.launches == 2);
     assert(m.saved == 0); // Failed persistence does not invent a remembered choice.
     // A failed save permits this session, but a new controller still boots
     // the previous saved choice. A later handoff failure remains an error.
@@ -109,6 +115,40 @@ int main() {
     tick(rejected, true); // User can leave the error and choose another group.
     assert(rejected.GetState() == Controller::State::Selected);
     tick(invalid, true, true, true);
-    assert(broken.opens == 1 && broken.auth == 0 && broken.launches == 0);
+    assert(broken.opens == 0 && broken.auth == 0 && broken.launches == 0);
     assert(invalid.GetState() == Controller::State::Error);
+    // Insertion can fulfill the first automatic attempt. Reinsertion after a
+    // completed attempt returns to the menu; Freeze explicitly retries.
+    broken.ready = true;
+    broken.present[0] = true;
+    tick(invalid);
+    assert(invalid.GetState() == Controller::State::Selected);
+    tick(invalid, false, false, true);
+    assert(broken.launches == 1);
+    const auto writes = broken.writes;
+    tick(invalid, false, false, true);
+    assert(broken.launches == 2 && broken.writes == writes);
+    broken.ready = false;
+    tick(invalid);
+    broken.ready = true;
+    tick(invalid);
+    assert(broken.launches == 2);
+    Media later;
+    later.ready = false;
+    later.present[0] = true;
+    later.saved = 0;
+    Controller inserted(later);
+    for (unsigned i = 0; i < 1000; ++i)
+        tick(inserted);
+    later.ready = true;
+    tick(inserted);
+    assert(later.launches == 1 && later.writes == 0);
+    // Empty scans remain quiet; Freeze scans once, then another press launches.
+    empty.present[0] = true;
+    tick(none);
+    assert(empty.opens == 1);
+    tick(none, false, false, true);
+    assert(empty.opens == 2 && empty.launches == 0);
+    tick(none, false, false, true);
+    assert(empty.launches == 1);
 }

@@ -4,7 +4,7 @@
 #include "images.hpp"
 
 namespace aurora_selector {
-// False means rejection before irreversible teardown or flash replacement.
+// False means rejection before irreversible teardown or RAM replacement.
 // Later failure is terminal and requires reset with recovery media ready.
 bool LaunchFirmware(daisy::DaisySeed& seed, unsigned index, const std::uint8_t* staged);
 } // namespace aurora_selector

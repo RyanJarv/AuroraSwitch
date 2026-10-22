@@ -180,21 +180,6 @@
     "id": "fatamorgana-ram"
   },
   {
-    "filename": "DirtVerb 1.1.bin",
-    "bytes": 95196,
-    "sha256": "e1775fb6c46dd83e33abaf599eb6d6089b7ff56692b42ac48748d2d1555d2784",
-    "stack": 537001984,
-    "reset": 2416183641,
-    "execution": "qspi",
-    "rgb": [
-      0.4,
-      0,
-      0.1
-    ],
-    "category": 0,
-    "id": "dirt-verb-1.1"
-  },
-  {
     "filename": "Aurora_v1-4-6_hpfilt.bin",
     "bytes": 182212,
     "sha256": "94f4200efdf47cfb0c055fa51896da4d8c8d0f8b6a6d0a9bc9ec31553d85ebc7",

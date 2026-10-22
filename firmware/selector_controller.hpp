@@ -3,7 +3,7 @@
 #include "../support/supported_image_menu.hpp"
 
 namespace aurora_selector {
-// Read installed slots once, then handle menu presses and launch requests.
+// Discover catalog files on USB insertion, then handle explicit menu actions.
 // An explicit menu action cancels the one automatic boot attempt.
 template <class Firmware> class SelectorController {
   public:
@@ -16,28 +16,38 @@ template <class Firmware> class SelectorController {
 
     template <class Loading>
     void Update(bool category_changed, bool selection_changed, bool load_pressed, Loading loading) {
-        if (category_changed || selection_changed)
+        if (category_changed || selection_changed || load_pressed)
             RequestMenu();
+        if (!firmware_.Ready()) {
+            started_ = false;
+            menu_.SetInstalled({});
+            state_ = State::Error;
+            return;
+        }
         bool automatic = false;
-        if (!started_) {
+        // A failed mount/empty scan stays quiet until Freeze or reinsertion.
+        if (!started_ || (load_pressed && !menu_.HasSelection())) {
             started_ = true;
             state_ = State::Loading;
             loading();
-            std::array<bool, ImageCount> installed{};
-            if (!firmware_.Open(installed)) {
+            std::array<bool, ImageCount> present{};
+            if (!firmware_.Open(present)) {
                 state_ = State::Error;
+                boot_pending_ = false;
                 return;
             }
-            menu_.SetInstalled(installed);
+            menu_.SetInstalled(present);
             if (boot_pending_) {
                 boot_pending_ = false;
                 const auto saved = firmware_.BootChoice();
                 automatic = saved >= 0 && menu_.Select(saved);
             }
             state_ = menu_.HasSelection() ? State::Selected : State::Empty;
+            // Freeze on an empty/error screen rescans; it must not launch an
+            // entry that appeared at a different menu position unexpectedly.
+            if (load_pressed && !automatic)
+                return;
         }
-        // Empty and unavailable storage both have no selectable image. Keep
-        // their existing Empty/Error state until reset.
         if (!menu_.HasSelection())
             return;
         // Navigation takes precedence over Freeze in the same update.

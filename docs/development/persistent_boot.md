@@ -1,48 +1,20 @@
-# Installed firmware and saved choices
+# USB saved choice
 
-The [installed layout and launch sequence](../how_it_works.md) describe the
-current fixed-slot design. Both preparers consume offsets exported from the
-compiled catalog. Every installer covers the full slot area, filling omitted
-images with erased bytes so a previous optional image cannot survive a subset
-replacement. Expected vectors determine menu presence; full copied-image
-authentication determines whether launch is allowed.
+The selector reads `0:/aurora/choice.dat`: exactly 76 bytes containing `AURUSB01`,
+64 lowercase SHA-256 characters identifying a current catalog original, then a
+little-endian CRC-32/ISO-HDLC over the preceding 72 bytes. Unknown hashes, wrong
+versions, lengths or CRCs provide no automatic launch authority.
 
-## Selection journal
+Read the saved choice after the first successful scan. Authenticate its actual
+file before launching. The startup button combination or explicit navigation
+cancels automatic boot; reinsertion after an attempted boot does not retry it.
 
-`ChoiceJournal` owns two 4-KiB sectors outside the installer. Each sector has
-sixteen page-aligned slots for 80-byte records: magic, generation, exact image
-hash and CRC. Hashes keep choices independent of catalog order. CRC rejects
-incomplete records; generation determines which complete record is newest.
+For a manual authenticated choice, reread the record first. If it already
+identifies that image, do not open it for writing. Otherwise replace it once,
+check full write, sync, close and validated readback. Save failure warns and
+permits that session's checked launch. No background retry occurs. A torn write
+can discard the previous choice; this acceptable loss returns to the menu.
 
-A changed explicit choice appends to the sector opposite the newest record.
-Automatic boots and repeated choices do not initialize QSPI or program flash.
-Recycling erases the older sector while preserving the newer committed choice.
-After an interrupted erase, append after the last occupied page rather than
-reusing an earlier hole. Torn records are skipped. If neither sector has a
-valid record, an explicit save can initialize one; ambiguous ordering and
-readback failures prevent saving.
-
-A failed save requests a brief red warning and still attempts the checked
-handoff. The next boot trusts the valid record actually present, not the
-reported success of the previous session. Dirt handoff requires mapped flash;
-a mapping failure cannot be bypassed by the session-launch policy.
-
-## Updater boundary
-
-The bundle ends before the journal with 68 KiB reserved for the stock updater's
-possible extra EOF erase and inclusive final sector. See the
-[stock updater notes](stock_updater.md). Choice records are outside its file-byte
-comparison, so keeping an unchanged installer on a drive does not make changed
-preferences look like changed application firmware.
-
-The pinned SDK issues status-register writes while changing QSPI modes. These
-are measured separately from array programming/erase. Vendor firmware can make
-its own settings writes after handoff; the selector is not a sandbox.
-
-## Qualification
-
-Checks must cover startup, all supported handoffs, failed saves, journal
-recycling and unchanged flash outside the journal. Keep exact artifacts and
-raw results locally. Virtual tests do not qualify physical USB installation,
-power interruption, audio or stock restoration; those remain the
-[release gate](recovery_release_gate.md).
+All persistence is on USB. The selector does not initialize QSPI or any on-module
+persistent settings. The stock updater necessarily writes the selector image
+when installing; vendor activity after handoff is measured separately.

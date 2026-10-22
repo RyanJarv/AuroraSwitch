@@ -4,9 +4,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="reference-sha256" content="4a04cd6b00f6ce43eb4311568ff0bc1c6ffb6d1e767dfa36b77066f3e517faf1">
-<meta name="renderer-sha256" content="3d146cbb061f9b16d6954dd01c2e63503cd525243ebc963cd33e6e1051ef8044">
-<meta name="quickstart-sha256" content="01a3accf05d8a46b889f77bca137ecdfeb7dd99f70304e1f45142c4bace37e6e">
+<meta name="reference-sha256" content="3e1e3b2111aed1491b2ff633d900e7b96f656190fd567e240f378ae8f87e415a">
+<meta name="renderer-sha256" content="607f7ad9c73ae1ed82116941ab8728615ebb0bd834e6f7f72105878ed7709434">
+<meta name="quickstart-sha256" content="c6bde5328bb315ba87da88d3d359b41caed8692e1e4ffbe8fae8c6f63a818270">
 <meta name="description" content="AuroraSwitch startup categories, firmware colors and controls.">
 <title>Firmware reference · AuroraSwitch</title>
 <link rel="stylesheet" href="style.css?v=0ca56c0559e2d38bb6339bbb0836aff286a7cce6e3e90421b78fe525559ff7ca">
@@ -32,7 +32,6 @@
 <section class="category-group" style="--category-color:#3787ff"><h2><span class="swatch" style="background:#3787ff" aria-hidden="true"></span>Reverbs<small>Blue</small></h2><ul>
 <li><a href="fdn-122.html"><span>FDN</span><small class="color-label"><span class="swatch" style="background:#3787ff" aria-hidden="true"></span>Blue</small></a></li>
 <li><a href="aurora-144.html"><span>Aurora</span><small class="color-label"><span class="swatch" style="background:#35bf58" aria-hidden="true"></span>Green</small></a></li>
-<li><a href="dirt-verb-11.html"><span>Dirt Verb</span><small class="color-label"><span class="swatch" style="background:#e84b78" aria-hidden="true"></span>Red-pink</small></a></li>
 <li><a href="aurora-hp-filter-variant.html"><span>Aurora HP-filter</span><small class="color-label"><span class="swatch" style="background:#ead342" aria-hidden="true"></span>Yellow</small></a></li>
 </ul></section>
 <section class="category-group" style="--category-color:#35bf58"><h2><span class="swatch" style="background:#35bf58" aria-hidden="true"></span>Delays<small>Green</small></h2><ul>
@@ -51,7 +50,6 @@
 <section class="category-group" style="--category-color:#3787ff"><h2><span class="swatch" style="background:#3787ff" aria-hidden="true"></span>Reverbs<small>Blue</small></h2><ul>
 <li><a href="fdn-122.html"><span>FDN</span><small class="color-label"><span class="swatch" style="background:#3787ff" aria-hidden="true"></span>Blue</small></a></li>
 <li><a href="aurora-144.html"><span>Aurora</span><small class="color-label"><span class="swatch" style="background:#35bf58" aria-hidden="true"></span>Green</small></a></li>
-<li><a href="dirt-verb-11.html"><span>Dirt Verb</span><small class="color-label"><span class="swatch" style="background:#e84b78" aria-hidden="true"></span>Red-pink</small></a></li>
 <li><a href="aurora-hp-filter-variant.html"><span>Aurora HP-filter</span><small class="color-label"><span class="swatch" style="background:#ead342" aria-hidden="true"></span>Yellow</small></a></li>
 </ul></section>
 <section class="category-group" style="--category-color:#35bf58"><h2><span class="swatch" style="background:#35bf58" aria-hidden="true"></span>Delays<small>Green</small></h2><ul>
@@ -71,7 +69,6 @@
 <section class="category-group" style="--category-color:#3787ff"><h2><span class="swatch" style="background:#3787ff" aria-hidden="true"></span>Reverbs<small>Blue</small></h2><ul>
 <li><a href="fdn-122.html"><span>FDN</span><small class="color-label"><span class="swatch" style="background:#3787ff" aria-hidden="true"></span>Blue</small></a></li>
 <li><a href="aurora-144.html"><span>Aurora</span><small class="color-label"><span class="swatch" style="background:#35bf58" aria-hidden="true"></span>Green</small></a></li>
-<li><a href="dirt-verb-11.html"><span>Dirt Verb</span><small class="color-label"><span class="swatch" style="background:#e84b78" aria-hidden="true"></span>Red-pink</small></a></li>
 <li><a href="aurora-hp-filter-variant.html"><span>Aurora HP-filter</span><small class="color-label"><span class="swatch" style="background:#ead342" aria-hidden="true"></span>Yellow</small></a></li>
 </ul></section>
 <section class="category-group" style="--category-color:#35bf58"><h2><span class="swatch" style="background:#35bf58" aria-hidden="true"></span>Delays<small>Green</small></h2><ul>
@@ -85,20 +82,14 @@
 <li><a href="tempest-100.html"><span>Tempest</span><small class="color-label"><span class="swatch" style="background:#e84444" aria-hidden="true"></span>Red</small></a></li>
 <li><a href="fatamorgana-ram-experiment.html"><span>FataMorgana</span><small class="color-label"><span class="swatch" style="background:#3ea7dc" aria-hidden="true"></span>Azure</small></a></li>
 </ul></section></nav><section class="setup-guide"><h2 id="quick-start">Quick start</h2>
-<p>Development workflow; older published releases use the previous USB layout.</p>
+<p><strong>USB is required to launch firmware, including automatic boot.</strong></p>
 <ol>
-<li>Build the development preparer with <code class="notranslate">make preparer</code> (<a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/development/README.md">build setup</a>).<br>
-Open the generated <code class="notranslate">dist/*-preparer.html</code> locally. No prebuilt preparer has<br>
-been published yet; older releases use the <a href="https://github.com/RyanJarv/AuroraSwitch/blob/v0.1.0/README.md">v0.1.0 USB workflow</a>.</li>
-<li>Obtain original firmware from its authors. Add <strong>Dirt Verb 1.1</strong> and any<br>
-other supported versions, such as <a href="https://www.qubitelectronix.com/s/Aurora_v1_4_4.zip" rel="nofollow">Aurora 1.4.4</a><br>
-(unzip first) or <a href="https://www.qubitelectronix.com/s/AR_FDN_v1_2_2.bin" rel="nofollow">FDN 1.2.2</a>,<br>
-to the preparer, then download <strong>AuroraSwitch.bin</strong>.<br>
-Original files stay unchanged and are not uploaded. Keep the generated BIN private.</li>
-<li>Back up a FAT USB drive. Put <strong>AuroraSwitch.bin</strong> at its root as the only BIN.<br>
-Safely eject, insert into Aurora, and power on to install.</li>
-<li>Remove the drive for normal selection and boot. Firmware-specific USB assets,<br>
-such as FataMorgana wavetables or Aurora options, still require a drive.</li>
+<li>Build <code class="notranslate">AuroraSwitch.bin</code> with <code class="notranslate">make package</code> (<a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/development/README.md">build setup</a>).</li>
+<li>Back up a FAT32 USB drive. Put the selector BIN at its root as the only root BIN.<br>
+Follow the stock USB installation procedure.</li>
+<li>Remove the root installer after installation. Put exact supported originals<br>
+in an <code class="notranslate">aurora/</code> folder on that drive, using their catalog filenames.</li>
+<li>Keep the drive connected and restart. Select and launch firmware from the menu.</li>
 </ol>
 <h3 id="select-firmware">Select firmware</h3>
 <ul>
@@ -108,9 +99,10 @@ such as FataMorgana wavetables or Aurora options, still require a drive.</li>
 the firmware can still run for this session.</li>
 <li><strong>Shift + Reverse held at power-on</strong> — open the menu.</li>
 </ul>
-<p>The last valid saved choice starts on the next boot without USB. Automatic boots and<br>
-reselecting the saved firmware do not write the selection record. Update a bundle<br>
-by preparing a new BIN; adding files to a drive does not change the installed menu.</p>
+<p>The last valid saved choice starts on the next boot when USB and its firmware<br>
+are available. Choices live in <code class="notranslate">aurora/choice.dat</code>. Automatic boots and repeated<br>
+choices do not rewrite that file. Missing or invalid files leave the menu open;<br>
+reconnect the drive and press Freeze to retry.</p>
 <p>To restore stock firmware, use its original BIN as the only root BIN and follow<br>
 <a href="https://www.qubitelectronix.com/faq" rel="nofollow">Qu-Bit's normal USB update procedure</a>.</p></section><p class="beta-status">Beta · Limited testing. Keep original Aurora firmware for recovery.</p>
 </main>

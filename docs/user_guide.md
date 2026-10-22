@@ -1,66 +1,50 @@
 # Installation and firmware selection
 
-Current development builds install one private bundle. Existing published
-releases predate this workflow. Physical installation and stock recovery of the
-new exact build remain qualification steps.
+**USB is required to launch firmware, including automatic boot.** This development
+build still needs physical installation, handoff and stock recovery qualification.
 
 ## Prepare and install
 
-1. Generate the development preparer with `make preparer` ([build setup](development/README.md)),
-   then open `dist/*-preparer.html` in a desktop browser. A prebuilt preparer is
-   not yet published.
-2. Select your original Dirt Verb 1.1 download and any other supported firmware
-   files obtained from their authors. Files are checked by complete SHA-256,
-   size and startup vectors. Unsupported or modified versions are rejected.
-3. Download `AuroraSwitch.bin`. Keep it private: it contains third-party firmware.
-4. Back up a FAT USB drive. Put that BIN at the root, keeping it the only root BIN.
-5. Safely eject, insert into Aurora and power on. The original updater installs
-   the bundle. Remove the drive for ordinary selector use.
+1. Build `AuroraSwitch.bin` with `make package` ([build setup](development/README.md)).
+2. Back up a FAT32 USB drive. Put that selector BIN at the root as the only root BIN.
+3. Safely eject, insert into Aurora, then follow the ordinary stock USB update procedure.
+4. After installation, remove `AuroraSwitch.bin` from the root. Create `aurora/`
+   and put supported original firmware BINs there with their exact catalog filenames.
+5. Keep the drive connected for firmware selection and automatic boot.
 
-No original vendor file is modified. The browser assembles prebuilt code locally;
-no firmware upload is performed. Once generated, the HTML works offline without
-a checkout or build tools.
+Only our selector is installed. Original vendor files are read into RAM unchanged;
+no private composite installer or preparer is needed. Firmware-owned tables/options
+keep their ordinary USB locations. FataMorgana's USB wavetable path remains unqualified.
 
 ## Controls
 
 **Shift — next category. Reverse — next firmware. Freeze — verify & launch.**
-Hold **Shift + Reverse at power-on** for the menu. Otherwise the last remembered
-available firmware starts automatically. No saved choice opens the menu.
+Hold **Shift + Reverse at power-on** for the menu. Otherwise the valid saved choice
+starts when USB and the exact firmware are available. An absent, corrupt or
+unsupported choice opens the menu without substituting another firmware.
 
 Menu colors and firmware controls are in the [reference](firmware_reference.md).
-A brief red Freeze LED before launch means saving failed. The firmware can run
-for this session, but the next boot may use a previous choice or open the menu.
-A red LED remaining in the menu means launch failed.
+The arc shows position within the category; Reverse shows the firmware color.
+Amber Freeze means loading; persistent red means unavailable USB, no usable files
+or a failed load. Reconnect USB to rescan, or press Freeze to retry. If a retry
+finds files on an empty menu, review the selection and press Freeze again to launch.
+
+The selector saves changed authenticated choices to `aurora/choice.dat`. A brief
+red Freeze warning before launch means saving failed; verified firmware can run
+for this session. Automatic boot and selecting the saved choice do not rewrite
+settings. A damaged choice file can be deleted to return to the menu.
 
 ## Supported firmware
 
-Obtain exact versions from the authors' links in the [reference](firmware_reference.md).
-Dirt Verb is required because the resident startup arrangement preserves its
-fixed flash execution address. Other catalog images are optional. To add or
-remove images, prepare and install another bundle. An absent saved image leaves
-the menu open; it does not automatically substitute a different firmware.
+Use the exact versions and filenames in the [reference](firmware_reference.md).
+Files are checked by complete SHA-256, size and RAM startup vectors. Changed,
+truncated, unsupported and flash-running images are rejected. Dirt Verb is not
+supported. Adding/removing supported originals on USB changes the available menu.
+New versions need review before entering the catalog.
 
-## USB assets and restoration
+## Stock restoration
 
-The selector does not mount USB. Firmware that loads its own tables or options
-still needs those files on a drive; see its reference page. FataMorgana's USB
-wavetable path remains unqualified.
-
-To restore an official firmware, put its original BIN at the USB root as the
-only BIN and follow [Qu-Bit's updater instructions](https://www.qubitelectronix.com/faq).
-Remove the combined installer from that drive before stock restoration.
-
-## Build the preparer
-
-Developers can run `make check` and `make preparer` with the pinned toolchain.
-This exports a self-contained HTML file into `dist/`, containing only our
-selector/wrapper code and supported metadata. That HTML can be distributed;
-the private BIN assembled from a user's firmware cannot be included in releases.
-
-## Unsupported firmware
-
-Only exact catalog versions are admitted. A different filename does not grant
-support. New versions need review of linked execution addresses, memory usage,
-startup and persistent writes; see [adding firmware](development/README.md#add-firmware).
-For the published v0.1.0 selector, use its
-[tagged USB-folder instructions](https://github.com/RyanJarv/AuroraSwitch/blob/v0.1.0/README.md).
+Put the original stock BIN at the USB root as the only root BIN and follow
+[Qu-Bit's updater instructions](https://www.qubitelectronix.com/faq).
+Restoration uses the stock bootloader and must not depend on a working selector
+or access to its menu. Power-interruption recovery remains physically unverified.

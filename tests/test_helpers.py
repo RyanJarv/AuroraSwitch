@@ -2,12 +2,9 @@
 
 from pathlib import Path
 import os
-import struct
-import zlib
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from firmware_catalog import read_catalog
 import subprocess
 import tempfile
 import unittest
@@ -30,7 +27,7 @@ class HelperTests(unittest.TestCase):
                     "-fno-omit-frame-pointer",
                 ]
             command += [str(ROOT / "firmware" / (source + ".cpp")), "-o", str(executable)]
-            if source == "flash_driver_test":
+            if source == "usb_files_test":
                 command += ["-I", str(ROOT / "tests/stubs")]
             subprocess.run(command, check=True)
             return subprocess.run([str(executable)], check=True, stdout=subprocess.PIPE).stdout
@@ -68,30 +65,13 @@ class HelperTests(unittest.TestCase):
             self.assertEqual(len(failure.exception.cmd), 1)  # Execution, not compilation.
             self.assertIn("runtime error: signed integer overflow", failure.exception.stderr)
 
-    def test_persisted_journal_contract(self):
-        records = self.compile_and_run("choice_journal_test")
-        images = read_catalog()["images"]
-        self.assertEqual(len(records), 80 * len(images))
-        for index, image in enumerate(images):
-            record = records[index * 80 : (index + 1) * 80]
-            self.assertEqual(record[:8], b"AURBOOT1")
-            self.assertEqual(struct.unpack_from("<I", record, 8)[0], index + 1)
-            self.assertEqual(record[12:76], image["sha256"].encode())
-            self.assertEqual(struct.unpack_from("<I", record, 76)[0], zlib.crc32(record[:76]))
-
     def test_shared_helpers(self):
-        for source in ("handoff_sequence_test", "flash_bundle_test", "menu_test"):
+        for source in ("handoff_sequence_test", "usb_files_test", "menu_test"):
             with self.subTest(source=source):
                 self.compile_and_run(source)
 
-    def test_installed_selection(self):
+    def test_usb_selection(self):
         self.compile_and_run("selector_controller_test")
-
-    def test_production_flash_driver_bounds(self):
-        self.compile_and_run("flash_driver_test")
-
-    def test_resident_image_bounds_and_exact_patch(self):
-        self.compile_and_run("resident_image_test")
 
     def test_catalog_colors_and_capacity(self):
         self.compile_and_run("catalog_test")

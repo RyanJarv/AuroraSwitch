@@ -31,27 +31,8 @@
 #define SELECTOR_QSPI_END 0x90800000
 #define SELECTOR_QSPI_APPLICATION_BASE 0x90040000
 #define SELECTOR_QSPI_APPLICATION_OFFSET 0x40000
-// Private composite installer: Dirt stays at the ordinary application base.
-// Its power-on vector enters the wrapper (Thumb bit set), followed by a
-// 16-byte metadata record and the saved selector image. Capacity is the
-// reviewed maximum selector size, ending before the firmware bundle directory.
-#define SELECTOR_RESIDENT_BASE 0x90040000
-#define SELECTOR_RESIDENT_ENTRY 0x90058001
-#define SELECTOR_RESIDENT_METADATA 0x90058100
-#define SELECTOR_RESIDENT_IMAGE 0x90059000
-#define SELECTOR_RESIDENT_CAPACITY 0x78000
-// Little-endian ASCII "ASR1" identifies the wrapper metadata format.
-#define SELECTOR_WRAPPER_MAGIC 0x31525341
-// Catch damage while copying the saved selector back into RAM (FNV-1a-32).
-// This fast checksum is not image authentication; full-file SHA-256 identifies
-// an approved firmware before launch.
-#define SELECTOR_FNV_OFFSET_BASIS 2166136261
-#define SELECTOR_FNV_PRIME 16777619
 // CRC-32/ISO-HDLC reflected polynomial used for saved-choice records.
 #define SELECTOR_BOOT_CRC_POLYNOMIAL 0xedb88320
-// Saved-choice generations wrap at 32 bits. A difference of half that range
-// cannot tell us which record is newer, so it must be treated as ambiguous.
-#define SELECTOR_GENERATION_HALF_RANGE 0x80000000
 // Word arithmetic and NVIC write-one masks have different meanings despite
 // sharing the same numeric value.
 #define SELECTOR_U32_MASK 0xffffffff
@@ -60,17 +41,7 @@
 #define SELECTOR_LED_DRIVER_A 0x00
 #define SELECTOR_LED_DRIVER_B 0x01
 
-// Fixed catalog-derived source slots. Omitted images leave erased bytes;
-// installers always cover the whole slot area to remove previous selections.
-// Reserve a 64-KiB EOF erase plus its inclusive final 4-KiB sector before choices.
-#define SELECTOR_BUNDLE_DATA 0x90101000
-#define SELECTOR_BUNDLE_LIMIT 0x907cf000
-// Pinned stock updater erases before its next read, including a possible EOF read.
+// Pinned stock updater reads/erases application files in 64-KiB blocks.
 #define SELECTOR_UPDATER_BLOCK_SIZE 65536
-// Two independent 4-KiB sectors remember choices. Records append to erased pages
-// so ordinary changes do not need an erase; the other sector survives recycling.
-#define SELECTOR_CHOICE_OFFSET 0x7e0000
-#define SELECTOR_CHOICE_SECTOR_SIZE 4096
-#define SELECTOR_CHOICE_RECORD_STRIDE 256
-// Serialized choice record, independent of compiler struct padding.
-#define SELECTOR_CHOICE_RECORD_SIZE 80
+// USB choice format: eight version bytes, catalog SHA-256 text, CRC-32.
+#define SELECTOR_CHOICE_FILE_SIZE 76

@@ -61,17 +61,15 @@ int main() {
             text(firmware.download);
         else
             std::cout << "null";
-        std::cout << ",\"resident\":" << (firmware.resident ? "true" : "false");
         std::cout << ",\"filename\":";
         text(image.filename);
         std::cout << ",\"rgb\":[" << image.menu_color[0] << ',' << image.menu_color[1] << ','
                   << image.menu_color[2] << ']';
-        std::cout << ",\"slot_offset\":" << BundleOffsets[i];
         std::cout << ",\"bytes\":" << image.size << ",\"sha256\":";
         text(image.sha256);
         std::cout << ",\"stack\":" << image.vectors.stack << ",\"reset\":" << image.vectors.reset;
         std::cout << ",\"execution\":";
-        text(image.execution == Execution::Sram ? "sram" : "qspi");
+        text("sram");
         std::cout << '}';
     }
     std::cout << "]}\n";

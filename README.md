@@ -1,27 +1,21 @@
 # AuroraSwitch
 
-Select Aurora firmware from an installed flash bundle. The official bootloader
-continues to handle USB installation and stock restoration.
+Switch firmware without a computer.
 
 **Important**
 * You may want to avoid using this for performances until this is better tested.
 
+
 ## Quick start
 
-Development workflow; older published releases use the previous USB layout.
+**USB is required to launch firmware, including automatic boot.**
 
-1. Build the development preparer with `make preparer` ([build setup](docs/development/README.md)).
-   Open the generated `dist/*-preparer.html` locally. No prebuilt preparer has
-   been published yet; older releases use the [v0.1.0 USB workflow](https://github.com/RyanJarv/AuroraSwitch/blob/v0.1.0/README.md).
-2. Obtain original firmware from its authors. Add **Dirt Verb 1.1** and any
-   other supported versions, such as [Aurora 1.4.4](https://www.qubitelectronix.com/s/Aurora_v1_4_4.zip)
-   (unzip first) or [FDN 1.2.2](https://www.qubitelectronix.com/s/AR_FDN_v1_2_2.bin),
-   to the preparer, then download **AuroraSwitch.bin**.
-   Original files stay unchanged and are not uploaded. Keep the generated BIN private.
-3. Back up a FAT USB drive. Put **AuroraSwitch.bin** at its root as the only BIN.
-   Safely eject, insert into Aurora, and power on to install.
-4. Remove the drive for normal selection and boot. Firmware-specific USB assets,
-   such as FataMorgana wavetables or Aurora options, still require a drive.
+1. Build `AuroraSwitch.bin` with `make package` ([build setup](docs/development/README.md)).
+2. Back up a FAT32 USB drive. Put the selector BIN at its root as the only root BIN.
+   Follow the stock USB installation procedure.
+3. Remove the root installer after installation. Put exact supported originals
+   in an `aurora/` folder on that drive, using their catalog filenames.
+4. Keep the drive connected and restart. Select and launch firmware from the menu.
 
 ### Select firmware
 
@@ -31,9 +25,10 @@ Development workflow; older published releases use the previous USB layout.
   the firmware can still run for this session.
 - **Shift + Reverse held at power-on** — open the menu.
 
-The last valid saved choice starts on the next boot without USB. Automatic boots and
-reselecting the saved firmware do not write the selection record. Update a bundle
-by preparing a new BIN; adding files to a drive does not change the installed menu.
+The last valid saved choice starts on the next boot when USB and its firmware
+are available. Choices live in `aurora/choice.dat`. Automatic boots and repeated
+choices do not rewrite that file. Missing or invalid files leave the menu open;
+reconnect the drive and press Freeze to retry.
 
 To restore stock firmware, use its original BIN as the only root BIN and follow
 [Qu-Bit's normal USB update procedure](https://www.qubitelectronix.com/faq).
@@ -55,8 +50,9 @@ The published release supports these exact versions:
 ### Source-build additions
 
 Current source adds Flux 0.1.0/0.2.0, Morse 0.1.0, Tempest 1.0.0, and one
-FataMorgana RAM build. This branch also includes Dirt Verb 1.1 (QSPI) and
-HP-filter Aurora (RAM), with no extra build options. See the
+FataMorgana RAM build. This branch also includes
+HP-filter Aurora (RAM), with no extra build options. Dirt Verb and other firmware
+requiring execution from application flash are unsupported. See the
 [user guide](docs/user_guide.md#supported-firmware) for files and commands.
 
 Earlier exact-build virtual screens pass; physical reliability and stock USB
