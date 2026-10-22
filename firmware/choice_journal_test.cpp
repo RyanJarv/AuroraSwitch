@@ -1,4 +1,5 @@
 #include "../support/choice_journal.hpp"
+#include "selector_controller.hpp"
 #include <cassert>
 #include <cstdio>
 #include <vector>
@@ -33,6 +34,101 @@ struct Driver {
         return cut >= size;
     }
 };
+
+// Exercise the actual controller and journal together. Only the flash storage
+// and terminal image launch are substitutes; no physical timing is modeled.
+struct JournalMedia {
+    explicit JournalMedia(Driver& flash) : journal(flash) {}
+    ChoiceJournal<Driver> journal;
+    unsigned launches = 0, warnings = 0;
+    int launched = -1;
+    bool Open(std::array<bool, ImageCount>& installed) {
+        installed.fill(false);
+        installed[0] = installed[1] = true;
+        return true;
+    }
+    bool Authenticate(unsigned index) { return index < 2; }
+    int BootChoice() { return journal.Load().index; }
+    bool Remember(unsigned index) { return journal.Save(index); }
+    void SaveWarning() { ++warnings; }
+    bool Launch(unsigned index) {
+        ++launches;
+        launched = index;
+        return true;
+    }
+};
+
+void TestBootWriteBudget() {
+    Driver flash;
+    using Controller = SelectorController<JournalMedia>;
+    auto tick = [](Controller& controller, bool next = false, bool freeze = false) {
+        controller.Update(false, next, freeze, [] {});
+    };
+    for (unsigned cycle = 0; cycle < 100; ++cycle) {
+        const unsigned selected = cycle % 2;
+        const auto writes = flash.writes, erases = flash.erases;
+        JournalMedia menu{flash};
+        Controller manual(menu);
+        manual.RequestMenu();
+        tick(manual);
+        if (selected == 1)
+            tick(manual, true);
+        assert(manual.Selected() == selected);
+        tick(manual, false, true);
+        assert(menu.launched == int(selected) && menu.warnings == 0);
+        assert(flash.writes == writes + 1);
+        assert(flash.erases == erases + (cycle >= 32 && cycle % 32 < 2 ? 1U : 0U));
+        const auto after = flash.bytes;
+        const auto inits = flash.inits, saved_erases = flash.erases;
+
+        for (unsigned boot = 0; boot < 3; ++boot) {
+            JournalMedia media{flash};
+            Controller automatic(media);
+            for (unsigned idle = 0; idle < 100; ++idle)
+                tick(automatic);
+            assert(media.launches == 1 && media.launched == int(selected));
+        }
+        // Explicitly choosing the same image is also a read-only operation.
+        tick(manual, false, true);
+        assert(flash.writes == writes + 1 && flash.erases == saved_erases);
+        assert(flash.inits == inits && flash.bytes == after);
+    }
+    assert(flash.writes == 100 && flash.erases == 6);
+
+    // Save failures must not become automatic retries. A new boot uses the
+    // previous committed choice; additional idle updates perform no writes.
+    for (unsigned failure = 0; failure < 3; ++failure) {
+        Driver broken;
+        ChoiceJournal<Driver> seed(broken);
+        for (unsigned i = 0; i < 32; ++i)
+            assert(seed.Save(i % 2)); // Both sectors full, last choice is 1.
+        broken.fail_init = failure == 0;
+        broken.fail_erase = failure == 1;
+        broken.cut = failure == 2 ? 0 : 80;
+        const auto writes = broken.writes, erases = broken.erases, inits = broken.inits;
+        JournalMedia media{broken};
+        Controller manual(media);
+        manual.RequestMenu();
+        tick(manual);
+        tick(manual, false, true); // Choose 0; the save fails, launch still allowed.
+        assert(media.warnings == 1 && media.launched == 0);
+        assert(broken.inits == inits + 1);
+        assert(broken.erases == erases + (failure == 0 ? 0U : 1U));
+        assert(broken.writes == writes + (failure == 2 ? 1U : 0U));
+        const auto after = broken.bytes;
+        const auto failed_writes = broken.writes, failed_erases = broken.erases;
+        for (unsigned idle = 0; idle < 1000; ++idle)
+            tick(manual);
+        JournalMedia rebooted{broken};
+        Controller automatic(rebooted);
+        for (unsigned idle = 0; idle < 1000; ++idle)
+            tick(automatic);
+        assert(rebooted.launched == 1 && rebooted.launches == 1);
+        assert(broken.writes == failed_writes && broken.erases == failed_erases);
+        assert(broken.inits == inits + 1 && broken.bytes == after);
+    }
+}
+
 int main() {
     Driver initial;
     ChoiceJournal<Driver> empty(initial);
@@ -165,6 +261,8 @@ int main() {
     ChoiceJournal<Driver> failed_read(unreadable);
     assert(failed_read.Load().index == -1 && !failed_read.Save(0));
     assert(unreadable.writes == 0 && unreadable.inits == 0);
+
+    TestBootWriteBudget();
 
     // Emit actual persisted bytes for an independent Python CRC/format check.
     Driver formats;

@@ -12,6 +12,81 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class FailureControls(unittest.TestCase):
+    def test_flash_driver_boundaries(self):
+        driver = (ROOT / "firmware/flash_driver.hpp").read_text()
+        start = driver.index("        if (offset < SELECTOR_CHOICE_OFFSET")
+        end = driver.index("        // Use a checked single-page", start)
+        cases = (
+            (
+                "program bounds",
+                "firmware/flash_driver.hpp",
+                driver[start:end],
+                "",
+                "!driver.WritePage(offset, record.size(), record.data())",
+            ),
+            (
+                "erase bounds",
+                "firmware/flash_driver.hpp",
+                "        if (offset != SELECTOR_CHOICE_OFFSET &&\n"
+                "            offset != SELECTOR_CHOICE_OFFSET + SELECTOR_CHOICE_SECTOR_SIZE)\n"
+                "            return false;\n",
+                "",
+                "!driver.EraseSector(offset)",
+            ),
+            (
+                "shifted production layout",
+                "support/selector_constants.h",
+                "#define SELECTOR_CHOICE_OFFSET 0x7e0000",
+                "#define SELECTOR_CHOICE_OFFSET 0x7d0000",
+                "driver.WritePage(offset, record.size(), record.data())",
+            ),
+        )
+        for name, filename, before, after, assertion in cases:
+            with (
+                self.subTest(safeguard=name),
+                tempfile.TemporaryDirectory(prefix="aurora-driver-negative-") as temporary,
+            ):
+                root = Path(temporary)
+                for relative in (
+                    "firmware/flash_driver.hpp",
+                    "firmware/flash_driver_test.cpp",
+                    "support/selector_constants.h",
+                    "tests/stubs/daisy_seed.h",
+                ):
+                    target = root / relative
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(ROOT / relative, target)
+                target = root / filename
+                source = target.read_text()
+                self.assertEqual(source.count(before), 1)
+                target.write_text(source.replace(before, after))
+                executable = root / "driver"
+                subprocess.run(
+                    [
+                        os.environ.get("CXX", "c++"),
+                        "-std=c++17",
+                        "-Wall",
+                        "-Wextra",
+                        "-Werror",
+                        "-I",
+                        str(root / "tests/stubs"),
+                        str(root / "firmware/flash_driver_test.cpp"),
+                        "-o",
+                        str(executable),
+                    ],
+                    check=True,
+                    capture_output=True,
+                )
+                result = subprocess.run(
+                    [str(executable)],
+                    capture_output=True,
+                    text=True,
+                    preexec_fn=lambda: resource.setrlimit(resource.RLIMIT_CORE, (0, 0)),
+                )
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("Assertion", result.stderr)
+                self.assertIn(assertion, result.stderr)
+
     def test_journal_safeguards(self):
         source = (ROOT / "support/choice_journal.hpp").read_text()
         readback_start = source.index(

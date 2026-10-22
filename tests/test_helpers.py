@@ -30,6 +30,8 @@ class HelperTests(unittest.TestCase):
                     "-fno-omit-frame-pointer",
                 ]
             command += [str(ROOT / "firmware" / (source + ".cpp")), "-o", str(executable)]
+            if source == "flash_driver_test":
+                command += ["-I", str(ROOT / "tests/stubs")]
             subprocess.run(command, check=True)
             return subprocess.run([str(executable)], check=True, stdout=subprocess.PIPE).stdout
 
@@ -84,6 +86,9 @@ class HelperTests(unittest.TestCase):
 
     def test_installed_selection(self):
         self.compile_and_run("selector_controller_test")
+
+    def test_production_flash_driver_bounds(self):
+        self.compile_and_run("flash_driver_test")
 
     def test_resident_image_bounds_and_exact_patch(self):
         self.compile_and_run("resident_image_test")

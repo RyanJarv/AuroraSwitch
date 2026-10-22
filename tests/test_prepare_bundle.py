@@ -51,6 +51,32 @@ def fixture():
 
 
 class PrepareBundleTests(unittest.TestCase):
+    def test_prepared_installer_preserves_reserved_regions_at_eof_boundaries(self):
+        # Independent model of the pinned loader's inclusive 4-KiB eraser and
+        # erase-before-read loop. This checks our file extents, not USB hardware
+        # behavior or the correctness of an arbitrary replacement bootloader.
+        for size in (0xCFFFF, 0xD0000, 0xD0001):
+            with self.subTest(installer_bytes=size):
+                template, files = fixture()
+                row = template["images"][1]
+                length = size - (row["slot_offset"] - 0x40000)
+                files[1] = files[1][:8] + bytes(length - 8)
+                row.update(bytes=length, sha256=identity(files[1]))
+                installer = assemble(template, files)
+                self.assertEqual(len(installer), size)
+                # Non-erased sentinels make even an unintended erase visible.
+                flash = bytearray(b"\x5a" * 0x800000)
+                for file_offset in range(0, len(installer) + 1, 65536):
+                    destination = 0x40000 + file_offset
+                    erase_end = destination + 65536 + 4096
+                    self.assertLessEqual(erase_end, 0x7E0000)
+                    flash[destination:erase_end] = b"\xff" * (65536 + 4096)
+                    block = installer[file_offset : file_offset + 65536]
+                    flash[destination : destination + len(block)] = block
+                self.assertEqual(flash[:0x40000], b"\x5a" * 0x40000)
+                self.assertEqual(flash[0x7E0000:], b"\x5a" * 0x20000)
+                self.assertEqual(flash[0x40000 : 0x40000 + size], installer)
+
     def test_updater_eof_erase_cannot_reach_selection_sectors(self):
         # Pinned stock updater reads/erases in 64-KiB chunks, erasing before
         # fread. An exactly aligned file therefore gets one extra EOF erase.

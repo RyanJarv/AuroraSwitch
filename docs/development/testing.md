@@ -21,6 +21,21 @@ launches, missing saved images and rejection after staged-byte corruption.
 Three mutation controls ensure journal integrity, repeat suppression and
 readback assertions actually fail when their safeguards are removed.
 
+The production flash-driver header also runs natively against an SDK-call
+recorder. Independent chip offsets check every journal page, invalid addresses
+and lengths, error propagation and indirect-mode initialization. Three driver
+mutation controls remove program/erase bounds or shift the production journal
+address; the independent expectations must reject each change. This recorder
+checks calls into the SDK, not the SPI commands emitted by its implementation.
+
+Controller/journal integration tests cover 100 changed choices, 300 automatic
+boots, repeat choices, sector recycling and initialization/erase/program
+failures. Idle updates and subsequent automatic boots must not retry saves.
+An independent stock-updater model applies prepared files around 64-KiB EOF
+boundaries to non-erased flash and checks that reserved regions remain intact.
+The existing maximum-length erase-margin test bounds the supported file range.
+Neither model executes physical USB installation or qualifies stock recovery.
+
 ## Browser checks
 
 With Firefox and geckodriver installed:
