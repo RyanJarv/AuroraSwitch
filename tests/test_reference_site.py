@@ -10,7 +10,16 @@ from urllib.parse import urlsplit
 import xml.etree.ElementTree as ET
 
 from scripts.firmware_catalog import read_catalog
-from scripts.render_reference import CATEGORIES, PANEL_CONTROLS, label_controls, navigation, read_quick_start, read_reference, slug, swatch
+from scripts.render_reference import (
+    CATEGORIES,
+    PANEL_CONTROLS,
+    label_controls,
+    navigation,
+    read_quick_start,
+    read_reference,
+    slug,
+    swatch,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "site"
@@ -65,8 +74,10 @@ class ReferenceSiteTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.source = (ROOT / "docs/firmware_reference.md").read_text()
-        _, cls.sections, cls.entries = read_reference(cls.source)
-        cls.navigation_swatches = 2 * (len({entry.anchor for entry in cls.entries}) + len(CATEGORIES))
+        cls.sections, cls.entries = read_reference(cls.source)
+        cls.navigation_swatches = 2 * (
+            len({entry.anchor for entry in cls.entries}) + len(CATEGORIES)
+        )
         cls.pages = {}
         for file in SITE.glob("*.html"):
             parser = ReferenceParser()
@@ -74,7 +85,7 @@ class ReferenceSiteTests(unittest.TestCase):
             cls.pages[file.name] = parser
 
     def test_each_firmware_page_has_download_actions(self):
-        """Keep compact actions in both direct pages and SPA navigation."""
+        """Keep compact actions in static reference pages."""
         for section in self.sections:
             if section.filename == "index.html" or section.filename not in self.pages:
                 continue
@@ -83,28 +94,44 @@ class ReferenceSiteTests(unittest.TestCase):
                 self.assertIn('class="firmware-heading"', page)
                 self.assertIn('class="download-button"', page)
                 self.assertRegex(section.markdown, r"Download|Discord download|Build RAM firmware")
-        for name, version in (("flux-capacitor", "0.1.0"), ("flux-capacitor", "0.2.0"),
-                              ("flux-capacitor", "0.3.0"), ("aurora-morse", "0.1.0"),
-                              ("aurora-morse", "0.2.0")):
+        for name, version in (
+            ("flux-capacitor", "0.1.0"),
+            ("flux-capacitor", "0.2.0"),
+            ("flux-capacitor", "0.3.0"),
+            ("aurora-morse", "0.1.0"),
+            ("aurora-morse", "0.2.0"),
+        ):
             self.assertIn(f"/releases/download/v{version}/{name}-{version}.bin", self.source)
 
     def test_static_pages_match_source_and_renderer(self):
-        expected = {"index.html"} | {section.filename for section in self.sections
-                                    if any(entry.anchor == section.anchor for entry in self.entries)}
+        expected = {"index.html"} | {
+            section.filename
+            for section in self.sections
+            if any(entry.anchor == section.anchor for entry in self.entries)
+        }
         self.assertEqual(set(self.pages), expected, "Regenerate pages with make reference-html")
         fingerprints = {
-            "reference-sha256": hashlib.sha256((ROOT / "docs/firmware_reference.md").read_bytes()).hexdigest(),
-            "renderer-sha256": hashlib.sha256((ROOT / "scripts/render_reference.py").read_bytes()
-                                           + json.dumps(read_catalog(), sort_keys=True, separators=(",", ":"),
-                                                        ensure_ascii=False).encode()).hexdigest(),
-            "quickstart-sha256": hashlib.sha256(read_quick_start((ROOT / "README.md").read_text()).encode()).hexdigest(),
+            "reference-sha256": hashlib.sha256(
+                (ROOT / "docs/firmware_reference.md").read_bytes()
+            ).hexdigest(),
+            "renderer-sha256": hashlib.sha256(
+                (ROOT / "scripts/render_reference.py").read_bytes()
+                + json.dumps(
+                    read_catalog(), sort_keys=True, separators=(",", ":"), ensure_ascii=False
+                ).encode()
+            ).hexdigest(),
+            "quickstart-sha256": hashlib.sha256(
+                read_quick_start((ROOT / "README.md").read_text()).encode()
+            ).hexdigest(),
         }
         for filename, parser in self.pages.items():
             with self.subTest(page=filename):
                 for key, digest in fingerprints.items():
                     self.assertEqual(parser.metadata.get(key), digest, "Run make reference-html")
                 style_digest = hashlib.sha256((SITE / "style.css").read_bytes()).hexdigest()
-                self.assertIn(f"style.css?v={style_digest}", parser.links, "Run make reference-html")
+                self.assertIn(
+                    f"style.css?v={style_digest}", parser.links, "Run make reference-html"
+                )
 
     def test_links_and_fragments_resolve_on_every_page(self):
         for filename, parser in self.pages.items():
@@ -131,17 +158,16 @@ class ReferenceSiteTests(unittest.TestCase):
         self.assertIn('id="quick-start"', body)
         self.assertIn('id="select-firmware"', body)
         for url in (
-            "https://github.com/RyanJarv/AuroraSwitch/releases/latest/download/AuroraSwitch.bin",
+            "https://github.com/RyanJarv/AuroraSwitch/blob/v0.1.0/README.md",
             "https://www.qubitelectronix.com/s/Aurora_v1_4_4.zip",
             "https://www.qubitelectronix.com/s/AR_FDN_v1_2_2.bin",
         ):
             self.assertIn(f'href="{url}"', body)
         self.assertNotIn("git clone", body)
         self.assertNotIn("make download-release", body)
-        self.assertIn("only BIN there", body)
+        self.assertIn("as the only BIN", body)
         self.assertIn("unzip first", body)
-        self.assertIn("changes category", body)
-        self.assertIn("verifies and launches", body)
+        self.assertIn("verify, remember and launch", body)
         self.assertIn("older published release", body)
         self.assertIn('class="category-overview"', body)
         self.assertIn('<section class="setup-guide">', body)
@@ -158,8 +184,7 @@ class ReferenceSiteTests(unittest.TestCase):
                 self.assertEqual(body.count(f'href="{section.filename}"'), 1)
 
     def test_additional_images_are_development_only_and_ram_fata_is_unique(self):
-        for name, color in (("Dirt Verb 1.1", "Red-pink"),
-                            ("Aurora HP-filter variant", "Yellow")):
+        for name, color in (("Dirt Verb 1.1", "Red-pink"), ("Aurora HP-filter variant", "Yellow")):
             entry = next(entry for entry in self.entries if entry.name == name)
             self.assertEqual(entry.color, color)
             self.assertEqual(entry.availability, "Development")
@@ -183,7 +208,9 @@ class ReferenceSiteTests(unittest.TestCase):
                 self.assertNotIn('class="page-links"', page)
                 self.assertNotIn('class="back-link"', page)
                 self.assertEqual(parser.swatches, self.navigation_swatches + 2)
-                self.assertIn(f'{swatch(CATEGORIES[entries[0].category])}{entries[0].category}</span>', page)
+                self.assertIn(
+                    f"{swatch(CATEGORIES[entries[0].category])}{entries[0].category}</span>", page
+                )
                 for heading in re.findall(r"^### (.+)$", section.markdown, re.M):
                     self.assertIn(slug(heading), parser.ids)
                 self.assertIn(entries[0].color, page)
@@ -191,59 +218,53 @@ class ReferenceSiteTests(unittest.TestCase):
                 for entry in entries:
                     if len(entries) > 1:
                         version = entry.name.removeprefix(section.title).strip()
-                        self.assertIn(version + (" (development)" if entry.availability == "Development" else ""), page)
+                        self.assertIn(
+                            version
+                            + (" (development)" if entry.availability == "Development" else ""),
+                            page,
+                        )
 
-    def test_html_fallbacks_have_accessible_navigation_and_local_spa(self):
+    def test_static_pages_have_accessible_navigation(self):
         for filename, parser in self.pages.items():
             page = (SITE / filename).read_text()
             with self.subTest(page=filename):
                 self.assertEqual(parser.h1_count, 0 if filename == "index.html" else 1)
-                self.assertEqual(parser.current, [filename] * (3 if filename == "index.html" else 2))
+                self.assertEqual(
+                    parser.current, [filename] * (3 if filename == "index.html" else 2)
+                )
                 self.assertIn("main", parser.ids)
                 self.assertIn("Firmware directory", parser.nav_labels)
                 self.assertIn("Mobile firmware directory", parser.nav_labels)
-                self.assertEqual(len(parser.scripts), 1)
-                script = parser.scripts[0]
-                self.assertEqual(script["type"], "module")
-                self.assertEqual(urlsplit(script["src"]).path, "navigation.js")
-                self.assertEqual(urlsplit(script["data-reference"]).path, "reference.json")
-                reference = parser.metadata["reference-sha256"]
-                renderer = parser.metadata["renderer-sha256"]
-                quickstart = parser.metadata["quickstart-sha256"]
-                self.assertEqual(urlsplit(script["data-reference"]).query, f"v={reference}-{renderer}-{quickstart}")
-                digest = hashlib.sha256((SITE / "navigation.js").read_bytes()).hexdigest()
-                self.assertEqual(urlsplit(script["src"]).query, f"v={digest}")
+                self.assertEqual(parser.scripts, [])
                 self.assertIn('name="viewport"', page)
                 self.assertIn('lang="en"', page)
                 self.assertIn('class="mobile-menu"', page)
                 self.assertIn('class="skip-link"', page)
                 self.assertIn(f'<body data-page="{filename}">', page)
-                for control, action in (("Shift", "Next category"), ("Reverse", "Next firmware"),
-                                        ("Freeze", "Verify &amp; launch")):
-                    self.assertIn(f'<kbd>{control}</kbd></dt><dd>{action}</dd>', page)
+                for control, action in (
+                    ("Shift", "Next category"),
+                    ("Reverse", "Next firmware"),
+                    ("Freeze", "Verify &amp; launch"),
+                ):
+                    self.assertIn(f"<kbd>{control}</kbd></dt><dd>{action}</dd>", page)
                 self.assertNotIn("Current source build", page)
                 self.assertNotIn('class="selector-title"', page)
                 self.assertEqual(parser.details, [], "Keep site content visible, not collapsible")
 
-    def test_spa_data_matches_every_fallback(self):
-        data = json.loads((SITE / "reference.json").read_text())
-        self.assertEqual(set(data["pages"]), set(self.pages))
-        for filename, parser in self.pages.items():
-            page = (SITE / filename).read_text()
-            with self.subTest(page=filename):
-                for field in ("reference", "renderer", "quickstart"):
-                    self.assertEqual(data[f"{field}_sha256"], parser.metadata[f"{field}-sha256"])
-                body = re.search(r'<main id="main">\n(.*?)\n</main>', page, re.S)[1]
-                self.assertEqual(data["pages"][filename]["body"], body)
-                self.assertIn("AuroraSwitch", data["pages"][filename]["title"])
-        self.assertNotIn("menu", data, "Use the existing static navigation")
-
     def test_control_descriptions_and_caveats_are_preserved(self):
         self.assertIn("Mix is not dry/wet.", (SITE / "tempest-100.html").read_text())
-        self.assertIn("USB table loading remains", (SITE / "fatamorgana-ram-experiment.html").read_text())
-        self.assertIn("not been independently verified", (SITE / "the-oscillator-is-a-lie-002.html").read_text())
+        self.assertIn(
+            "USB table loading remains", (SITE / "fatamorgana-ram-experiment.html").read_text()
+        )
+        self.assertIn(
+            "not been independently verified",
+            (SITE / "the-oscillator-is-a-lie-002.html").read_text(),
+        )
         self.assertIn("step boundary or reset", (SITE / "morse.html").read_text())
-        self.assertIn("Without tables, a generated cube", (SITE / "fatamorgana-ram-experiment.html").read_text())
+        self.assertIn(
+            "Without tables, a generated cube",
+            (SITE / "fatamorgana-ram-experiment.html").read_text(),
+        )
 
     def test_control_views_show_panel_and_visible_details_section(self):
         for section in self.sections:
@@ -256,39 +277,48 @@ class ReferenceSiteTests(unittest.TestCase):
                 self.assertEqual(parser.images[0]["src"], "aurora-panel.svg")
                 for number, name in enumerate(PANEL_CONTROLS, 1):
                     self.assertIn(f"{number} {name}", parser.images[0]["alt"])
-                details = [item for item in parser.details if item.get("id") == "details-and-sources"]
+                details = [
+                    item for item in parser.details if item.get("id") == "details-and-sources"
+                ]
                 self.assertEqual(details, [])
                 self.assertIn('<h2 id="details-and-sources">Details &amp; sources</h2>', page)
                 self.assertNotIn('class="reference-details"', page)
                 self.assertNotIn('class="conventions"', page)
                 self.assertNotIn('class="control-key"', page)
-                self.assertNotIn('How to read the controls', page)
-                self.assertNotIn('Names refer to the original Aurora panel', page)
+                self.assertNotIn("How to read the controls", page)
+                self.assertNotIn("Names refer to the original Aurora panel", page)
                 self.assertIn('<span class="control-number">', page)
 
     def test_control_numbers_only_label_table_controls(self):
-        self.assertEqual(label_controls('<tr><td>Time + CV</td><td>Delay</td></tr>'),
-                         '<tr><td><span class="control-number">2</span> Time + CV</td><td>Delay</td></tr>')
-        cell = label_controls('<tr><td>Shift + Freeze</td><td>Time</td></tr>')
+        self.assertEqual(
+            label_controls("<tr><td>Time + CV</td><td>Delay</td></tr>"),
+            '<tr><td><span class="control-number">2</span> Time + CV</td><td>Delay</td></tr>',
+        )
+        cell = label_controls("<tr><td>Shift + Freeze</td><td>Time</td></tr>")
         self.assertIn('control-number">8</span>', cell)
         self.assertIn('control-number">9</span>', cell)
         self.assertNotIn('control-number">2</span>', cell)
-        unrelated = '<tr><td>Clock ratio</td><td>Reverse</td></tr>'
+        unrelated = "<tr><td>Clock ratio</td><td>Reverse</td></tr>"
         self.assertEqual(label_controls(unrelated), unrelated)
 
     def test_panel_drawing_preserves_physical_control_order(self):
         panel = ET.parse(SITE / "aurora-panel.svg").getroot()
         ns = {"svg": "http://www.w3.org/2000/svg"}
-        knobs = [item for item in panel.findall('.//svg:use', ns) if item.get("href") == "#knob"]
+        knobs = [item for item in panel.findall(".//svg:use", ns) if item.get("href") == "#knob"]
         self.assertEqual(len(knobs), 6)
-        self.assertEqual(len([item for item in panel.findall('.//svg:use', ns)
-                              if item.get("href") == "#button"]), 3)
+        self.assertEqual(
+            len(
+                [item for item in panel.findall(".//svg:use", ns) if item.get("href") == "#button"]
+            ),
+            3,
+        )
         # Warp/Blur/Mix alternate with the right-hand Time/Reflect/Atmosphere column.
         self.assertEqual({item.get("x") for item in knobs[::2]}, {knobs[0].get("x")})
         self.assertEqual({item.get("x") for item in knobs[1::2]}, {knobs[1].get("x")})
         self.assertLess(float(knobs[0].get("x")), float(knobs[1].get("x")))
-        self.assertEqual([float(item.get("y")) for item in knobs],
-                         sorted(float(item.get("y")) for item in knobs))
+        self.assertEqual(
+            [float(item.get("y")) for item in knobs], sorted(float(item.get("y")) for item in knobs)
+        )
         for name in PANEL_CONTROLS:
             self.assertIn(name, " ".join(panel.itertext()))
 
@@ -303,20 +333,28 @@ class ReferenceSiteTests(unittest.TestCase):
             if not entries:
                 continue
             name = entries[0].family_name
-            self.assertIn(f'<span>{name}</span><small class="color-label">'
-                          f'{swatch(entries[0].color)}{entries[0].color}</small>', menu)
+            self.assertIn(
+                f'<span>{name}</span><small class="color-label">'
+                f"{swatch(entries[0].color)}{entries[0].color}</small>",
+                menu,
+            )
             if name != section.title:
-                self.assertNotIn(f'<span>{section.title}</span>', menu)
+                self.assertNotIn(f"<span>{section.title}</span>", menu)
         self.assertEqual(menu.count('class="swatch"'), self.navigation_swatches // 2)
 
     def test_menu_groups_match_selector_membership_and_family_order(self):
         # Consume the real export rather than parsing C++ source text.
         images = read_catalog()["images"]
-        self.assertEqual([entry.category for entry in self.entries],
-                         [row["category"] for row in images])
+        self.assertEqual(
+            [entry.category for entry in self.entries], [row["category"] for row in images]
+        )
         self.assertEqual([entry.color for entry in self.entries], [row["color"] for row in images])
-        family_pages = {row["family"]: next(section.filename for section in self.sections
-                                          if section.anchor == row["reference"]) for row in images}
+        family_pages = {
+            row["family"]: next(
+                section.filename for section in self.sections if section.anchor == row["reference"]
+            )
+            for row in images
+        }
         rows = [row["family"] for row in images]
         categories = [list(CATEGORIES).index(row["category"]) for row in images]
         menu = navigation(list(reversed(self.sections)), self.entries, "index.html")
@@ -324,8 +362,13 @@ class ReferenceSiteTests(unittest.TestCase):
         parser.feed(menu)
         ordered = ["index.html"]
         for category in range(len(CATEGORIES)):
-            ordered += list(dict.fromkeys(family_pages[family] for family, group in zip(rows, categories)
-                                         if group == category))
+            ordered += list(
+                dict.fromkeys(
+                    family_pages[family]
+                    for family, group in zip(rows, categories)
+                    if group == category
+                )
+            )
         self.assertEqual(parser.links, ordered)
         self.assertEqual(menu.count('<section class="category-group"'), 3)
         self.assertNotIn("Release firmware", menu)
@@ -334,16 +377,21 @@ class ReferenceSiteTests(unittest.TestCase):
         self.assertNotIn("outside-the-selector-catalog.html", self.pages)
 
     def test_quick_start_extraction_is_exact_and_fail_closed(self):
-        source = "# Project\n\n## Quick start\n\nInstall.\n\n### Select\nUse.\n\n## Other\nIgnore.\n"
+        source = (
+            "# Project\n\n## Quick start\n\nInstall.\n\n### Select\nUse.\n\n## Other\nIgnore.\n"
+        )
         self.assertEqual(read_quick_start(source), "## Quick start\nInstall.\n\n### Select\nUse.\n")
-        for invalid in ("# No quick start\n", "## Quick start\n\n", source + "\n## Quick start\nDuplicate.\n"):
+        for invalid in (
+            "# No quick start\n",
+            "## Quick start\n\n",
+            source + "\n## Quick start\nDuplicate.\n",
+        ):
             with self.assertRaisesRegex(ValueError, "one README Quick start"):
                 read_quick_start(invalid)
 
     def test_navigation_rejects_missing_link_targets(self):
         with self.assertRaisesRegex(ValueError, "Missing firmware section"):
-            read_reference(self.source.replace(
-                "## FDN 1.2.2 — Blue", "## Missing firmware", 1))
+            read_reference(self.source.replace("## FDN 1.2.2 — Blue", "## Missing firmware", 1))
 
     def test_colors_may_repeat_across_categories(self):
         yellow = [entry for entry in self.entries if entry.color == "Yellow"]
@@ -351,11 +399,14 @@ class ReferenceSiteTests(unittest.TestCase):
         self.assertEqual(len({entry.anchor for entry in yellow}), 2)
 
     def test_versions_share_stable_family_colors(self):
-        for anchor, color, count in (("flux-capacitor--yellow", "Yellow", 3),
-                                     ("morse--white", "White", 2)):
+        for anchor, color, count in (
+            ("flux-capacitor--yellow", "Yellow", 3),
+            ("morse--white", "White", 2),
+        ):
             versions = [entry for entry in self.entries if entry.anchor == anchor]
             self.assertEqual(len(versions), count)
             self.assertEqual({entry.color for entry in versions}, {color})
+
     def test_navigation_rejects_sections_without_a_color_entry(self):
         with self.assertRaisesRegex(ValueError, "Unlinked firmware sections"):
             read_reference(self.source + "\n## Unlisted firmware\n\nMissing catalog row.\n")

@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-21",
+  "failures": [
+    {
+      "id": "journal-erased-hole",
+      "impact": "An interrupted sector recycle can leave an erased first page before surviving older valid records. Appending into that hole breaks generation ordering, fails readback and prevents saved-choice recovery.",
+      "linked_failure": "ValueError: payload decision differs interrupted-erase",
+      "linked_manifest": "b0093e802d48c3af0725976644e3f6c331a39956ef1a0a0cfd5bd43a17758820",
+      "linked_raw_sha256": "58039ad7f6ebf6342e7f2b0cfec7146ccd0deed7ead20fd490409b6d6ee51206",
+      "native_failure": "Retry after interrupted erase of 0 bytes\nRetry after interrupted erase of 1 bytes\nRetry after interrupted erase of 80 bytes\naurora-flash-journal-repro: /dev/shm/aurora-flash-journal-repro.cpp:91: int main(): Assertion `RememberBootChoice(recovered, 0)' failed.\n",
+      "native_log_sha256": "3d3fda95647d8b552cc9635aa842dbeb6f8b70888e2fd2c325f53d2b27b23673"
+    },
+    {
+      "declared_file_end_offset": "0x7d0000",
+      "derived_erased_end_exclusive": "0x7e1000",
+      "id": "updater-inclusive-end",
+      "impact": "At the declared maximum file length, an extra EOF erase includes the first journal sector. The guard and test omitted the inclusive end sector.",
+      "journal_start": "0x7e0000",
+      "linked_instructions": [
+        "0x0800d526 advances by 4096",
+        "0x0800d52c loops while end >= next sector"
+      ],
+      "loader_sha256": "b442456ab1c7f9689b73e57fb09ca55331d02760b54be28c10a207afed95f06e",
+      "scope": "Static extent calculation and authenticated loader disassembly; physical USB updater not executed.",
+      "test_log_sha256": "86639df4d576490fe5392dc9bcd28aa49e567a38842fed223103753666ecc691"
+    },
+    {
+      "id": "uninitialized-journal",
+      "impact": "Both sectors can contain invalid non-erased data because installation excludes the journal. The first explicit selection then refuses to erase either sector despite no valid choice existing.",
+      "native_failure": "aurora-flash-dirty-journal: firmware/flash_boot_store_test.cpp:44: int main(): Assertion `RememberBootChoice(first_choice, 0)' failed.\n",
+      "native_log_sha256": "975d3aa38349d74637a5af7865813c260f98d3fb2b84f5889a948771f45ef415",
+      "reviewed_source_commit": "e49105c"
+    }
+  ],
+  "physical_qualified": false,
+  "reviewed_tip": "fe54e8b",
+  "schema": "aurora-flash-bundle-review-failures-v1"
+}

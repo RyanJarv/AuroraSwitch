@@ -1,145 +1,47 @@
 # Development
 
-Keep the loader small. Reuse the pinned SDK, libDaisy, FatFs, and SHA-256 code.
-Comment non-obvious files, types, and functions briefly: purpose, key invariants,
-and their role in the loader. Skip obvious names; explain why, not each statement.
-
-## Build and test
-
-Requires Git, GNU Make, Python 3, C/C++ compilers and GNU Arm Embedded
-**10-2020-q4-major** on PATH. Published releases need none of these tools.
+Keep this a small exact-image selector. Build tools are needed by developers;
+the distributable output is an offline browser preparer. It has not yet been
+published for this development workflow.
 
 ```sh
-git clone https://github.com/RyanJarv/AuroraSwitch.git && cd AuroraSwitch
-make -j2 build
 make check
+make test-sanitize
+make build
 make package
+make preparer
 ```
 
-See `make help` for virtual build targets. Never install virtual firmware.
-Packaging requires clean committed source; it records inputs and checks ELF/BIN
-agreement. It does not prove runtime behavior.
+Use GNU Arm 10-2020-q4-major. `make package` builds clean committed sources and
+pinned dependencies in isolation, checks ELF/BIN identity and seals a development
+bundle. `make preparer` additionally exports a standalone HTML file. Neither
+command downloads vendor firmware, touches a USB drive or programs hardware.
 
-On macOS, the pinned Linux toolchain can run through Docker Desktop:
-
-```sh
-sh scripts/docker_build.sh make check
-sh scripts/docker_build.sh make -j2 build
-sh scripts/docker_build.sh make -j2 build-virtual
-```
-
-Docker Desktop must be running. The script uses the current checkout and maps
-the current user, so generated files remain in this workspace. It builds an
-x86_64 Linux image on Apple Silicon; the first build downloads the pinned Arm
-toolchain. This matches the exact host-toolchain archive used by release CI;
-the firmware target is still Arm Cortex-M. Compilation under emulation may be
-slow. `make package` and `make package-virtual` still require a clean committed
-checkout. Docker builds do not qualify a physical release.
-In Docker Desktop **Settings → Resources → File Sharing**, share this repository
-folder before running the script or opening the Docker toolchain in CLion. A
-denied bind mount means the container cannot see the project, even when its
-compiler checks pass.
-
-For CLion, build the image first with the script above. In **Settings → Build,
-Execution, Deployment → Toolchains**, add a **Docker** toolchain using the local
-Docker Desktop server and image `aurora-switch-build:10-2020-q4-major`. Set Make
-to `/usr/bin/make` and CMake to `/usr/bin/cmake`. Leave the C and C++ compiler
-fields on automatic detection so CLion uses `/usr/bin/gcc` and `/usr/bin/g++`
-for its own toolchain checks. The project Makefile finds `arm-none-eabi-gcc`
-and `arm-none-eabi-g++` on the image's PATH for firmware builds. Do not point
-CLion's C++ compiler field at the `bin/` directory or the bare-metal compiler:
-CMake's generic link probe cannot link this firmware without its linker setup.
-Open the repository's top-level `Makefile` as a Makefile project; this repo has
-no `CMakeLists.txt`. In **Makefile** settings, select that toolchain and set the
-build target to `build`. Map this project folder to
-`/workspace` in the toolchain's container settings if CLion offers a path
-mapping. **Build → Build Project** and the build action for CLion's generated
-**Native Application** configurations use the Docker toolchain. The configuration
-label does not mean compilation runs on macOS. Use the build action: running the
-configuration also tries to execute its selected binary, and Arm firmware cannot
-run as a native container application.
-
-CLion's **Makefile Target** run configurations do not use Docker toolchains.
-For `make check` and `build-virtual` from the IDE, use its terminal or an
-External Tool that runs `/bin/sh` with arguments
-`scripts/docker_build.sh make check` or
-`scripts/docker_build.sh make -j2 build-virtual`, with working directory
-`$ProjectFileDir$`.
-
-The selector's discovery, file handling, persistence and handoff logic are shared
-with host tests. Builds link either the USB adapter or a synthetic transport;
-there are no conditional test branches in the selector/handoff. See
-[testing boundaries](testing.md) for fault injection, sanitizers and coverage limits.
-The virtual build remains for linked Arm execution and does not test real USB.
-
-From a checkout, `make download-release USB_DIR="/Volumes/AURORA"` automates
-checked release/public-firmware downloads and copying; it needs `gh` and host
-compilers, but no Arm compiler. `scripts/prepare_payloads.py --output prepared
-local-firmware/AR_FDN_v1_2_2.bin` optionally verifies a user-supplied file before
-copying. Use a new output folder each time.
+[Architecture](../how_it_works.md), [saved choices](persistent_boot.md),
+[testing](testing.md), [release workflow](releases.md) and the
+[physical release gate](recovery_release_gate.md) describe the relevant boundaries.
 
 ## Add firmware
 
-1. Measure a user-owned binary without admitting it:
-   `python3 scripts/inspect_firmware.py --execution sram /path/to/firmware.bin`
-   (use `qspi` only for a reviewed flash-execution image). This prints size,
-   SHA-256, vectors and existing catalog matches; it modifies neither the binary
-   nor the catalog.
-2. Review RAM layout, startup, DMA, inherited clocks/MPU and persistent writes.
-   Add one `FirmwareCatalog` record in [images.hpp](../../firmware/images.hpp).
-   Keep its stable ID and all exact image identity fields together. Reuse an
-   existing family, or add a `Family` enum member and its `Families` record in
-   the same file: stable family ID, display name, category, palette color and
-   Markdown section anchor. Versions inherit color/category automatically.
-3. Add the control section in [firmware_reference.md](../firmware_reference.md).
-   Run `make reference-html` to regenerate the Markdown lookup table and site.
-   The compiled catalog drives navigation and the default USB download subset;
-   set `download` only when the image belongs in that reviewed automatic set.
-   Support, automatic downloading and physical qualification are separate.
-4. Run `make check`, `make test-sanitize` and the reference browser smoke test.
-   Existing launch contracts have a frozen fixture; generic invariants also
-   exercise a synthetic family addition without changing the loader. Colors
-   must remain distinct within each category; inspect physical LEDs too.
-5. Commit and package. Authenticate local payloads with `prepare_payloads.py`
-   or `make verify-images`; run affected linked launch, controls/audio, copy and
-   DMA cleanup checks. Handoff changes need complete switching-cycle tests.
-   Record exact builds and limits, then test physical launch and stock recovery.
+Measure a user-owned binary with `scripts/inspect_firmware.py`, then review its
+startup, memory layout, USB assets and persistent writes. Add one catalog record
+in `firmware/images.hpp`, reuse or add its family metadata, and document its
+controls in `docs/firmware_reference.md`. The fixed flash slots, preparer and menu
+are derived from this catalog. Support requires exact-image authentication and
+affected execution checks, not just adding metadata.
 
-Ordinary SRAM additions need no selector/controller/handoff changes. QSPI
-programming takes an explicit checked extent. The single `resident` flag marks
-Dirt's reviewed reset-redirection exception; it does not make other QSPI images
-resident-compatible. Keep source-build recipes such as FataMorgana isolated
-until another image needs the same mechanism.
+Shared numeric definitions live in `support/selector_constants.h`. The selector,
+wrapper, linkers and build tools consume those definitions. Independent test
+expectations retain literal addresses and format bytes.
 
-Do not commit payloads. Host tests alone do not prove compatibility.
-Do not create a new emulator for a difficult image; defer it.
+Keep external execution-model code and commands in their owning repository.
+Historical checkpoints retain exact identities; do not transfer physical claims
+to changed binaries. Never distribute locally assembled vendor-containing BINs.
 
-## Working notes
+## Current validation
 
-- [Firmware onboarding record](firmware_onboarding.md): older versions, Tempest,
-  and the FataMorgana RAM experiment. Intake is not supported-image evidence.
-- [Architecture](architecture.md): source map, memory, and handoff.
-- [QSPI branch review](branch_review_20261007.md): tooling fixes and remaining test boundaries.
-- [Builds and releases](releases.md): tag workflow and build-only CI.
-- [Verification status](verification.md) and [active checklist](reliability_campaign.md#active-checklist).
-- [Recovery checks](recovery_release_gate.md) and [optional timing diagnostics](load_timing.md).
-- [QSPI feasibility](qspi_feasibility.md): updater boundaries and Dirt Verb implementation.
-- [Persistent boot](persistent_boot.md): remembered choices and the private Dirt resident installer.
-- [Additional-image checkpoint](qspi_additional_images.md): current
-  Dirt/HP-filter scope and historical QSPI Fata evidence.
-- [Seven-image checkpoint](checkpoints/public_releases_20261006.md) and [machine-readable evidence](evidence/public_releases_20261006.json) (history).
-
-Historical records stay in `history/`. Do not transfer their results to changed
-binaries. Documentation-only edits need link checks, not new emulator campaigns.
-
-## Numeric constants
-
-[selector_constants.h](../../support/selector_constants.h) holds the hardware
-memory map, binary-format markers, checksums and
-masks, with comments explaining their origins. Vendor vectors live beside
-their exact image identities in the firmware catalog. C++, assembly, linker scripts
-and Python tooling consume these definitions. Linker scripts are preprocessed
-into the build directory; changing the header also rebuilds the assembly blobs.
-Independent test expectations stay literal so a mistaken definition cannot
-change both implementation and oracle. Historical resident bundles still read
-their layout from their sealed source commit, including the old header path.
+[Testing](testing.md) summarizes the local checks and their limits. The
+[cleanup validation](evidence/project_cleanup_20261021.json) binds the current
+checks to exact build identities and confirms unchanged production bytes.
+Machine-readable records retain earlier results; superseded plans and checkpoint
+prose remain in Git history.

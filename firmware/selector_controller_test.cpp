@@ -1,146 +1,114 @@
-// Replace the media implementation while exercising the selector's real flow.
 #include "selector_controller.hpp"
-#include <array>
 #include <cassert>
-
-struct FakeMedia
-{
-    bool ready = false;
-    bool reject_launch_auth = false;
-    bool withdraw_on_launch_auth = false;
-    bool withdraw_during_discovery = false;
-    std::array<bool, sizeof(aurora_selector::Images) / sizeof(aurora_selector::Images[0])> present{};
-    unsigned attempts = 0, launches = 0, last_launch = 0;
-    unsigned discovery_starts = 0, discovery_ends = 0;
+struct Media {
+    std::array<bool, aurora_selector::ImageCount> present{};
+    bool ready = true, reject = false, fail_remember = false, fail_launch = false;
     int saved = -1;
-    bool remember_fail = false;
-    unsigned remembers = 0;
-
-    int BootChoice() { return saved; }
-    bool Remember(unsigned index) { ++remembers; saved = index; return !remember_fail; }
-
-    bool Ready() const { return ready; }
-    void BeginDiscovery() { ++discovery_starts; }
-    void EndDiscovery() { ++discovery_ends; }
-    bool Authenticate(unsigned index)
-    {
-        ++attempts;
-        if(withdraw_during_discovery && index == 1) ready = false;
-        if(reject_launch_auth && attempts > present.size()) return false;
-        if(withdraw_on_launch_auth && attempts > present.size()) ready = false;
-        return present[index];
+    unsigned opens = 0, auth = 0, launches = 0, writes = 0, warnings = 0, last = 0;
+    bool Open(std::array<bool, aurora_selector::ImageCount>& installed) {
+        ++opens;
+        installed = present;
+        return ready;
     }
-    bool Launch(unsigned index)
-    {
-        ++launches;
-        last_launch = index;
+    bool Authenticate(unsigned i) {
+        ++auth;
+        return present[i] && !reject;
+    }
+    int BootChoice() { return saved; }
+    bool Remember(unsigned i) {
+        ++writes;
+        if (fail_remember)
+            return false;
+        saved = i;
         return true;
     }
-};
-
-int main()
-{
-    using Controller = aurora_selector::SelectorController<FakeMedia>;
-    FakeMedia media;
-    media.present[0] = media.present[1] = media.present[2] = true;
-    Controller selector(media);
-    unsigned loading = 0;
-    auto tick = [&](bool category = false, bool next = false, bool freeze = false) {
-        selector.Update(category, next, freeze, [&] { ++loading; });
-    };
-
-    tick(false, false, true);
-    assert(selector.GetState() == Controller::State::Waiting && media.launches == 0);
-    media.ready = true;
-    tick();
-    assert(selector.GetState() == Controller::State::Selected && selector.Selected() == 0);
-    assert(media.attempts == media.present.size());
-    assert(media.discovery_starts == 1 && media.discovery_ends == 1 && loading == 1);
-    tick(false, true);
-    assert(selector.Selected() == 1); // Reverse stays in the current category.
-    tick(true);
-    assert(selector.Selected() == 2); // Shift moves to the next available category.
-    tick(false, false, true);
-    assert(media.launches == 1 && media.last_launch == 2);
-    assert(media.attempts == media.present.size() + 1 && loading == 2);
-
-    // A changed image fails its fresh Freeze authentication before handoff.
-    FakeMedia changed;
-    changed.ready = true;
-    changed.present[0] = true;
-    Controller changed_selector(changed);
-    changed_selector.Update(false, false, false, [] {});
-    changed.reject_launch_auth = true;
-    changed_selector.Update(false, false, true, [] {});
-    assert(changed_selector.GetState() == Controller::State::Error);
-    assert(changed.launches == 0);
-
-    // Withdrawal after authentication also prevents launch and clears the menu.
-    FakeMedia withdrawn;
-    withdrawn.ready = true;
-    withdrawn.present[0] = true;
-    Controller withdrawn_selector(withdrawn);
-    withdrawn_selector.Update(false, false, false, [] {});
-    withdrawn.withdraw_on_launch_auth = true;
-    withdrawn_selector.Update(false, false, true, [] {});
-    assert(withdrawn_selector.GetState() == Controller::State::Error);
-    assert(withdrawn.launches == 0);
-    withdrawn_selector.Update(false, false, false, [] {});
-    assert(withdrawn_selector.GetState() == Controller::State::Waiting);
-    assert(!withdrawn_selector.Menu().HasSelection());
-    withdrawn.ready = true;
-    withdrawn.withdraw_on_launch_auth = false;
-    withdrawn_selector.Update(false, false, false, [] {});
-    assert(withdrawn.discovery_starts == 2 && withdrawn_selector.Menu().HasSelection());
-
-    withdrawn_selector.FailInitialization();
-    assert(withdrawn_selector.GetState() == Controller::State::Error);
-    assert(!withdrawn_selector.Menu().HasSelection());
-
-    FakeMedia interrupted;
-    interrupted.ready = true;
-    interrupted.present[0] = true;
-    interrupted.withdraw_during_discovery = true;
-    Controller interrupted_selector(interrupted);
-    interrupted_selector.Update(false, false, true, [] {});
-    assert(interrupted_selector.GetState() == Controller::State::Waiting);
-    assert(!interrupted_selector.Menu().HasSelection() && interrupted.launches == 0);
-
-    for(bool menu : {false, true})
-    {
-        FakeMedia boot;
-        boot.ready = true;
-        boot.saved = 2;
-        boot.present[0] = boot.present[2] = true;
-        Controller automatic(boot);
-        if(menu) automatic.RequestMenu();
-        automatic.Update(false, false, false, [] {});
-        assert(boot.launches == (menu ? 0U : 1U));
-        assert(boot.remembers == 0); // Automatic startup never writes the saved choice.
-        if(!menu) assert(boot.last_launch == 2 && boot.attempts == boot.present.size() + 1);
-        boot.ready = false;
-        automatic.Update(false, false, false, [] {});
-        boot.ready = true;
-        automatic.Update(false, false, false, [] {});
-        assert(boot.launches == (menu ? 0U : 1U));
+    void SaveWarning() { ++warnings; }
+    bool Launch(unsigned i) {
+        ++launches;
+        last = i;
+        return !fail_launch;
     }
-    FakeMedia missing;
-    missing.ready = true;
-    missing.saved = 2;
+};
+using Controller = aurora_selector::SelectorController<Media>;
+void tick(Controller& c, bool category = false, bool next = false, bool freeze = false) {
+    c.Update(category, next, freeze, [] {});
+}
+int main() {
+    for (bool menu : {false, true}) {
+        Media m;
+        m.present[0] = m.present[2] = true;
+        m.saved = 2;
+        Controller c(m);
+        if (menu)
+            c.RequestMenu();
+        tick(c);
+        assert(m.launches == (menu ? 0U : 1U) && m.writes == 0);
+        assert(m.auth == (menu ? 0U : 1U));
+        for (unsigned idle = 0; idle < 1000; ++idle)
+            tick(c);
+        assert(m.opens == 1 && m.auth == (menu ? 0U : 1U));
+        assert(m.launches == (menu ? 0U : 1U)); // No repeated automatic launch.
+    }
+    Media m;
+    m.present[0] = m.present[1] = m.present[2] = true;
+    Controller c(m);
+    tick(c);
+    tick(c, false, true);
+    assert(c.Selected() == 1);
+    tick(c, true, false, true);
+    assert(c.Selected() == 2 && m.launches == 0);
+    tick(c, false, false, true);
+    assert(m.last == 2 && m.launches == 1 && m.writes == 1);
+    m.reject = true;
+    tick(c, false, false, true);
+    assert(m.launches == 1 && m.writes == 1);
+    assert(c.GetState() == Controller::State::Error);
+    m.reject = false;
+    m.fail_remember = true;
+    m.saved = 0;
+    tick(c, false, false, true);
+    assert(m.launches == 2 && m.warnings == 1 && m.writes == 2);
+    assert(m.saved == 0); // Failed persistence does not invent a remembered choice.
+    // A failed save permits this session, but a new controller still boots
+    // the previous saved choice. A later handoff failure remains an error.
+    Controller after_failed_save(m);
+    tick(after_failed_save);
+    assert(m.last == 0 && m.writes == 2 && m.warnings == 1);
+    m.fail_launch = true;
+    tick(c, false, false, true);
+    assert(c.GetState() == Controller::State::Error);
+    assert(m.warnings == 2);
+    Media missing;
     missing.present[0] = true;
-    Controller missing_selector(missing);
-    missing_selector.Update(false, false, false, [] {});
-    assert(missing.launches == 0 && missing_selector.GetState() == Controller::State::Selected);
-    missing.remember_fail = true;
-    missing_selector.Update(false, false, true, [] {});
-    assert(missing.launches == 0 && missing_selector.GetState() == Controller::State::Error);
-    FakeMedia changed_boot;
-    changed_boot.ready = true;
-    changed_boot.saved = 0;
-    changed_boot.present[0] = true;
-    changed_boot.reject_launch_auth = true;
-    Controller changed_auto(changed_boot);
-    changed_auto.Update(false, false, false, [] {});
-    assert(changed_boot.launches == 0 && changed_boot.remembers == 0);
-    assert(changed_auto.GetState() == Controller::State::Error);
+    missing.saved = 2;
+    Controller unavailable(missing);
+    tick(unavailable);
+    assert(missing.launches == 0 && unavailable.Selected() == 0);
+    Media empty;
+    Controller none(empty);
+    tick(none, false, false, true);
+    assert(none.GetState() == Controller::State::Empty && empty.launches == 0);
+    Media broken;
+    broken.ready = false;
+    Controller invalid(broken);
+    tick(invalid);
+    assert(invalid.GetState() == Controller::State::Error && broken.auth == 0);
+    // Slot presence does not authenticate a damaged remembered image.
+    Media corrupt;
+    corrupt.present[0] = corrupt.present[2] = true;
+    corrupt.saved = 2;
+    corrupt.reject = true;
+    Controller rejected(corrupt);
+    tick(rejected);
+    assert(rejected.Selected() == 2 && corrupt.auth == 1);
+    assert(corrupt.launches == 0 && corrupt.writes == 0);
+    assert(rejected.GetState() == Controller::State::Error);
+    tick(rejected); // Never automatically retry or substitute another image.
+    assert(corrupt.auth == 1);
+    corrupt.reject = false;
+    tick(rejected, true); // User can leave the error and choose another group.
+    assert(rejected.GetState() == Controller::State::Selected);
+    tick(invalid, true, true, true);
+    assert(broken.opens == 1 && broken.auth == 0 && broken.launches == 0);
+    assert(invalid.GetState() == Controller::State::Error);
 }

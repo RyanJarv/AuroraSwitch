@@ -1,28 +1,11 @@
 # Compilation only. Deliberately no local programming targets or bootloader BIN.
-VIRTUAL_TRANSPORT ?= 0
-ifeq ($(filter $(VIRTUAL_TRANSPORT),0 1),)
-$(error VIRTUAL_TRANSPORT must be 0 or 1)
-endif
-ifeq ($(VIRTUAL_TRANSPORT),1)
-TARGET = AuroraSwitchVirtual
-EXPECTED_BUILD_DIR = build-virtual-experimental-dma
-MEDIA_SOURCE = media_virtual.cpp
-else
 TARGET = AuroraSwitch
-MEDIA_SOURCE = media_usb.cpp
-EXPECTED_BUILD_DIR = build-experimental-dma
-endif
-BUILD_DIR ?= $(EXPECTED_BUILD_DIR)
-# Keep real/synthetic objects isolated; upstream assigns BUILD_DIR itself.
+BUILD_DIR ?= build-experimental-dma
 override BUILD_DIR := $(BUILD_DIR)
-ifneq ($(BUILD_DIR),$(EXPECTED_BUILD_DIR))
-$(error Use BUILD_DIR=$(EXPECTED_BUILD_DIR) for this transport)
-endif
 # Preserve link order for stable exact-image diagnostic bindings.
-CPP_SOURCES = handoff.cpp selector.cpp $(MEDIA_SOURCE)
+CPP_SOURCES = handoff.cpp selector.cpp
 ASM_SOURCES = copy_jump.s resident_boot.s
 override APP_TYPE := BOOT_SRAM
-USE_FATFS = 1
 CPP_STANDARD = -std=gnu++17
 SDK_ROOT ?= ../.deps/Aurora-SDK
 MBEDTLS_ROOT ?= ../.deps/mbedtls

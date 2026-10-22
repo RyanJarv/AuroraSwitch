@@ -1,31 +1,27 @@
-# Builds and releases
+# Development builds and releases
 
-Tag pushes run checks and an isolated USB build with the pinned Arm toolchain.
-The workflow attaches BIN, ELF, MAP, manifest, and checksums to an existing
-release, preserving its notes and status. If none exists, it creates a
-**draft prerelease**. Existing assets are never overwritten; payload firmware is excluded.
+`make package` seals a fresh build of clean committed source and pinned SDK,
+libDaisy and mbedTLS. GNU Arm 10-2020-q4-major is required. ELF/BIN agreement,
+tool identities, source identity and exact artifact inventory are checked.
 
-The build and artifact upload passed in [CI](https://github.com/RyanJarv/AuroraSwitch/actions/runs/37555710183).
-The quickstart uses `make download-release` to download the latest published release, check its
-manifest hashes, tag/source identity, and real-USB configuration, then reuse the
-existing payload authentication and copying code. These are consistency checks,
-not signatures or proof of physical reliability.
-Use `RELEASE_TAG=v0.1.0` to select a specific release instead.
+`bash scripts/docker_build.sh` runs host checks using the Docker daemon's native
+AMD64 or ARM64 architecture and the matching GNU Arm compiler archive. Pass a
+command to run it in the same container, for example
+`bash scripts/docker_build.sh make build`. ARM here means a 64-bit ARM Linux
+host; the firmware target remains the Aurora's Cortex-M7 on either host.
 
-```sh
-git tag -a v0.1.0-beta.1 -m "AuroraSwitch beta test build"
-git push origin v0.1.0-beta.1
-```
+`make preparer` also exports a self-contained `*-preparer.html` in `dist/`.
+It embeds only our selector, startup wrapper and catalog metadata. Users supply
+original firmware locally in a browser and receive one private installation BIN.
+No vendor firmware, generated installer or user file belongs in release assets.
 
-Keep drafts unpublished until the [recovery checks](recovery_release_gate.md)
-pass. Do not move a release tag.
+The release workflow uploads the preparer, provenance and SHA256SUMS. The raw
+selector BIN is a development input, not a standalone flash-bundle installer.
+Checks bind embedded selector bytes to the sealed manifest and release source.
+New releases remain drafts while physical qualification is open. A hosted build
+is not authorization to publish or deploy hardware.
 
-For a build-only run, without a tag or release:
-
-```sh
-gh workflow run firmware-release.yml --ref main
-```
-
-Download the run's firmware artifact and check it with
-`sha256sum --check SHA256SUMS`. Install only `AuroraSwitch.bin`; keep the other
-files for reports. Successful CI is a software check, not hardware qualification.
+The stock updater and its USB recovery mechanism remain unchanged. Virtual
+startup and modeled flash readback do not qualify real USB programming, power
+interruption, audio or ordinary stock restoration. See the
+[release gate](recovery_release_gate.md).

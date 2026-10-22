@@ -23,7 +23,7 @@ Current source build: **Shift** → category, **Reverse** → firmware,
 **Freeze** → verify and launch. Category colors: blue reverbs, green delays,
 amber synths/other.
 The older published release uses Reverse → Freeze → Shift.
-Power cycle with the selector USB attached to return. [Setup guide](user_guide.md).
+Hold **Shift + Reverse at power-on** for the menu. Normal selector boot needs no USB. [Setup guide](user_guide.md).
 
 Dirt Verb and HP-filter are included in current source builds, not
 the older published release. Virtual screening is not physical compatibility or
@@ -447,8 +447,8 @@ Driven reverb with optional chorus and pitch shifting. Only the exact
 - Running LEDs: gold at infinite feedback; white when overdrive is bypassed;
   red increases with drive. These are not selector menu colors.
 - Shift, CV and gate behavior is not documented in the supplied author notes.
-- Launch programs application QSPI. Menu re-entry requires ready USB media
-  containing AuroraSwitch as the only root BIN; reset alone is not a recovery guarantee.
+- Launch reuses installed Dirt without programming application flash.
+  Hold **Shift + Reverse at power-on** to return to the menu.
 - Controls come from community-supplied author notes, not a reviewed source build.
   Physical handoff and stock USB recovery remain unverified.
 
@@ -456,9 +456,8 @@ Driven reverb with optional chorus and pitch shifting. Only the exact
 
 [Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
 
-Stock Aurora controls with two shifted changes. Place the exact supplied
-`Aurora_v1-4-6_hpfilt.bin` in `aurora/`; the current source build's selector
-has enough reviewed staging capacity for this image.
+Stock Aurora controls with two shifted changes. Add the exact supplied
+`Aurora_v1-4-6_hpfilt.bin` to the offline preparer.
 
 ### Shifted controls
 

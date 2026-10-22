@@ -1,0 +1,327 @@
+{
+  "checks": {
+    "host_tests": 68,
+    "offline_browser_all_originals_parity": true,
+    "offline_browser_reference_parity": true,
+    "production_linked_scenarios": 25,
+    "reference_mobile_dark_keyboard_no_javascript": true,
+    "release_preparer_provenance_bindings": true,
+    "sanitizer_native_probes": 11,
+    "workflow_actionlint": true
+  },
+  "date": "2026-10-21",
+  "discovered_and_corrected": [
+    "Reserved an extra 64-KiB gap before the journal after an updater EOF-boundary regression failed.",
+    "Initialized changed-choice writes in indirect mode after the linked counter exposed a redundant status-register write.",
+    "Changed button actions to presses after the menu-release regression launched the wrong image. Final manual lanes require no handoff before the explicit user action."
+  ],
+  "firmware_source_commit": "a41cecfa6247b00fcc96a113ba085bd8b02b0c50",
+  "interpretation": [
+    "Automatic runs include the stock loader baseline of one status-register write; the selector adds none.",
+    "A changed choice programs one 80-byte journal record; recycling a full journal sector additionally erases one 4-KiB sector.",
+    "Changed and recycled choices use two and four SDK status-register writes respectively. These are reported separately from array programming.",
+    "Manual lanes start with independently observed loader QSPI/clock context. Automatic Dirt and FDN lanes execute the stock loader from reset.",
+    "Handoffs verify exact payload bytes, reset PC, VTOR/MSP and a cleared DMA arena. RAM payloads stop at reset entry; Dirt reaches its main entry.",
+    "The complete modeled NOR remains unchanged outside the two choice sectors."
+  ],
+  "linked_report_sha256": "d12541d1192ebe0afa650d7ac7ea61be0901ddc72f987e43d04564480f1f5f41",
+  "not_qualified": [
+    "Physical USB installation of the larger combined file and stock USB restoration.",
+    "Physical no-drive boot, buttons, audio, DMA/cache timing and electrical behavior.",
+    "Physical power cuts during installation or journal programming/erase.",
+    "Later opaque payload settings writes and payload-owned USB assets."
+  ],
+  "physical_qualified": false,
+  "private_installer": {
+    "bytes": 2364128,
+    "distributed": false,
+    "included_original_images": 14,
+    "sha256": "862884a1ae30bca8129ab631d84c8fe34ab58dc9c826a89f71ced1f24670f824"
+  },
+  "retained_log_sha256": {
+    "actual_originals_browser": "558c5ba44328aeed4bb4415ebc8c11de52c4a09108332919ba34c854e0345b19",
+    "host": "edd14116a5bb1b964d8ef788405aa2b441a2db18e21628334e84f81e231f661a",
+    "offline_browser": "72b27feef64468135a6abc739d9ea35bf5a0631fa95959a0c63fb33e62340b33",
+    "reference_browser": "56834fe829e0d65892d3a2b877c9602f5d7532ee637fdad5574cbbcc063aa8e7",
+    "sanitizers": "586822002880265ac4325af46ed8098a186a5e7ba075d653dc1c03d34ad7d628"
+  },
+  "scenarios": [
+    {
+      "erase_commands": 0,
+      "firmware": "dirt-verb-1.1",
+      "nor_sha256": "7cabd75943f0e3aa55b2c159dfb8f377404f20e7859ca8e09ce053f8fc6c4274",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_sha256": "29a84bb3d02d3fee51b8cbd624e245e2608309de9fd618f20d69ef97103c7c8a",
+      "scenario": "auto-dirt",
+      "status_writes": 1,
+      "stock_loader_executed": true
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "fdn",
+      "nor_sha256": "10439c4b8df9db1e5744bcb34676f6d39bb8c9c89614d5ff3df4b0014ab7bf11",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_sha256": "a408f7aa3a82b2497f6c83bf7861ee8b474a7ce5be1615af4b6f8df78c30ba62",
+      "scenario": "auto-fdn",
+      "status_writes": 1,
+      "stock_loader_executed": true
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "dirt-verb-1.1",
+      "nor_sha256": "7cabd75943f0e3aa55b2c159dfb8f377404f20e7859ca8e09ce053f8fc6c4274",
+      "payload_entered": false,
+      "program_bytes": 0,
+      "raw_sha256": "3dbc8f5b8b6e73d929d09adf550785a6f295e3beeab0f9aa7b3b4818ecd52aa5",
+      "scenario": "menu",
+      "status_writes": 0,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "dirt-verb-1.1",
+      "nor_sha256": "164989b4a754605ae677604485a8b5acd8a854cd38a46ea25ba3598273d89f04",
+      "payload_entered": false,
+      "program_bytes": 0,
+      "raw_sha256": "f191cb6a3cfba716b15e07db6302b7ca40af4c25d021baf7ca46052a7f223c89",
+      "scenario": "bad-directory",
+      "status_writes": 0,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "fdn",
+      "nor_sha256": "8be43c7157e6d5460137a985d63e2eb66bfdb1756a1f22c5d4def8aac5cea9c7",
+      "payload_entered": false,
+      "program_bytes": 0,
+      "raw_sha256": "fe96dea03283b7ac4eb98e4fc792ed678f6bc1da2a43fc5458fcc14b060fecef",
+      "scenario": "bad-source",
+      "status_writes": 0,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "dirt-verb-1.1",
+      "nor_sha256": "5bce7e8cf80fcc006e94e6b5729026ee92b14f07fe29b2e81a2e794fa89a1f2e",
+      "payload_entered": false,
+      "program_bytes": 0,
+      "raw_sha256": "0f9e3dc219f2277a6e0b57370c1fc193bc9fa1ed4004bca48795c4be84467596",
+      "scenario": "bad-installed-dirt",
+      "status_writes": 0,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "fdn",
+      "nor_sha256": "10439c4b8df9db1e5744bcb34676f6d39bb8c9c89614d5ff3df4b0014ab7bf11",
+      "payload_entered": true,
+      "program_bytes": 80,
+      "raw_sha256": "f274750472fcc61e0cceb20d9cb4e19cca16b60323bb0fa0e019e5b3760ba29b",
+      "scenario": "manual-fdn",
+      "status_writes": 2,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "fdn",
+      "nor_sha256": "10439c4b8df9db1e5744bcb34676f6d39bb8c9c89614d5ff3df4b0014ab7bf11",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_sha256": "2da5aec2dfa93361c07ca9b9617caa5f9897694d6a2e921396bcc96fdee6ea0e",
+      "scenario": "repeat-manual-fdn",
+      "status_writes": 0,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "fdn",
+      "nor_sha256": "10439c4b8df9db1e5744bcb34676f6d39bb8c9c89614d5ff3df4b0014ab7bf11",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_sha256": "623d7571d71c42b17682a2f3963694f8ae30e9394cfe32863133b7678cb875a1",
+      "scenario": "repeat-auto-fdn",
+      "status_writes": 1,
+      "stock_loader_executed": true
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "dirt-verb-1.1",
+      "nor_sha256": "7cabd75943f0e3aa55b2c159dfb8f377404f20e7859ca8e09ce053f8fc6c4274",
+      "payload_entered": true,
+      "program_bytes": 80,
+      "raw_sha256": "40794db3d0f42618a2c8a74164acca5d9e6bb4fb2566e6637622456101e2a631",
+      "scenario": "manual-dirt",
+      "status_writes": 2,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "dirt-verb-1.1",
+      "nor_sha256": "7cabd75943f0e3aa55b2c159dfb8f377404f20e7859ca8e09ce053f8fc6c4274",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_sha256": "caa831e217c163e97bf52679475bfd5910532b3fcf497bc9fadb6fa6a3e03f27",
+      "scenario": "repeat-auto-dirt",
+      "status_writes": 1,
+      "stock_loader_executed": true
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "fdn",
+      "nor_sha256": "10439c4b8df9db1e5744bcb34676f6d39bb8c9c89614d5ff3df4b0014ab7bf11",
+      "payload_entered": false,
+      "program_bytes": 0,
+      "raw_sha256": "1628d7bad0386f5b595a2398bccbe3687dd4743e0a470056dadc21c12dc012ee",
+      "scenario": "bad-staging",
+      "status_writes": 0,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 1,
+      "firmware": "fdn",
+      "nor_sha256": "3ce4f736a0fdf66e6de0b2a46024058d28af639d9cedadb935c997040adcd44a",
+      "payload_entered": true,
+      "program_bytes": 80,
+      "raw_sha256": "4902c15e598231da77c0a7f2b7cbe7028bfe672096a0c6267eb977f394ea4c03",
+      "scenario": "recycle-choice",
+      "status_writes": 4,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "spectral",
+      "nor_sha256": "ec15b484f9db47365675790a460ba217208c5aa14bad6c624d9e70fc31acd0b2",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_sha256": "47dec3ab66ef9471781afbfed7df209ff3d700406111033b7950638861d12de5",
+      "scenario": "handoff-1",
+      "status_writes": 0,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "echogarden-0.3.1",
+      "nor_sha256": "39a6eb25feb76073d4aa95e7cc75290dce066203588d5b837f17c67cf3f7c3e5",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_sha256": "bdd146facc5735c80cc3f820267741335581585b4688c3fadfc9b4956d415ec4",
+      "scenario": "handoff-2",
+      "status_writes": 0,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "cloudscapex",
+      "nor_sha256": "3d6c75807d35d6dd9ee1fba3254ff30e2cfd6624fbe284c3357af7296b6ea233",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_sha256": "59d1abff9df98ea10822398223b32770e437b911879aefd79ae8b6091b920a2b",
+      "scenario": "handoff-3",
+      "status_writes": 0,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "oscillator-0.0.2",
+      "nor_sha256": "f9ad9f4bde9b2660237d7a08ec7754ca6e7c0e05c9f2d2a26fc07815185c3461",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_sha256": "28c711df2e640a7349837df4bfc91a50b6623d93696f299e0de302857334a887",
+      "scenario": "handoff-4",
+      "status_writes": 0,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "flux-0.3.0",
+      "nor_sha256": "e9c2e2f52136a6de8b9c4bccedfa6a53fc45c81691b4500ef5c169cc6fb59dcb",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_sha256": "8b337b28e21a85265ede611c20209b7b9a9d90a1abc48f479734cbcc2abae95d",
+      "scenario": "handoff-5",
+      "status_writes": 0,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "morse-0.2.0",
+      "nor_sha256": "851ff75c131dc5338711499b4d698efcb806702b9dd498bf9cdcb9289368d26c",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_sha256": "d13d5d72f7eb77f9cddb8561c68bc61459bb7b31e2d3fbbfa6d7a55c024ed4cf",
+      "scenario": "handoff-6",
+      "status_writes": 0,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "flux-0.1.0",
+      "nor_sha256": "4d75783f8dff4619ac4cb1d2db725b083935fdecebcca9baacdae44e47e25134",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_sha256": "b8673aa7a559a88bd8dede39f03052cb661cf08829a549758ee643a4c1f80479",
+      "scenario": "handoff-7",
+      "status_writes": 0,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "flux-0.2.0",
+      "nor_sha256": "eaf9ae34651382c71fd1ca99795fb7a3bdafab67cf12225bc51279b519afc788",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_sha256": "276d4a7092faa2b6e8382f59c1f0ebf9fdcfb555b795ce0581b84681377f887d",
+      "scenario": "handoff-8",
+      "status_writes": 0,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "morse-0.1.0",
+      "nor_sha256": "d42b3cc17b1632fa499069a93b00383833de4ce85658c4805b37d5933f18c9d6",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_sha256": "2d0587baeba555350d61c258d96b829699e5a07ffb0dfb4762f69ec4086bfdc6",
+      "scenario": "handoff-9",
+      "status_writes": 0,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "tempest-1.0.0",
+      "nor_sha256": "eb3ece7a7bbbb091cbb9a8f3aab61c7a349682afe6bd17a59855acfc378708af",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_sha256": "1530aebb834b1484d1277260a9b9090e1e3797ae9043461fe3cc8780e217fb47",
+      "scenario": "handoff-10",
+      "status_writes": 0,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "fatamorgana-ram",
+      "nor_sha256": "7e4c0bc4185631e997ae6eefb6d48bed2214b4f62c68878ebf2fbd54a0494804",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_sha256": "c7ebdf61113e69a15086536597886107749b13a8f24118938f2bc925c06eb7b0",
+      "scenario": "handoff-11",
+      "status_writes": 0,
+      "stock_loader_executed": false
+    },
+    {
+      "erase_commands": 0,
+      "firmware": "aurora-hp-filter",
+      "nor_sha256": "d095ec310f48f1bb78944ebc003039ddeea391deb1cd4dd3f7e29e488253153c",
+      "payload_entered": true,
+      "program_bytes": 0,
+      "raw_sha256": "874bfd1633566a2624ce74b1552650ed572d7d2a6c48bfebc134bde7439c0fdd",
+      "scenario": "handoff-13",
+      "status_writes": 0,
+      "stock_loader_executed": false
+    }
+  ],
+  "schema": "aurora-installed-flash-validation-v1",
+  "sealed_manifest_sha256": "b0093e802d48c3af0725976644e3f6c331a39956ef1a0a0cfd5bd43a17758820"
+}

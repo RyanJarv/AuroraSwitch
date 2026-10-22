@@ -1,5 +1,7 @@
-// This position-independent blob is copied into the local composite installer,
-// not executed at its linked SRAM address. Dirt's reset vector points here.
+// On power-up, start the saved selector while leaving Dirt installed in flash.
+// The installer copies this position-independent routine into flash and points
+// Dirt's reset vector at it. It copies the selector to RAM, checks that copy,
+// and then starts it; it does not run at its original linked SRAM address.
 #include "../support/selector_constants.h"
 .syntax unified
 .cpu cortex-m7

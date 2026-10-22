@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AuroraSwitch installer preparation</title>
+<style>
+:root { color-scheme: light dark; font: 16px system-ui; }
+body { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; }
+label, button, output { display: block; margin: 1rem 0; }
+input { max-width: 100%; }
+button { padding: .6rem 1rem; }
+li { margin: .3rem 0; }
+</style>
+<h1>AuroraSwitch installer</h1>
+<p>Development build — physical installation and recovery are not qualified.</p>
+<label>Original firmware downloads <input id="firmware" type="file" multiple></label>
+<ul id="images"></ul>
+<button id="prepare" disabled>Prepare AuroraSwitch.bin</button>
+<output id="status" role="status">Dirt Verb is required. Other supported images are optional.</output>
+<p>USB installation: place AuroraSwitch.bin at the drive root, safely eject, insert into Aurora and power on. Keep one root BIN.</p>
+<p>Shift — category. Reverse — firmware. Freeze — verify &amp; launch. Shift + Reverse at power-on — menu. FataMorgana wavetables still require USB.</p>
+<script>
+'use strict';
+const release = /* RELEASE_TEMPLATE */ null;
+const sha256 = async bytes => [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))]
+    .map(v => v.toString(16).padStart(2, '0')).join('');
+const decode = text => Uint8Array.from(atob(text), c => c.charCodeAt(0));
+
+// Admit files by complete identity, independent of their filenames.
+async function admitOriginals(images, files) {
+    const resident = images.map((r, i) => r.resident ? i : -1).filter(i => i >= 0);
+    const known = new Map(images.map((r, i) => [r.sha256, i]));
+    if (resident.length !== 1 || known.size !== images.length) throw Error('Ambiguous catalog');
+    const provided = new Map();
+    for (const bytes of files) {
+        const index = known.get(await sha256(bytes));
+        if (index === undefined || provided.has(index) || bytes.length !== images[index].bytes)
+            throw Error('Unsupported, changed or duplicate firmware');
+        const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+        if (view.getUint32(0, true) !== images[index].stack || view.getUint32(4, true) !== images[index].reset)
+            throw Error('Firmware vectors differ');
+        provided.set(index, bytes);
+    }
+    if (!provided.has(resident[0])) throw Error('The original Dirt Verb image is required');
+    const dirt = provided.get(resident[0]);
+    return {provided, dirt};
+}
+
+// Return the full slot extent only after all layout bounds are checked.
+function checkedBundleEnd(template, selector, boot, dirt) {
+    const constants = template.constants, layout = template.layout, images = template.images;
+    const wrapper = layout.ENTRY - 1;
+    // Preserve the required Dirt address and the wrapper/selector ordering.
+    if (layout.BASE !== constants.QSPI_APPLICATION_BASE || layout.ENTRY % 4 !== 1 ||
+        !(layout.BASE + dirt.length <= wrapper && wrapper < layout.METADATA && layout.METADATA < layout.IMAGE))
+        throw Error('Bundle layout bounds');
+    // Each prebuilt component must fit its reserved region.
+    if (!(boot.length > 0 && boot.length <= 256) || wrapper + boot.length > layout.METADATA ||
+        layout.METADATA + 16 > layout.IMAGE || !(selector.length > 8 && selector.length <= layout.CAPACITY) ||
+        layout.IMAGE + layout.CAPACITY > constants.BUNDLE_DATA)
+        throw Error('Bundle layout bounds');
+    // Leave the reviewed updater erase margin before the selection journal.
+    if (!(constants.BUNDLE_DATA < constants.BUNDLE_LIMIT) ||
+        !(constants.BUNDLE_LIMIT + constants.UPDATER_BLOCK_SIZE + constants.CHOICE_SECTOR_SIZE <=
+            constants.QSPI_BASE + constants.CHOICE_OFFSET))
+        throw Error('Bundle layout bounds');
+    const vectors = new DataView(selector.buffer);
+    const reset = vectors.getUint32(4, true);
+    if (vectors.getUint32(0, true) !== constants.DTCM_END || !(reset & 1) ||
+        !(constants.AXI_SRAM_BASE + 8 <= reset && reset < constants.AXI_SRAM_BASE + selector.length))
+        throw Error('Selector vectors');
+    let end = constants.BUNDLE_DATA;
+    for (const row of images) {
+        end = Math.ceil(end / 4) * 4;
+        if (row.slot_offset !== end - constants.QSPI_BASE) throw Error('Catalog slot differs');
+        end += row.bytes;
+        if (!(end <= constants.BUNDLE_LIMIT)) throw Error('Bundle exceeds reserved flash storage');
+    }
+    return end;
+}
+
+// Assemble prebuilt bytes locally. Each user image must match its complete
+// supported identity; neither its filename nor its startup vectors are enough.
+async function buildBundle(template, files) {
+    if (template.schema !== 2) throw Error('Unsupported preparer');
+    const constants = template.constants, layout = template.layout, images = template.images;
+    const selector = decode(template.selector), boot = decode(template.boot);
+    if (await sha256(selector) !== template.selector_sha256 || await sha256(boot) !== template.boot_sha256)
+        throw Error('Damaged preparer');
+    const {provided, dirt} = await admitOriginals(images, files);
+    const end = checkedBundleEnd(template, selector, boot, dirt);
+    const wrapper = layout.ENTRY - 1;
+    // Write the complete area, including erased slots for omitted images.
+    const output = new Uint8Array(end - layout.BASE).fill(255);
+    const view = new DataView(output.buffer);
+    const word = (address, value) => view.setUint32(address - layout.BASE, value >>> 0, true);
+    output.set(dirt);
+    word(layout.BASE + 4, layout.ENTRY);
+    output.set(boot, wrapper - layout.BASE);
+    let checksum = constants.FNV_OFFSET_BASIS;
+    for (const byte of selector) checksum = Math.imul(checksum ^ byte, constants.FNV_PRIME) >>> 0;
+    word(layout.METADATA, constants.WRAPPER_MAGIC);
+    word(layout.METADATA + 4, selector.length);
+    word(layout.METADATA + 8, ~selector.length);
+    word(layout.METADATA + 12, checksum);
+    output.set(selector, layout.IMAGE - layout.BASE);
+    for (const [index, bytes] of provided)
+        output.set(bytes, images[index].slot_offset - constants.QSPI_APPLICATION_OFFSET);
+    return output;
+}
+
+const status = document.getElementById('status');
+const prepare = document.getElementById('prepare');
+if (release) {
+    document.getElementById('images').replaceChildren(...release.images.map(row => {
+        const item = document.createElement('li');
+        item.textContent = row.name + (row.resident ? ' — required' : '');
+        return item;
+    }));
+    prepare.disabled = false;
+}
+prepare.addEventListener('click', async () => {
+    prepare.disabled = true;
+    try {
+        const files = await Promise.all([...document.getElementById('firmware').files]
+            .map(async file => new Uint8Array(await file.arrayBuffer())));
+        const bytes = await buildBundle(release, files);
+        const url = URL.createObjectURL(new Blob([bytes], { type: 'application/octet-stream' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'AuroraSwitch.bin';
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+        status.textContent = 'Prepared AuroraSwitch.bin — keep this private; it contains vendor firmware.';
+    } catch (error) {
+        status.textContent = error.message;
+    } finally {
+        prepare.disabled = false;
+    }
+});
+</script>
+</html>

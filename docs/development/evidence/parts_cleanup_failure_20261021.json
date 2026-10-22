@@ -1,0 +1,22 @@
+{
+  "schema": "aurora-cleanup-failure-witness-v1",
+  "introduced_during_uncommitted_cleanup": true,
+  "baseline_commit": "cc485a6",
+  "input": "UPDATER_BLOCK_SIZE omitted from otherwise valid synthetic template",
+  "result": {
+    "before": "Bundle layout bounds",
+    "cleanup": "accepted"
+  },
+  "unsafe_replacement": "Replacing !(sum <= boundary) with sum > boundary accepts NaN when a field is missing",
+  "candidate_preparer_sha256": "cf2e9ad12331f285258f20f2d6b8541b71eb4d72012eaab0e09221a6ee3a864b",
+  "required_behavior": "Reject with Bundle layout bounds",
+  "directory_field_case": {
+    "input": "BUNDLE_HEADER_SIZE omitted from otherwise valid synthetic template",
+    "result": {
+      "accepted": true,
+      "output_equal_reference": false
+    },
+    "candidate_preparer_sha256": "78603db3d28dbcf0a7292d201f9fc3b87c9a40023e7e50ee08fdbb1d079d3abc",
+    "required_behavior": "Reject with Bundle layout bounds"
+  }
+}

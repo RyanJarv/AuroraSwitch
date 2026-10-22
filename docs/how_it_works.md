@@ -1,108 +1,65 @@
 # How it works
 
-AuroraSwitch is a `BOOT_SRAM` application, not a bootloader replacement.
-Aurora's existing updater installs and starts it. The selector loads and
-authenticates a catalog image in separate SRAM, then launches it.
-This branch supports both RAM and QSPI images in one build.
+The stock updater installs one private bundle at its ordinary QSPI application
+address. Dirt remains at that fixed address with only its four-byte reset entry
+redirected to our small startup wrapper. Our selector and unchanged copies of
+all included firmware follow in reserved flash ranges.
 
-## Why this approach?
+Physical installation and recovery remain unqualified for this development
+build. See the [release gate](development/recovery_release_gate.md).
 
-RAM payloads are linked to execute at `0x24000000`, the same address as
-the selector. Staging them elsewhere and copying at handoff avoids relocating
-their code or writing a new application to flash on each selection. The existing
-updater remains unchanged.
+At power-on the wrapper copies the selector into RAM and checks that copy before
+starting it. The selector checks the catalog-defined image slots, reads the last selection
+from flash, and either verifies and boots that image or shows the menu.
+Menu presence means installed, not authenticated: a damaged image is rejected
+when selected. An unavailable or damaged saved image never triggers an
+automatic fallback to different firmware. USB is used by the
+stock updater and any payload-specific assets, not by the selector.
 
-This works without modifying payload source. Selection is not persisted;
-payloads may retain their own settings.
-
-The tradeoff is inherited state: a branch to a reset handler is not a hardware
-reset. Cleanup must remove selector-owned activity while retaining the clocks,
-MPU policy, and external-memory mappings expected by `BOOT_SRAM` startup.
-
-## Memory layout
+## Installed layout
 
 | Region | Role |
 | --- | --- |
-| AXI SRAM, `0x24000000` | Selector code; overwritten by the payload |
-| DTCM, `0x20000000` | Globals and stack; not accessible to USB DMA |
-| D2, `[0x30000000, 0x30008000)` | 32-KiB SDK DMA arena; cleared during terminal handoff |
-| D2, `[0x30008000, 0x300347e0)` | 182240-byte staging buffer |
-| SRAM4, `[0x38000000, 0x38000400)` | Reserved space for the copy/jump trampoline |
-| SDRAM | Inherited mapping; not globally cleared |
-| QSPI, `0x90040000` | Installed application; Dirt launch replaces it and executes here |
+| Below `0x90040000` | Existing loader/calibration/vendor settings; preserved |
+| `0x90040000` | Dirt, with the reviewed reset-word redirect |
+| `0x90058000` | Startup wrapper |
+| `0x90058100` | Selector length/complement/checksum |
+| `0x90059000` | Selector image |
+| `0x90101000` onward | Fixed catalog-derived slots containing unchanged originals or erased bytes |
+| `0x907e0000`, `0x907e1000` | Independent selection-journal sectors |
 
-Staging capacity is the largest catalog image rounded to 32 bytes. Linker
-assertions keep it outside the DMA arena and below `0x30040000`, and pin the
-trampoline to SRAM4.
+Every installer covers the complete slot area, including erased slots for omitted
+images. This clears previous optional images on reinstall. It ends before the journal. The updater's byte comparison therefore
+ignores changing selections, even if the installer stays on USB. Neither normal
+boot nor firmware switching rewrites the installed bundle.
 
-## Loading and authentication
+## Selection and launch
 
-Initialization starts USB/FatFs, buttons, and LED output, but not audio, ADC, or
-persistence. It skips the full hardware initializer to avoid calibration writes
-and external-memory reconfiguration. Data caching stays disabled for USB-DMA
-coherence.
+The saved record identifies an exact image hash, not its menu index. Two sectors
+hold alternating generations. Each changed explicit selection appends one
+80-byte record on an erased page and verifies it. An existing valid choice survives sector recycling. If neither sector contains
+a valid record, the first explicit save initializes one. Automatic boot and repeat selections
+perform no write or QSPI initialization.
 
-Discovery reads catalog filenames into the reusable staging buffer. Each match
-must have the exact length, SHA-256, initial stack pointer, and Thumb reset
-vector recorded in [images.hpp](../firmware/images.hpp). Discovery alone does
-not authorize execution.
+A failed choice save shows the Freeze LED red for half a second, then attempts
+the ordinary verified launch. The choice may not be remembered next time.
+If flash mapping is unavailable, the Dirt handoff still refuses to proceed.
 
-An explicit load must read the complete file and close it successfully before
-authentication. Launch rehashes that same RAM buffer; it never reopens the file
-and runs a different, unchecked copy. Freeze performs loading and handoff in one
-iteration, without retaining approval for a later button press. Simultaneous
-selection/category changes block launch. Upstream USB/FatFs calls have no
-overall load deadline.
+Before launch, the chosen original is copied from flash into separate staging
+RAM and authenticated by full SHA-256, size and vectors. RAM firmware replaces
+the selector at `0x24000000`. Dirt's installed bytes must match the authenticated
+original except for the reviewed reset word; its original startup address is
+used for explicit launch.
 
-## Irreversible handoff
-
-[PrepareAndJump](../firmware/handoff_sequence.hpp) defines the ordering:
-
-1. Revalidate staging and unmount FatFs. Failure refuses launch unless QSPI
-   programming already replaced the application; then it halts.
-2. Stop USB and mask interrupts.
-3. Force-reset DMA1/2, MDMA, BDMA, USB1 OTG HS, I2C1, and SAI1/2.
-4. Deinitialize the Seed runtime, clean/disable caches, disable SysTick, and
-   clear NVIC enables/pending bits plus pending SysTick/PendSV. Preserve MPU,
-   clocks, FMC, and QSPI configuration.
-5. Revalidate staging after cleanup, then copy and read back the trampoline
-   in SRAM4. Failure now halts; returning to the dismantled selector is unsafe.
-6. Enter the trampoline without an expected return.
-
-The [assembly trampoline](../firmware/copy_jump.s) uses no stack, external
-calls, or references to overwritten selector storage. It copies the exact
-payload to AXI SRAM, zeros the DMA arena, and applies memory barriers. It sets
-`VTOR` to `0x24000000`, loads MSP and the reset PC from the payload vectors,
-clears `CONTROL`, `BASEPRI`, `FAULTMASK`, and PSP, then unmasks interrupts and
-branches to the reset handler. An unexpected return loops in SRAM4.
-
-The target now owns execution. This does not reproduce power-on memory or
-controller state; the target must initialize state it uses. DMA clearing occurs
-only in the terminal routine because earlier clearing could destroy live
-selector buffers.
-
-## QSPI launch
-
-The catalog admits only exact Dirt Verb 1.1 for QSPI execution. Before
-shared cleanup, it authenticates staging, initializes the pinned flash driver,
-and erases offsets `[0x40000, 0x58000)` in 4-KiB sectors. Each page write is
-checked, then the entire payload is compared with mapped flash.
-
-Cleanup preserves QSPI mapping. A separate SRAM4 trampoline clears the DMA
-arena and enters the QSPI vectors without copying into AXI SRAM. Any failure
-after an erase attempt halts: the installed selector may no longer be intact.
-
-On reset, the normal updater can reinstall the selector from its root USB BIN.
-Missing or slow media can instead boot the installed payload. Physical re-entry,
-interrupted-programming recovery, and stock restore remain unverified.
+The selector stops interrupts, resets memory-writing peripherals, cleans cache
+state, rechecks staged bytes, and executes a checked jump routine from separate
+SRAM4. The final routine clears the DMA arena, sets VTOR/MSP and enters the
+firmware's reset handler. This jump is not a hardware reset or a sandbox.
 
 ## Boundaries
 
-RAM loading and handoff do not program flash. Initial installation
-and Dirt launch do. Launched firmware is not sandboxed and may write
-persistent settings. Exact hashes establish expected bytes, not firmware safety.
-Virtual switching checks
-do not establish physical handoff reliability or ordinary stock recovery;
-those remain hardware test requirements.
-
-See the [source map](development/architecture.md) for implementation files.
+Only exact catalog images are supported. Payloads retain full hardware privilege
+and may write their own settings. The layout excludes reviewed calibration and
+settings locations, but virtual startup checks do not qualify all later payload
+writes, physical USB installation, audio, power interruption or stock recovery.
+FataMorgana tables and other firmware-owned USB assets remain separate.

@@ -1,54 +1,38 @@
-// Synthetic ordering test; does not implement or simulate hardware registers.
 #include "handoff_sequence.hpp"
 #include <cassert>
 #include <vector>
-
-// Records order; terminal methods return only so the host can inspect failure paths.
-struct Platform
-{
+struct Platform {
     int validations = 0;
-    bool initial_valid = true, final_valid = true, unmount = true, install = true;
+    bool initial = true, final = true, install = true;
     std::vector<int> steps;
-    bool Validate() { steps.push_back(0); return ++validations == 1 ? initial_valid : final_valid; }
-    bool Unmount() { steps.push_back(1); return unmount; }
-    void StopMedia() { steps.push_back(2); }
-    void MaskInterrupts() { steps.push_back(3); }
-    void ResetBusMasters() { steps.push_back(4); }
-    void DisableRuntime() { steps.push_back(5); }
-    bool InstallTrampoline() { steps.push_back(6); return install; }
-    void Fatal() { steps.push_back(7); }
-    void Jump() { steps.push_back(8); }
+    bool Validate() {
+        steps.push_back(0);
+        return ++validations == 1 ? initial : final;
+    }
+    void MaskInterrupts() { steps.push_back(1); }
+    void ResetBusMasters() { steps.push_back(2); }
+    void DisableRuntime() { steps.push_back(3); }
+    bool InstallTrampoline() {
+        steps.push_back(4);
+        return install;
+    }
+    void Fatal() { steps.push_back(5); }
+    void Jump() { steps.push_back(6); }
 };
-
-int main()
-{
+int main() {
     Platform good;
     assert(aurora_selector::PrepareAndJump(good));
-    assert((good.steps == std::vector<int>{0, 1, 2, 3, 4, 5, 0, 6, 8}));
+    assert((good.steps == std::vector<int>{0, 1, 2, 3, 0, 4, 6}));
     Platform stale;
-    stale.initial_valid = false;
+    stale.initial = false;
     assert(!aurora_selector::PrepareAndJump(stale));
     assert((stale.steps == std::vector<int>{0}));
-    Platform media;
-    media.unmount = false;
-    assert(!aurora_selector::PrepareAndJump(media));
-    assert((media.steps == std::vector<int>{0, 1}));
-    // Once flash has been replaced, neither stale bytes nor an unmount failure
-    // may restore the menu. RAM-only pre-teardown rejection remains unchanged.
-    Platform flashed_stale;
-    flashed_stale.initial_valid = false;
-    assert(!aurora_selector::PrepareAndJump(flashed_stale, true));
-    assert((flashed_stale.steps == std::vector<int>{0, 7}));
-    Platform flashed_media;
-    flashed_media.unmount = false;
-    assert(!aurora_selector::PrepareAndJump(flashed_media, true));
-    assert((flashed_media.steps == std::vector<int>{0, 1, 7}));
-    Platform mutated;
-    mutated.final_valid = false;
-    assert(!aurora_selector::PrepareAndJump(mutated));
-    assert((mutated.steps == std::vector<int>{0, 1, 2, 3, 4, 5, 0, 7}));
-    Platform missing_blob;
-    missing_blob.install = false;
-    assert(!aurora_selector::PrepareAndJump(missing_blob));
-    assert((missing_blob.steps == std::vector<int>{0, 1, 2, 3, 4, 5, 0, 6, 7}));
+    Platform changed;
+    changed.final = false;
+    assert(!aurora_selector::PrepareAndJump(changed));
+    assert((changed.steps == std::vector<int>{0, 1, 2, 3, 0, 5}));
+    Platform bad_jump;
+    bad_jump.install = false;
+    assert(!aurora_selector::PrepareAndJump(bad_jump));
+    assert((bad_jump.steps == std::vector<int>{0, 1, 2, 3, 0, 4, 5}));
 }

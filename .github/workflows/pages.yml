@@ -20,7 +20,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - name: Check reference content and SPA assets
+      - name: Check static reference pages
         run: python3 -m unittest discover -s tests -p test_reference_site.py -v
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa

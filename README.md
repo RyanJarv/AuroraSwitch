@@ -1,37 +1,43 @@
 # AuroraSwitch
 
-Allows you to select which Aurora firmware you want to load when starting the module. This does not replace the official boot loader, to uninstall just change the file on the USB drive back to whatever you used before.
+Select Aurora firmware from an installed flash bundle. The official bootloader
+continues to handle USB installation and stock restoration.
 
-Dirt Verb replaces the installed application. Returning to the selector requires ready USB media containing AuroraSwitch.bin in the drive's root; power cycling alone does not guarantee menu re-entry.
-
-**Note:** You may to avoid using this for performances until this is better tested.
+**Development branch:** this single-file installer workflow is not yet a
+physically qualified release. Published older releases use the previous USB
+firmware-folder workflow.
 
 ## Quick start
 
-Back up a FAT USB drive. No repository checkout or build tools are needed.
+Development workflow; older published releases use the previous USB layout.
 
-1. [Download AuroraSwitch.bin](https://github.com/RyanJarv/AuroraSwitch/releases/latest/download/AuroraSwitch.bin)
-   to the drive's root. Keep it as the only BIN there.
-2. Create an `aurora/` folder. Add [Aurora 1.4.4](https://www.qubitelectronix.com/s/Aurora_v1_4_4.zip)
-   (unzip first), [FDN 1.2.2](https://www.qubitelectronix.com/s/AR_FDN_v1_2_2.bin), or both.
-3. Safely eject, insert the drive into Aurora, and power cycle to install.
+1. Build the development preparer with `make preparer` ([build setup](docs/development/README.md)).
+   Open the generated `dist/*-preparer.html` locally. No prebuilt preparer has
+   been published yet; older releases use the [v0.1.0 USB workflow](https://github.com/RyanJarv/AuroraSwitch/blob/v0.1.0/README.md).
+2. Obtain original firmware from its authors. Add **Dirt Verb 1.1** and any
+   other supported versions, such as [Aurora 1.4.4](https://www.qubitelectronix.com/s/Aurora_v1_4_4.zip)
+   (unzip first) or [FDN 1.2.2](https://www.qubitelectronix.com/s/AR_FDN_v1_2_2.bin),
+   to the preparer, then download **AuroraSwitch.bin**.
+   Original files stay unchanged and are not uploaded. Keep the generated BIN private.
+3. Back up a FAT USB drive. Put **AuroraSwitch.bin** at its root as the only BIN.
+   Safely eject, insert into Aurora, and power on to install.
+4. Remove the drive for normal selection and boot. Firmware-specific USB assets,
+   such as FataMorgana wavetables or Aurora options, still require a drive.
 
 ### Select firmware
 
-For the current source build:
+- **Shift** — next category: blue reverbs, green delays, amber synths/other.
+- **Reverse** — next firmware; the arc shows its position and category color.
+- **Freeze** — verify, remember and launch. A brief red warning means saving failed;
+  the firmware can still run for this session.
+- **Shift + Reverse held at power-on** — open the menu.
 
-1. **Shift** changes category: blue reverbs, green delays, amber synths/other.
-2. **Reverse** selects firmware, keeping its original color. One arc shows its position and category color.
-3. **Freeze** verifies and launches. Red means loading failed; choose or retry.
+The last valid saved choice starts on the next boot without USB. Automatic boots and
+reselecting the saved firmware do not write the selection record. Update a bundle
+by preparing a new BIN; adding files to a drive does not change the installed menu.
 
-The older published release uses Reverse → Freeze → Shift instead.
-
-The current source remembers the chosen firmware on USB and starts it on the
-next boot. **Hold Shift + Reverse at power-on** to open the menu. Keep the USB
-drive connected. Missing or invalid saved files leave the menu open.
-
-Other supported firmware BINs go in the same `aurora/` folder. Files shared on
-Discord must be added manually. See the [user guide](docs/user_guide.md).
+To restore stock firmware, use its original BIN as the only root BIN and follow
+[Qu-Bit's normal USB update procedure](https://www.qubitelectronix.com/faq).
 
 ## Firmware
 
@@ -52,7 +58,7 @@ The published release supports these exact versions:
 Current source adds Flux 0.1.0/0.2.0, Morse 0.1.0, Tempest 1.0.0, and one
 FataMorgana RAM build. This branch also includes Dirt Verb 1.1 (QSPI) and
 HP-filter Aurora (RAM), with no extra build options. See the
-[user guide](docs/user_guide.md#source-build-additions) for files and commands.
+[user guide](docs/user_guide.md#supported-firmware) for files and commands.
 
 Earlier exact-build virtual screens pass; physical reliability and stock USB
 recovery remain open. Fata's USB wavetable path is unverified. Unsupported
@@ -66,7 +72,7 @@ https://github.com/user-attachments/assets/828c759e-82dc-492c-8cff-8abad066c41e
 
 - [Online firmware reference](https://aurora-switch.ryanjarv.sh/): color lookup and controls.
 - [Firmware control reference](docs/firmware_reference.md): colors and controls for every catalog entry.
-- [User guide](docs/user_guide.md): build, USB layout, and firmware selection.
+- [User guide](docs/user_guide.md): installation, USB layout, and firmware selection.
 - [How it works](docs/how_it_works.md): RAM handoff, memory layout, design choices.
 - [Development guide](docs/development/README.md): tests and adding firmware.
-- [Documentation index](docs/README.md): current plans and historical evidence.
+- [Documentation index](docs/README.md): current guides and validation evidence.

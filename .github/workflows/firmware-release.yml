@@ -36,23 +36,29 @@ jobs:
           tar -xjf "$RUNNER_TEMP/toolchain.tar.bz2" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/gcc-arm-none-eabi-10-2020-q4-major/bin" >> "$GITHUB_PATH"
 
-      - name: Build isolated USB package
-        run: make package
-
-      - name: Prepare exact release assets
-        id: bundle
+      - name: Build isolated selector and export offline preparer
         run: |
-          set -- dist/*
-          test "$#" -eq 1 && test -d "$1"
-          test "$(sha256sum "$1/manifest.json" | cut -d ' ' -f 1)" = "${1##*/}"
-          echo "path=$PWD/$1" >> "$GITHUB_OUTPUT"
-          cd "$1"
-          sha256sum AuroraSwitch.bin AuroraSwitch.elf AuroraSwitch.map manifest.json > SHA256SUMS
+          python3 - <<'PYTHON'
+          import sys, shutil, hashlib
+          from pathlib import Path
+          sys.path.insert(0, 'scripts')
+          from package import package
+          from prepare_bundle import export_preparer
+          bundle = package()
+          release = Path('dist/release')
+          release.mkdir()
+          export_preparer(bundle, release / 'AuroraSwitch-preparer.html')
+          shutil.copyfile(bundle / 'manifest.json', release / 'provenance.json')
+          names = ['AuroraSwitch-preparer.html', 'provenance.json']
+          (release / 'SHA256SUMS').write_text(''.join(
+              hashlib.sha256((release / name).read_bytes()).hexdigest() + '  ' + name + '\n'
+              for name in names))
+          PYTHON
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: firmware-${{ github.sha }}
-          path: ${{ steps.bundle.outputs.path }}/
+          path: dist/release/
           if-no-files-found: error
           retention-days: 14
 
@@ -80,25 +86,32 @@ jobs:
           python3 - <<'PY'
           import hashlib, json, os
           from pathlib import Path
-          manifest = json.loads(Path('manifest.json').read_bytes())
+          import base64
+          provenance = Path('provenance.json').read_bytes()
+          manifest = json.loads(provenance)
           assert manifest['source_commit'] == os.environ['GITHUB_SHA']
           assert manifest['development_only'] is True and manifest['physical_qualified'] is False
           assert manifest['build_provenance']['configuration'] == {
               'EXPERIMENTAL_HANDOFF': 1, 'DMA_ARENA_CLEANUP': 1, 'VIRTUAL_TRANSPORT': 0}
-          assert set(manifest['files']) == {'AuroraSwitch.bin', 'AuroraSwitch.elf', 'AuroraSwitch.map'}
-          assert {p.name for p in Path('.').iterdir()} == {*manifest['files'], 'manifest.json', 'SHA256SUMS'}
-          for name, identity in manifest['files'].items():
-              data = Path(name).read_bytes()
-              assert len(data) == identity['bytes'] and hashlib.sha256(data).hexdigest() == identity['sha256']
+          assert {p.name for p in Path('.').iterdir()} == {
+              'AuroraSwitch-preparer.html', 'provenance.json', 'SHA256SUMS'}
+          html = Path('AuroraSwitch-preparer.html').read_text()
+          template = json.loads(html.split('const release = ', 1)[1].split(';\nconst sha256', 1)[0])
+          assert template['source_commit'] == os.environ['GITHUB_SHA']
+          assert template['manifest'] == hashlib.sha256(provenance).hexdigest()
+          selector = base64.b64decode(template['selector'], validate=True)
+          assert hashlib.sha256(selector).hexdigest() == manifest['files']['AuroraSwitch.bin']['sha256']
+          assert len(selector) == manifest['files']['AuroraSwitch.bin']['bytes']
+          assert hashlib.sha256(base64.b64decode(template['boot'], validate=True)).hexdigest() == template['boot_sha256']
           PY
           encoded_tag="$(python3 -c 'import os, urllib.parse; print(urllib.parse.quote(os.environ["TAG"], safe=""))')"
           test "$(gh api "repos/$GH_REPO/commits/$encoded_tag" --jq '.sha')" = "$GITHUB_SHA"
           if gh release view "$TAG" >/dev/null 2>&1; then
             # Preserve the maintainer's notes/status; never replace existing assets.
-            gh release upload "$TAG" AuroraSwitch.bin AuroraSwitch.elf AuroraSwitch.map manifest.json SHA256SUMS
+            gh release upload "$TAG" AuroraSwitch-preparer.html provenance.json SHA256SUMS
           else
             # New releases stay drafts while physical recovery remains unqualified.
-            gh release create "$TAG" AuroraSwitch.bin AuroraSwitch.elf AuroraSwitch.map manifest.json SHA256SUMS \
+            gh release create "$TAG" AuroraSwitch-preparer.html provenance.json SHA256SUMS \
               --verify-tag --draft --prerelease --latest=false --title "AuroraSwitch $TAG" \
               --notes "Development build from $GITHUB_SHA. Physical reliability and stock USB recovery remain unqualified. Third-party firmware is not included. See docs/user_guide.md for setup."
           fi

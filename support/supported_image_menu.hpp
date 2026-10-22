@@ -4,85 +4,75 @@
 #include <array>
 #include <cstddef>
 
-namespace daisy_development
-{
-    // Bounded catalog discovery, not arbitrary binary admission. The caller
-    // authenticates each exact catalog entry; discovery never authorizes launch.
-    template<std::size_t Count>
-    class SupportedImageMenu
-    {
-        static_assert(Count > 0, "A supported catalog must not be empty");
-      public:
-        // Optional small category IDs; the default retains a single flat menu.
-        explicit SupportedImageMenu(std::array<unsigned, Count> categories = {})
-            : categories_(categories) {}
-        // Invalidate the menu while retaining the last index for a later rescan.
-        void Clear() { available_.fill(false); }
+namespace daisy_development {
+// Menu presence never authorizes execution; launch verifies the exact image.
+template <std::size_t Count> class SupportedImageMenu {
+    static_assert(Count > 0, "A supported catalog must not be empty");
 
-        // Preserve a still-valid choice; any media loss discards the entire scan.
-        template<class Authenticate, class Ready>
-        void Discover(Authenticate authenticate, Ready ready)
-        {
-            Clear();
-            for(std::size_t index = 0; index < Count; ++index)
-            {
-                if(!ready()) { Clear(); return; }
-                available_[index] = authenticate(index);
-            }
-            if(!ready()) { Clear(); return; }
-            if(!available_[selected_])
-                for(std::size_t index = 0; index < Count; ++index)
-                    if(available_[index]) { selected_ = index; break; }
-        }
-
-        bool HasSelection() const { return available_[selected_]; }
-        std::size_t Selected() const { return selected_; }
-        bool Select(std::size_t index)
-        {
-            if(index >= Count || !available_[index]) return false;
-            selected_ = index;
-            return true;
-        }
-        void Next()
-        {
-            if(!HasSelection()) return;
-            for(std::size_t distance = 1; distance <= Count; ++distance)
-            {
-                const auto index = (selected_ + distance) % Count;
-                if(available_[index] && categories_[index] == Category())
-                    { selected_ = index; return; }
-            }
-        }
-
-        unsigned Category() const { return categories_[selected_]; }
-        // Skip empty categories, preserving catalog order within each group.
-        void NextCategory()
-        {
-            if(!HasSelection()) return;
-            const unsigned current = Category();
-            std::size_t choice = selected_;
-            unsigned best = ~0U;
-            for(std::size_t index = 0; index < Count; ++index)
-                if(available_[index] && categories_[index] != current)
-                {
-                    const unsigned rank = categories_[index] > current
-                        ? categories_[index] - current
-                        : categories_[index] + Count - current;
-                    if(rank < best) { best = rank; choice = index; }
+  public:
+    explicit SupportedImageMenu(std::array<unsigned, Count> categories) : categories_(categories) {}
+    // Presence comes from the installed slots. Payload bytes
+    // are authenticated separately, immediately before a requested launch.
+    void SetInstalled(const std::array<bool, Count>& installed) {
+        available_ = installed;
+        if (!available_[selected_])
+            for (std::size_t index = 0; index < Count; ++index)
+                if (available_[index]) {
+                    selected_ = index;
+                    break;
                 }
-            selected_ = choice;
-        }
-        std::size_t Position() const
-        {
-            std::size_t position = 0;
-            for(std::size_t index = 0; index < selected_; ++index)
-                if(available_[index] && categories_[index] == Category()) ++position;
-            return position;
-        }
+    }
 
-      private:
-        std::array<bool, Count> available_{};
-        std::array<unsigned, Count> categories_{};
-        std::size_t selected_ = 0;
-    };
-}
+    bool HasSelection() const { return available_[selected_]; }
+    std::size_t Selected() const { return selected_; }
+    bool Select(std::size_t index) {
+        if (index >= Count || !available_[index])
+            return false;
+        selected_ = index;
+        return true;
+    }
+    void Next() {
+        if (!HasSelection())
+            return;
+        for (std::size_t distance = 1; distance <= Count; ++distance) {
+            const auto index = (selected_ + distance) % Count;
+            if (available_[index] && categories_[index] == Category()) {
+                selected_ = index;
+                return;
+            }
+        }
+    }
+
+    unsigned Category() const { return categories_[selected_]; }
+    // Skip empty categories, preserving catalog order within each group.
+    void NextCategory() {
+        if (!HasSelection())
+            return;
+        const unsigned current = Category();
+        std::size_t first = selected_, next = Count;
+        for (std::size_t index = 0; index < Count; ++index) {
+            if (!available_[index])
+                continue;
+            const auto category = categories_[index];
+            if (category < categories_[first])
+                first = index;
+            if (category > current && (next == Count || category < categories_[next]))
+                next = index;
+        }
+        // Advance to the next nonempty category, or wrap to the first one.
+        selected_ = next == Count ? first : next;
+    }
+    std::size_t Position() const {
+        std::size_t position = 0;
+        for (std::size_t index = 0; index < selected_; ++index)
+            if (available_[index] && categories_[index] == Category())
+                ++position;
+        return position;
+    }
+
+  private:
+    std::array<bool, Count> available_{};
+    std::array<unsigned, Count> categories_{};
+    std::size_t selected_ = 0;
+};
+} // namespace daisy_development

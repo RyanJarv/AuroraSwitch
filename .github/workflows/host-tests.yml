@@ -14,5 +14,5 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - name: Compile USB and synthetic transports with the pinned SDK/toolchain
-        run: sh scripts/docker_build.sh make build build-virtual
+      - name: Compile flash-bundle selector with the pinned SDK/toolchain
+        run: sh scripts/docker_build.sh make build

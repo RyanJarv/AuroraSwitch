@@ -7,7 +7,11 @@ by installing original Aurora through the normal USB updater.
 
 Before release:
 
-- Test both official launch directions, reset/re-entry, and failed loading.
+- Install the complete private bundle through the ordinary USB updater.
+- Boot without a drive, including the last saved Dirt and RAM choices.
+- Hold Shift + Reverse at power-on, change a selection, then power cycle.
+- Interrupt selection-journal writes and confirm the old or new complete choice survives.
+- Test both official launch directions, reset/re-entry, and corrupt bundled images.
 - Restore stock through USB and check controls, audio, and calibrated behavior.
 - Record the exact builds, hardware, and results. Check for unexplained changes
   to the bootloader, calibration, or other persistent state.

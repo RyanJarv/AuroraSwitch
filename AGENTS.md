@@ -22,7 +22,7 @@ GitHub operations. Preserve unrelated local changes.
 - Keep public text brief. Development rationale belongs in `docs/development/`,
   not user-facing prose. Do not mention sibling/internal projects on the site.
 - Edit `docs/firmware_reference.md`, `scripts/render_reference.py`, and shared
-  site assets; regenerate HTML and `reference.json` with `make reference-html`.
+  site assets; regenerate static HTML with `make reference-html`.
   Do not hand-edit generated pages. Run the browser smoke test for UI changes,
   including mobile, dark theme, keyboard access, and no-JavaScript fallbacks.
 

@@ -10,12 +10,9 @@ stay unchanged. Family order within each group matches the selector catalog.
 Installation stays visible below the categories. Unsupported-firmware notes
 stay in the Markdown reference, not a separate website page.
 
-A small `navigation.js` loads `reference.json` once and replaces only the main content
-on navigation. The sidebar, mobile directory and footer stay as ordinary HTML.
-Back/Forward and direct links work; if JavaScript or the content bundle is
-unavailable, links load the static pages normally. There is no framework,
-service worker or Node toolchain. The generated bundle avoids fetching another
-page on each click; it is not a second source of content.
+Every firmware view is a complete static page. Ordinary links provide navigation
+and browser history with or without JavaScript. There is no client-side router
+or duplicate JSON content bundle.
 
 Edit `docs/firmware_reference.md` for controls or `README.md`'s Quick start for
 installation. The home page renders that exact section, not a separate copy.
@@ -27,19 +24,18 @@ make reference-html
 make test
 ```
 
-The category/color table drives navigation, so there is no second firmware catalog to edit.
-Versions on the same family page share one color, matching `menu_colors` in
+The compiled catalog drives navigation, so there is no second firmware catalog to edit.
+Versions on the same family page share one color, matching family metadata in
 `firmware/images.hpp`; different families must use distinct colors.
 Tests bind category membership/order to `firmware/images.hpp`. The directory shows
 family names with adjacent color dots and labels; version numbers stay on control
 pages. Website UX rules live in `AGENTS.md`: prefer clear labels and structure,
 not paragraphs explaining website widgets.
-The renderer uses GitHub Markdown and writes the HTML fallbacks and
-SPA data from identical content; shared styling is in `site/style.css`. Regenerate
-after changing the reference, renderer or `navigation.js` (its URL is content-versioned).
-Commit source and generated files together.
-Offline tests check reference/Quick start fingerprints, links, versions, colors
-and equality between SPA content and fallbacks. The Pages workflow refuses stale pages.
+The renderer uses GitHub Markdown and writes complete HTML pages; shared styling
+is in `site/style.css`. Regenerate after changing the reference or renderer.
+Commit source and generated files together. Offline tests check source/Quick
+start fingerprints, links, versions and colors. The Pages workflow refuses
+stale pages.
 
 `site/aurora-panel.svg` is an original simplified drawing of the manual's panel
 layout, not copied artwork. Knobs 1–6 and buttons 7–9 match table labels added by
@@ -55,8 +51,8 @@ geckodriver --port 4444
 python3 scripts/check_reference_browser.py --webdriver http://127.0.0.1:4444
 ```
 
-It checks grouped navigation, startup labels, no-reload switching, the panel
-drawing, Back/Forward, mobile/dark layouts, keyboard access, and static fallbacks.
+It checks grouped navigation, startup labels, ordinary page links, the panel
+drawing, Back/Forward, mobile/dark layouts, keyboard access, and operation without JavaScript.
 
 Repository **Settings → Pages → Source** must be **GitHub Actions**.
 Pushes to `main` deploy automatically; the workflow can also be run manually.
@@ -66,5 +62,5 @@ Navigation, family labels, palette colors and the Markdown lookup table come
 from the compiled catalog in `firmware/images.hpp`. `make reference-html`
 regenerates that table before rendering; control prose remains in Markdown.
 The host metadata exporter requires only a native C++17 compiler, no SDK or
-network setup. SPA freshness includes the exported catalog as well as the
-renderer, so catalog-only changes cannot reuse stale navigation data.
+network setup. Page fingerprints include the exported catalog as well as the
+renderer, so catalog-only changes require regenerated pages.
