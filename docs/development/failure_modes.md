@@ -5,16 +5,63 @@ an engineering plan, not a list of discovered defects or a qualification report.
 The code boundaries described here were reviewed at `0628413`; unrelated local
 build-script changes were excluded. No firmware behavior or hardware was changed.
 
-The priorities are preserving calibration and ordinary USB recovery, preventing
-unintended execution, and avoiding unnecessary flash wear. Correct audio and
-controls, usable selection, and private handling of vendor files also matter.
+The priority is preventing lasting damage caused by AuroraSwitch: lost
+calibration or settings, premature flash wear, damaged hardware, or loss of
+ordinary stock USB recovery.
+Crashes, a broken menu, a lost saved choice and corrupted application firmware
+are lower priority when a normal USB firmware update can reliably restore them.
+
+## Scope: risks introduced by AuroraSwitch
+
+This work covers code and artifacts we are responsible for: the preparer,
+bundle layout, startup wrapper, selector, selection journal and handoff. It also
+covers the effects of our calls into dependencies and of installing our bundle
+through the stock updater.
+
+The baseline is the same exact vendor firmware running normally through the
+stock boot path on the same hardware, with equivalent inputs and settings.
+Writes, wear, crashes or damage that would also occur in that baseline are
+outside this work's scope. We are not making vendor firmware safer than it is
+when used by itself, and do not need a sandbox or restrictions on its normal
+behavior.
+
+A vendor application can still expose a problem we introduced: for example,
+leftover DMA, incompatible processor state, changed flash contents or an altered
+startup sequence could make it write incorrectly after our handoff. Those
+additional effects are in scope even when the offending instruction belongs to
+the vendor image. Attribute effects by cause and comparison with stock execution,
+not just by which code issued the final command.
+
+## Priority by consequence
+
+| Consequence | Priority and response |
+| --- | --- |
+| Lost calibration or unique settings | Highest: prevent writes outside authorized regions; a firmware update cannot recreate unit-specific data |
+| Lost stock loader, changed boot/protection configuration, or blocked USB restoration | Highest: prevent these changes and qualify recovery independently of application startup |
+| Premature flash wear | High: bound actual program/erase activity, including repeated boots, failed saves and retries |
+| Electrical damage or damaging output | High where a plausible hardware path exists; distinguish damage from an ordinary audio/control fault |
+| Crash, hang, broken menu/audio, corrupt application or lost selection | Lower if normal USB restoration works; retain basic regressions without adding elaborate availability mechanisms |
+| Wrong build, layout or handoff | Priority follows its effects: high if it can cause persistent writes or damage; lower if it only stops execution |
+
+“Recoverable by USB” must mean the stock loader can install a replacement even
+when the selector and application never start. Entering the selector menu is not
+an adequate recovery dependency. A recurring boot loop is inconvenient rather
+than permanent damage if that independent restoration route still works.
+
+The failure families below retain the broader analysis as reference. Their
+proposals are options, not a requirement to implement every test. Prioritize
+tests that protect persistent assets or establish USB recoverability. Do not add
+a watchdog, rollback system, crash journal or sandbox solely to eliminate a
+USB-recoverable crash. Private handling of vendor files remains a separate
+distribution requirement.
 
 ## What we can promise
 
 We cannot guarantee that nothing goes wrong after arbitrary future changes.
 Future code can remove a check, bypass a driver, change the test oracle, or
-program hardware directly. Hardware faults and the behavior of closed-source
-firmware add assumptions that software tests cannot eliminate.
+program hardware directly. Tests cannot establish safety for every future
+version. Independent hardware failures and unchanged vendor-firmware faults
+are outside the prevention scope defined above.
 
 The useful promise is narrower: for a specific reviewed build, under stated
 hardware and fault assumptions, define which operations are allowed and verify
@@ -24,8 +71,9 @@ recovery route for failures outside that boundary.
 Today the selector, flash driver and launched firmware share privileged access.
 The handoff leaves no independent monitor behind. Full-image SHA-256 establishes
 that bytes match an accepted image; it does not prove that image cannot damage
-state. CRC and FNV checks detect classes of corruption; neither establishes
-trusted origin. Readback detects a bad write after it happened.
+state. Making vendor images safe in isolation is not our goal. CRC and FNV
+checks detect classes of corruption; neither establishes trusted origin.
+Readback detects a bad write after it happened.
 
 ## Physical boundaries to preserve
 
@@ -63,7 +111,7 @@ would miss a single destructive write to the wrong address.
 starts for erasure, and aligned 80-byte records in their range for programming.
 The journal checks results and readback. These guards precede calls into the
 pinned SDK, whose command construction and mode/status changes remain trusted.
-They do not constrain arbitrary privileged code or vendor firmware.
+They constrain our intended save path, not the normal writes of vendor firmware.
 
 **Plan:** retain the small driver and test its production adapter, then observe
 the actual QSPI commands below the SDK. Independently check opcode, offset,
@@ -77,14 +125,16 @@ the owning layer rather than duplicating the whole flash implementation.
 
 **Acceptance:** inject wrong offsets (including mapped addresses), lengths,
 opcodes and success/error returns at each relevant boundary. Require zero
-unauthorized commands and unchanged bytes outside the journal. Deliberately
-remove the guard and verify that an independent observer fails the test. Include
+unauthorized selector commands and unchanged bytes outside the journal during
+selector-only operation. Attribute stock-loader and vendor writes separately
+against their baselines. Deliberately remove the guard and verify that an
+independent observer fails the test. Include
 initialization/status writes, not just array writes. Do not silently modify
 protection bits as a generic recovery mechanism.
 
 **Limit:** this proves an exercised path, not containment of code that bypasses
-it. Independent write restriction would require a separately enforced boundary;
-see the final section.
+it. Check our call paths and dependencies for bypasses; do not extend the guard
+into a policy restricting normal vendor execution.
 
 ### 2. Installation is incomplete or erases too much
 
@@ -100,7 +150,9 @@ Updating in place is not an atomic transaction.
 the reviewed stock loader normally writes from `0x90040000`. Its known EOF and
 inclusive-sector behavior is documented in [stock updater assumptions](stock_updater.md).
 It does not check every failure or provide rollback. A selector-side check runs
-too late to prevent an updater mistake.
+too late to prevent an updater mistake. Our responsibility is to ensure our
+bundle fits the supported loader contract and does not introduce additional
+damage or defeat restoration; redesigning the stock updater is outside scope.
 
 **Plan:** independently decode the final private installer and model the exact
 qualified loader's erase/program commands. Exercise lengths around page,
@@ -236,27 +288,31 @@ hardware, releasing it does not navigate/save, and navigation cancels automatic
 boot. Tests distinguish a safe halt from a usable menu. Recovery remains possible
 when the application cannot run; neither outcome guarantees continuous audio.
 
-### 7. A launched vendor application behaves badly
+### 7. Our launch path changes vendor behavior
 
-**Assume:** an exact accepted vendor image writes flash, changes clock/power/GPIO
-state, hangs, or drives invalid audio. Its own bug can execute arbitrary writes.
+**Assume:** the wrapper, flash layout or handoff changes memory, peripheral or
+processor state in a way that affects a correctly identified vendor image.
 
-**Worst outcome:** any loss available to privileged application code, including
-calibration or recovery damage. A selector write counter cannot attribute all
-module writes to the selector.
+**Worst outcome:** the vendor image makes destructive writes, wears flash or
+changes outputs because our launch conditions differ from stock startup.
 
-**Current protection:** admission by exact image identity and per-image review.
-There is no sandbox after handoff and no source-level proof of vendor behavior.
+**Current protection:** exact-image authentication, reviewed layout and handoff
+cleanup. These establish parts of the launch contract, not complete equivalence
+with stock execution.
 
-**Plan:** qualify each accepted image's observed writes and peripheral behavior
-against stock operation, separately attributing loader, selector and application
-commands. Requalify changed identities. Document required firmware-owned assets
-and settings. Keep recovery and backups independent of the installed image.
+**Plan:** compare the same image through stock and selector paths with equivalent
+inputs and settings. Attribute loader, selector and application commands
+separately. Investigate additional writes or changed effects caused by our
+layout/startup/handoff. Preserve raw differences rather than changing thresholds
+to hide them. Document required firmware-owned assets and settings so a missing
+asset is not mistaken for a handoff defect.
 
-**Acceptance:** no unexplained writes or output differences in the defined
-workloads; preserve raw differences instead of relaxing comparisons to pass.
-This is bounded evidence, not a proof for every possible application input.
-Preventing arbitrary payload writes requires independent containment.
+**Acceptance:** no unexplained additional persistent damage, wear or loss of
+recovery caused by our path in the defined workloads. A vendor write or fault
+that also occurs during equivalent stock execution is baseline behavior, not
+something AuroraSwitch must block. No sandbox, vendor-code patch or restriction
+on normal vendor writes is proposed. Comparisons are bounded evidence, not a
+proof for every possible input.
 
 ### 8. Preparation, builds or releases produce the wrong artifact
 
@@ -314,48 +370,46 @@ No gate proves a different future build safe.
 ## Implementation order
 
 1. **Constrain and observe writes.** Extend existing driver tests and command
-   observation to prove addresses and opcodes as well as counts. Keep normal
-   operation separate from stock installation and vendor activity. This targets
+   observation to prove addresses and opcodes as well as counts. Apply journal
+   bounds to selector operations; compare stock-loader and vendor activity with
+   their normal baselines rather than prohibiting their writes. This targets
    the most irreversible losses with the smallest change.
 2. **Independently check final artifacts and updater extents.** Reuse existing
    package tests; add a small physical-layout oracle rather than another build
    framework. Include common-mode wrong constants and EOF erase cases.
-3. **Extend existing fault tests at uncovered transitions.** Prioritize journal
-   commit/recycle, post-check copy corruption, DMA cleanup and menu escape.
-   Avoid duplicating tests of harmless implementation details.
-4. **Qualify physical failure/recovery paths under separate authorization.** Use
-   the [physical release gate](recovery_release_gate.md): exact larger-bundle
-   installation, no-drive boot, controls/audio, interrupted saves/installations,
-   calibration preservation and stock restoration. Virtual passes cannot replace
-   these checks. A backup/readback can aid recovery; it does not prevent damage.
+3. **Bound wear and persistent side effects.** Extend journal commit/recycle and
+   whole-boot command tests where needed. Verify that failures, repeated boots
+   and repeat selections cannot cause write/erase loops. Check that malformed
+   images or handoff faults cannot turn into writes to protected state; a safe
+   halt is acceptable. Avoid duplicating tests of harmless implementation details.
+4. **Establish independent USB recoverability under separate authorization.**
+   Use the [physical release gate](recovery_release_gate.md) to test stock
+   restoration with an unusable selector/application and interrupted installation,
+   plus preservation of calibration, loader and configuration. Virtual passes
+   cannot replace these checks. A backup/readback can aid recovery; it does not
+   prevent damage. Other release checks, including controls/audio, remain useful
+   but do not take priority over lasting-damage prevention in this work.
+
+Defer additional crash-only fault campaigns and availability features unless
+they expose a path to persistent damage or defeat USB restoration. Keep existing
+basic authentication, handoff and UI tests; this prioritization does not call for
+removing established safeguards.
 
 For each functional change, first preserve a failing local reproducer, then
 build a fresh authenticated candidate and run affected regressions. Store raw
 reports in ignored local artifact storage. This plan does not authorize hardware
 access and does not resume audio testing.
 
-## If independent containment is required
+## Keep prevention proportional to our responsibility
 
-Software checks are the simplest practical improvement for the current design.
-They do not meet a requirement that arbitrary privileged future code must be
-unable to destroy protected state.
+Focus runtime guards, independent layout checks and fault tests on our code and
+its effects. Do not add a supervisor, sandbox, vendor-write filtering or hardware
+protection scheme to prevent behavior that the same firmware exhibits when run
+normally. Such mechanisms would add compatibility and recovery risks without
+addressing the agreed scope.
 
-That stronger requirement needs an authority the changed code cannot override:
-for example, a hardware write restriction or a separately protected supervisor
-that owns programming access. Establish feasibility on the exact MCU, flash,
-wiring, loader and vendor execution model before proposing implementation. Flash
-protection geometry, persistence, quad-mode pins, status writes and ordinary USB
-restoration all need review. Do not set readout protection, option bytes or flash
-locks speculatively; they can impair recovery or cause data loss.
-
-An MPU configuration alone is insufficient for this architecture: payloads run
-privileged, and DMA also needs containment. ST explicitly states that MPU
-attributes apply to CPU accesses rather than other bus masters such as DMA
-([ST AN5156](https://www.st.com/content/st_com/en/technical-documents/an5156-introduction-to-security-for-stm32-mcus-stmicroelectronics_asset/chunk-008-topic-an5156-sec-feat-firewall.html)).
-Running unchanged vendor applications unprivileged would be a substantial
-compatibility redesign, not a small guard around the existing handoff.
-
-Even independent containment would protect specified assets under specified
-fault assumptions, not guarantee uninterrupted operation, correct audio, or
-survival of every physical failure. Choose those guarantees explicitly before
-adding that complexity.
+The goal is to avoid adding lasting damage or wear and to preserve ordinary USB
+restoration. A recoverable crash can be acceptable; an additional write that
+loses calibration cannot. Future changes to our code require fresh evidence for
+these properties rather than a claim that the current checks guarantee every
+future implementation.
