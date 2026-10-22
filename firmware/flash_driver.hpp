@@ -22,12 +22,16 @@ struct ChoiceFlashDriver {
         // Initialization is only requested for a changed choice. Enter write
         // mode directly; WritePage restores mapped reads after the program.
         config.mode = daisy::QSPIHandle::Config::INDIRECT_POLLING;
-        config.pin_config.io0 = dsy_pin(DSY_GPIOF, 8);
-        config.pin_config.io1 = dsy_pin(DSY_GPIOF, 9);
-        config.pin_config.io2 = dsy_pin(DSY_GPIOF, 7);
-        config.pin_config.io3 = dsy_pin(DSY_GPIOF, 6);
-        config.pin_config.clk = dsy_pin(DSY_GPIOF, 10);
-        config.pin_config.ncs = dsy_pin(DSY_GPIOG, 6);
+        // On-board flash wiring from DaisySeed::ConfigureQspi() in the pinned SDK.
+        // dsy_pin describes an STM32 port/pin, not a Seed header pin or an output
+        // value. Init below assigns their QSPI peripheral functions. IO0..IO3
+        // carry four data bits in parallel during quad transfers.
+        config.pin_config.io0 = dsy_pin(DSY_GPIOF, 8);  // PF8: data 0; flash input in SPI mode.
+        config.pin_config.io1 = dsy_pin(DSY_GPIOF, 9);  // PF9: data 1; flash output in SPI mode.
+        config.pin_config.io2 = dsy_pin(DSY_GPIOF, 7);  // PF7: data 2.
+        config.pin_config.io3 = dsy_pin(DSY_GPIOF, 6);  // PF6: data 3.
+        config.pin_config.clk = dsy_pin(DSY_GPIOF, 10); // PF10: serial clock.
+        config.pin_config.ncs = dsy_pin(DSY_GPIOG, 6);  // PG6: chip select, active low.
         initialized = qspi.Init(config) == daisy::QSPIHandle::OK;
         return initialized;
     }

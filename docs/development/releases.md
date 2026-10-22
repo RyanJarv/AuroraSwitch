@@ -9,6 +9,8 @@ AMD64 or ARM64 architecture and the matching GNU Arm compiler archive. Pass a
 command to run it in the same container, for example
 `bash scripts/docker_build.sh make build`. ARM here means a 64-bit ARM Linux
 host; the firmware target remains the Aurora's Cortex-M7 on either host.
+The wrapper handles rootless Docker UID mapping so bind-mounted build outputs
+remain writable without changing host directory permissions.
 
 `make preparer` also exports a self-contained `*-preparer.html` in `dist/`.
 It embeds only our selector, startup wrapper and catalog metadata. Users supply

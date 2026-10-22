@@ -13,12 +13,19 @@ esac
 platform=linux/$architecture
 image=aurora-switch-build:10-2020-q4-major-$architecture
 
+# Rootless Docker maps container root to the daemon's unprivileged host user.
+# A numeric host UID inside that namespace maps to a different, subordinate UID.
+case "$(docker info --format '{{json .SecurityOptions}}')" in
+    *'"name=rootless"'*) container_user=0:0 ;;
+    *) container_user="$(id -u):$(id -g)" ;;
+esac
+
 if [ "$#" -eq 0 ]; then
     set -- make check
 fi
 
 docker build --platform "$platform" -t "$image" -f "$root/docker/Dockerfile" "$root/docker"
 docker run --rm --platform "$platform" \
-    --user "$(id -u):$(id -g)" \
+    --user "$container_user" \
     --mount "type=bind,source=$root,target=/workspace" \
     --workdir /workspace "$image" "$@"

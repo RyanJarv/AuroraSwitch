@@ -1,8 +1,9 @@
 FROM ubuntu:24.04
 
+# Include CMake/GDB for CLion as well as the Make-based command-line build.
 # The AMD64 toolchain matches firmware-release.yml; ARM64 uses the same release.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    bzip2 ca-certificates curl g++ git make python3 \
+    bzip2 ca-certificates cmake curl g++ gdb git make python3 \
     && rm -rf /var/lib/apt/lists/*
 
 # BuildKit sets TARGETARCH from the requested image platform.
