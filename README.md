@@ -3,9 +3,8 @@
 Select Aurora firmware from an installed flash bundle. The official bootloader
 continues to handle USB installation and stock restoration.
 
-**Development branch:** this single-file installer workflow is not yet a
-physically qualified release. Published older releases use the previous USB
-firmware-folder workflow.
+**Important**
+* You may want to avoid using this for performances until this is better tested.
 
 ## Quick start
 
@@ -63,10 +62,6 @@ HP-filter Aurora (RAM), with no extra build options. See the
 Earlier exact-build virtual screens pass; physical reliability and stock USB
 recovery remain open. Fata's USB wavetable path is unverified. Unsupported
 versions or changed files are rejected.
-
-## Video
-
-https://github.com/user-attachments/assets/828c759e-82dc-492c-8cff-8abad066c41e
 
 ## More Info
 
