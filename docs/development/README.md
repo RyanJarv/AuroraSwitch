@@ -40,8 +40,7 @@ to changed binaries. Never distribute locally assembled vendor-containing BINs.
 
 ## Current validation
 
-[Testing](testing.md) summarizes the local checks and their limits. The
-[cleanup validation](evidence/project_cleanup_20261021.json) binds the current
-checks to exact build identities and confirms unchanged production bytes.
-Machine-readable records retain earlier results; superseded plans and checkpoint
-prose remain in Git history.
+[Testing](testing.md) describes the checks and their limits. Keep run reports,
+raw captures and build identities in ignored local artifact storage rather than
+committing per-run records. Superseded plans and checkpoint prose remain in Git
+history.

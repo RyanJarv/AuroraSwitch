@@ -39,8 +39,8 @@ both checkers accept `--firefox /path/to/firefox`.
 
 ## Execution and qualification
 
-The [fixed-slot validation record](evidence/fixed_slot_validation_20261021.json)
-binds the production execution scenarios to exact firmware bytes. External
+Retain exact build identities, inputs and raw results with each local run.
+Generated reports belong in ignored artifact storage, not in Git. External
 execution-model code and commands belong in their owning repository.
 
 Observations stop at the checked handoff; later vendor settings writes are

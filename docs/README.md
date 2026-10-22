@@ -10,5 +10,5 @@ mobile-friendly version of the control reference.
 - [How it works](how_it_works.md): the loader and its design choices.
 
 [Development](development/README.md) contains onboarding, build internals,
-release checks and [validation records](development/evidence/). Superseded
+release checks and [test commands](development/testing.md). Superseded
 implementation notes remain in Git history rather than the active guides.

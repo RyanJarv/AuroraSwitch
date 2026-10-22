@@ -29,7 +29,8 @@ GitHub operations. Preserve unrelated local changes.
 ## Firmware and evidence
 
 - Keep external virtualization integration code and run instructions in its
-  owning repository. Retain firmware tests and bounded validation summaries here.
+  owning repository. Retain firmware tests and validation commands here, but
+  keep generated run reports and evidence in ignored local artifact storage.
 
 - Preserve exact-image authentication, launch-time staged-byte verification,
   DMA cleanup, reviewed memory bounds, and ordinary stock USB recovery.

@@ -39,11 +39,10 @@ The pinned SDK issues status-register writes while changing QSPI modes. These
 are measured separately from array programming/erase. Vendor firmware can make
 its own settings writes after handoff; the selector is not a sandbox.
 
-## Evidence
+## Qualification
 
-The [fixed-slot record](evidence/fixed_slot_validation_20261021.json) includes
-32 production scenarios, all 14 handoffs, failed-save/reboot checks, host and
-browser checks, and the merged build's byte identity. Earlier records in
-`evidence/` remain bound to their named source/artifact identities. Virtual tests
-do not qualify physical USB installation, power interruption, audio or stock
-restoration; those remain the [release gate](recovery_release_gate.md).
+Checks must cover startup, all supported handoffs, failed saves, journal
+recycling and unchanged flash outside the journal. Keep exact artifacts and
+raw results locally. Virtual tests do not qualify physical USB installation,
+power interruption, audio or stock restoration; those remain the
+[release gate](recovery_release_gate.md).
