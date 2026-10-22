@@ -21,6 +21,9 @@ command downloads vendor firmware, touches a USB drive or programs hardware.
 [testing](testing.md), [release workflow](releases.md) and the
 [physical release gate](recovery_release_gate.md) describe the relevant boundaries.
 
+[Failure modes and prevention plan](failure_modes.md) reviews worst outcomes,
+existing safeguards, proposed checks and the limits of software containment.
+
 ## Add firmware
 
 Measure a user-owned binary with `scripts/inspect_firmware.py`, then review its
