@@ -25,6 +25,8 @@ save/retry loops, missing firmware and cleanup-time staged-byte rejection.
 The real-FatFs check needs the pinned SDK, native C/C++ compilers and `mkfs.fat`.
 It uses an ordinary temporary file, never mounted media. It compiles the pinned
 filesystem code with ARM-compatible integer widths on the host.
+CI runs this check alongside the native tests and sanitizers, fetching pinned
+dependencies with `make setup` and installing `dosfstools` for `mkfs.fat`.
 
 Three mutation controls remove CRC checking, repeat suppression or save readback;
 the corresponding native assertions must fail. The exact-image authenticator
