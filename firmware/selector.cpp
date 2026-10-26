@@ -23,7 +23,7 @@ struct UsbFirmware {
     bool Open(std::array<bool, aurora_selector::ImageCount>& present);
     bool Authenticate(unsigned index);
     bool AuthenticatePath(unsigned index, const char* path);
-    bool CanInstall() { return Ready() && aurora_selector::CheckInstallRoot(); }
+    bool CanInstall(unsigned index) { return Ready() && aurora_selector::CheckInstallFiles(index); }
     void Install(unsigned index);
     bool Launch(unsigned index);
     int BootChoice();

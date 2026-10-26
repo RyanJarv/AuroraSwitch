@@ -6,7 +6,7 @@ struct Media {
     int saved = -1;
     bool root_valid = true, fail_install = false;
     unsigned installs = 0, resets = 0;
-    bool CanInstall() { return root_valid; }
+    bool CanInstall(unsigned) { return root_valid; }
     void Install(unsigned) {
         ++installs;
         if (!fail_install)

@@ -5,7 +5,7 @@
 using UINT = unsigned;
 using FRESULT = int;
 constexpr int FR_OK = 0, FR_DISK_ERR = 1, FR_NO_FILE = 4, FR_EXIST = 8;
-constexpr unsigned FA_READ = 1, FA_WRITE = 2, FA_CREATE_ALWAYS = 8, AM_DIR = 16;
+constexpr unsigned FA_READ = 1, FA_WRITE = 2, FA_CREATE_ALWAYS = 8, AM_DIR = 16, AM_HID = 2;
 struct FIL {
     const char* path;
     std::size_t position;

@@ -76,7 +76,7 @@ template <class Firmware> class SelectorController {
             return;
         }
         if (Images[selected].launch == LaunchMethod::StockUsbInstall) {
-            if (!firmware_.CanInstall()) {
+            if (!firmware_.CanInstall(selected)) {
                 state_ = State::Error;
                 return;
             }

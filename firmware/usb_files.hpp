@@ -81,13 +81,25 @@ inline bool CheckInstallRoot(bool installed = false) {
             break;
         if (!(info.fattrib & AM_DIR) && (IsBinName(info.fname) || IsBinName(info.altname))) {
             ++matches;
-            if (!installed || std::strcmp(info.fname, "DIRTVERB.BIN") != 0) {
+            if (!installed || (info.fattrib & AM_HID) ||
+                std::strcmp(info.fname, "DIRTVERB.BIN") != 0) {
                 valid = false;
                 break;
             }
         }
     }
     return f_closedir(&directory) == FR_OK && valid && matches == (installed ? 1U : 0U);
+}
+inline bool CheckInstallFiles(unsigned index) {
+    if (index >= ImageCount || Images[index].launch != LaunchMethod::StockUsbInstall ||
+        !CheckInstallRoot())
+        return false;
+    char source[128];
+    FirmwarePath(source, sizeof(source), index);
+    FILINFO info{};
+    // Rename preserves attributes. A hidden original would be ignored by the
+    // stock loader after moving, so refuse it before changing the directory.
+    return f_stat(source, &info) == FR_OK && !(info.fattrib & (AM_DIR | AM_HID));
 }
 // Once rename is attempted, its failure can leave directory changes behind.
 // The controller latches that boundary; never roll back or retry automatically.

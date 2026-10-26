@@ -48,7 +48,7 @@ New versions need review before entering the catalog.
 **Dirt replaces the selector; returning requires a computer.**
 
 Put the exact `DirtVerb 1.1.bin` in `aurora/`. Leave no BIN files in the USB root;
-`AuroraSwitch.img` is an optional inactive backup. Names such as
+`AuroraSwitch.img` is an optional inactive backup. Dirt must not be a hidden file. Names such as
 `AuroraSwitch.bin.disabled` still count as BIN files and must be removed.
 
 Select Dirt (pink, Reverbs) and press Freeze to verify. When Freeze alternates

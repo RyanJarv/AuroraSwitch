@@ -11,6 +11,7 @@ unsigned writes = 0, creates = 0, reads = 0;
 bool fail_directory = false, fail_rename = false;
 unsigned renames = 0, directory_closes = 0;
 std::map<std::string, std::string> aliases;
+std::map<std::string, unsigned> attributes;
 FRESULT f_opendir(DIR* directory, const char*) {
     directory->position = 0;
     return connected && !fail_directory ? FR_OK : FR_DISK_ERR;
@@ -25,6 +26,7 @@ FRESULT f_readdir(DIR* directory, FILINFO* info) {
     *info = {};
     if (directory->position < root.size()) {
         const auto path = root[directory->position++];
+        info->fattrib = attributes[path];
         std::snprintf(info->fname, sizeof(info->fname), "%s", path.c_str() + 3);
         std::snprintf(info->altname, sizeof(info->altname), "%s", aliases[path].c_str());
     }
@@ -52,7 +54,7 @@ FRESULT f_stat(const char* path, FILINFO* info) {
     if (!files.count(path))
         return FR_NO_FILE;
     info->fsize = files[path].size();
-    info->fattrib = 0;
+    info->fattrib = attributes[path];
     return FR_OK;
 }
 FRESULT f_open(FIL* file, const char* path, unsigned mode) {
@@ -188,6 +190,10 @@ int main() {
     FirmwarePath(path, sizeof(path), dirt);
     files[path].assign(Images[dirt].size, 0x3a);
     const auto original = files[path];
+    attributes[path] = AM_HID;
+    assert(!CheckInstallFiles(dirt) && renames == 0 && files[path] == original);
+    attributes[path] = 0;
+    assert(CheckInstallFiles(dirt));
     fail_rename = true;
     assert(!MoveToInstallRoot(dirt) && files[path] == original);
     fail_rename = false;
@@ -199,4 +205,7 @@ int main() {
     assert(files["0:/harmless.img"] == std::vector<std::uint8_t>{1});
     connected = false;
     assert(!CheckInstallRoot(true));
+    connected = true;
+    attributes[InstallPath] = AM_HID;
+    assert(!CheckInstallRoot(true)); // The stock loader would skip hidden Dirt.
 }
