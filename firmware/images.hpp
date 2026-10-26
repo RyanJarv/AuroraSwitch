@@ -7,7 +7,7 @@
 #include <cstring>
 
 namespace aurora_selector {
-enum class Color { Blue, Green, Cyan, Magenta, Amber, Yellow, White, Red, Azure };
+enum class Color { Blue, Green, Cyan, Magenta, Amber, Yellow, White, Red, Azure, Pink };
 struct ColorInfo {
     const char* name;
     const char* css;
@@ -18,7 +18,7 @@ constexpr ColorInfo Palette[] = {
     {"Cyan", "#32c9ce", {0.f, 0.4f, 0.4f}},  {"Magenta", "#d855d5", {0.4f, 0.f, 0.4f}},
     {"Amber", "#dc9a25", {0.4f, 0.2f, 0.f}}, {"Yellow", "#ead342", {0.4f, 0.4f, 0.f}},
     {"White", "#fff", {0.4f, 0.4f, 0.4f}},   {"Red", "#e84444", {0.4f, 0.f, 0.f}},
-    {"Azure", "#3ea7dc", {0.f, 0.2f, 0.4f}},
+    {"Azure", "#3ea7dc", {0.f, 0.2f, 0.4f}}, {"Pink", "#e84c82", {0.4f, 0.f, 0.1f}},
 };
 constexpr const ColorInfo& GetColor(Color color) {
     return Palette[static_cast<unsigned>(color)];
@@ -43,6 +43,7 @@ enum class Family {
     Morse,
     Tempest,
     FataMorgana,
+    DirtVerb,
     HpFilter,
     Count
 };
@@ -65,6 +66,7 @@ constexpr FamilyInfo Families[] = {
     {"tempest", "Tempest", Category::Other, Color::Red, "tempest-100--red"},
     {"fatamorgana", "FataMorgana", Category::Other, Color::Azure,
      "fatamorgana-ram-experiment--azure"},
+    {"dirt-verb", "Dirt Verb", Category::Reverbs, Color::Pink, "dirt-verb-11--pink"},
     {"hp-filter", "Aurora HP-filter", Category::Reverbs, Color::Yellow,
      "aurora-hp-filter-variant--yellow"},
 };
@@ -74,6 +76,10 @@ constexpr const FamilyInfo& GetFamily(Family family) {
     return Families[static_cast<unsigned>(family)];
 }
 
+// StockUsbInstall only prepares USB for the stock bootloader; it never jumps
+// directly to flash or gives the selector permission to program flash.
+enum class LaunchMethod { Ram, StockUsbInstall };
+
 // Exact runtime descriptor. Keep metadata out of the handoff ABI.
 struct Image {
     const char* filename;
@@ -81,6 +87,7 @@ struct Image {
     std::size_t size;
     daisy_development::SramImageVectors vectors;
     std::array<float, 3> menu_color{};
+    LaunchMethod launch = LaunchMethod::Ram;
 };
 struct Firmware {
     Family family;
@@ -226,6 +233,18 @@ constexpr Firmware FirmwareCatalog[] = {
       "94f4200efdf47cfb0c055fa51896da4d8c8d0f8b6a6d0a9bc9ec31553d85ebc7",
       182212U,
       {SELECTOR_DTCM_END, 0x2400070dU}}},
+    {Family::DirtVerb,
+     "dirt-verb-1.1",
+     "Dirt Verb 1.1",
+     "Installs Dirt; computer required to return",
+     false,
+     nullptr,
+     {"DirtVerb 1.1.bin",
+      "e1775fb6c46dd83e33abaf599eb6d6089b7ff56692b42ac48748d2d1555d2784",
+      95196U,
+      {SELECTOR_DTCM_END, 0x90040959U},
+      {},
+      LaunchMethod::StockUsbInstall}},
 };
 constexpr std::size_t ImageCount = sizeof(FirmwareCatalog) / sizeof(FirmwareCatalog[0]);
 constexpr auto Images = [] {
@@ -266,9 +285,10 @@ static_assert(StagingCapacity() <= StagingLimit - StagingAddress,
 inline bool VerifyImage(const std::uint8_t* bytes, std::size_t size, const Image& image,
                         const std::uint8_t* digest) {
     daisy_development::SramImageVectors vectors{};
+    const auto base = image.launch == LaunchMethod::Ram ? SELECTOR_AXI_SRAM_BASE
+                                                        : SELECTOR_APPLICATION_FLASH_BASE;
     if (digest == nullptr || size != image.size ||
-        !daisy_development::ReadImageVectors(bytes, size, 480U * 1024U, SELECTOR_AXI_SRAM_BASE,
-                                             vectors) ||
+        !daisy_development::ReadImageVectors(bytes, size, 480U * 1024U, base, vectors) ||
         vectors.stack != image.vectors.stack || vectors.reset != image.vectors.reset)
         return false;
     constexpr char hex[] = "0123456789abcdef";

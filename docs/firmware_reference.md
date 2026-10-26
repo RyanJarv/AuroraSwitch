@@ -17,6 +17,7 @@
 | Synths / Other | Red | [Tempest 1.0.0](#tempest-100--red) | Multi-bank distortion | Development |
 | Synths / Other | Azure | [FataMorgana RAM experiment](#fatamorgana-ram-experiment--azure) | Dual wavetable synthesizer | Development |
 | Reverbs | Yellow | [Aurora HP-filter variant](#aurora-hp-filter-variant--yellow) | Spectral reverb with dry-input high-pass | Development |
+| Reverbs | Pink | [Dirt Verb 1.1](#dirt-verb-11--pink) | Installs Dirt; computer required to return | Development |
 
 Current source build: **Shift** → category, **Reverse** → firmware,
 **Freeze** → verify and launch. Category colors: blue reverbs, green delays,
@@ -437,3 +438,40 @@ Other controls follow the [stock Aurora reference](#aurora-144--green).
 - RAM launch; no selector QSPI programming for this payload.
 - Changes are described in the supplied community notes. Physical behavior
   remains unverified; this is not an official Aurora release.
+
+## Dirt Verb 1.1 — Pink
+
+[Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
+
+Driven reverb with chorus and pitch shifting. **Dirt replaces the selector;
+returning requires a computer.** Use exact `DirtVerb 1.1.bin` in `aurora/`.
+Freeze verifies; a second press during alternating amber/red confirms installation
+and restart. Shift/Reverse cancels. Keep the USB root free of BINs beforehand.
+See [installation and return steps](user_guide.md#dirt-verb-install-and-restart).
+
+### Knobs
+
+| Panel knob | Function |
+| --- | --- |
+| Warp | Decay / feedback |
+| Time | Overdrive |
+| Blur | Damping |
+| Reflect | Chorus rate |
+| Mix | Dry/wet balance |
+| Atmosphere | Pitch-shifter mix |
+
+### Buttons
+
+| Button | Function |
+| --- | --- |
+| Reverse | Toggle chorus |
+| Freeze | Toggle pitch shifting |
+
+### Details and sources
+
+- The stock USB updater installs Dirt; the selector does not program flash.
+- Dirt is never an automatic selector choice. Installed Dirt boots normally.
+- Running LEDs: gold at infinite feedback; white when overdrive is bypassed;
+  red increases with drive. These differ from the selector color.
+- Controls come from community-supplied author notes. Shift/CV/gate behavior is
+  not documented there. Physical installation and recovery remain unverified.

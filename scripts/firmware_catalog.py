@@ -60,7 +60,7 @@ def validate_catalog(data: dict) -> dict:
             raise ValueError("firmware SHA-256 must have 64 lowercase hexadecimal characters")
         if not 16 <= row["bytes"] <= 480 * 1024:
             raise ValueError("firmware size is outside the supported bounds")
-        if row["execution"] != "sram":
+        if row["execution"] not in ("sram", "stock-usb-install"):
             raise ValueError("unknown firmware execution target")
         if row["availability"] not in ("Release", "Development"):
             raise ValueError("unknown firmware availability")

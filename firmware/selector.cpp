@@ -22,6 +22,9 @@ struct UsbFirmware {
     bool Ready() { return usb_initialized && usb.GetReady(); }
     bool Open(std::array<bool, aurora_selector::ImageCount>& present);
     bool Authenticate(unsigned index);
+    bool AuthenticatePath(unsigned index, const char* path);
+    bool CanInstall() { return Ready() && aurora_selector::CheckInstallRoot(); }
+    void Install(unsigned index);
     bool Launch(unsigned index);
     int BootChoice();
     bool Remember(unsigned index);
@@ -66,12 +69,29 @@ bool UsbFirmware::Open(std::array<bool, aurora_selector::ImageCount>& present) {
     return true;
 }
 bool UsbFirmware::Authenticate(unsigned index) {
-    if (!Ready() || !aurora_selector::ReadOriginal(index, staged, sizeof(staged)))
+    if (index >= aurora_selector::ImageCount)
+        return false;
+    char path[128];
+    aurora_selector::FirmwarePath(path, sizeof(path), index);
+    return AuthenticatePath(index, path);
+}
+bool UsbFirmware::AuthenticatePath(unsigned index, const char* path) {
+    if (!Ready() || !aurora_selector::ReadImageFile(path, index, staged, sizeof(staged)))
         return false;
     std::uint8_t digest[32]{};
     return mbedtls_sha256_ret(staged, aurora_selector::Images[index].size, digest, 0) == 0 &&
            aurora_selector::VerifyImage(staged, aurora_selector::Images[index].size,
                                         aurora_selector::Images[index], digest);
+}
+void UsbFirmware::Install(unsigned index) {
+    if (!aurora_selector::MoveToInstallRoot(index) ||
+        !AuthenticatePath(index, aurora_selector::InstallPath) ||
+        f_mount(nullptr, filesystem.GetUSBPath(), 0) != FR_OK)
+        return;
+    // f_rename synchronizes its directory changes before reporting success.
+    // Unmount alone does not flush or make FAT operations power-loss atomic.
+    usb.Deinit();
+    NVIC_SystemReset(); // Normal restart through stock loader; never drive BOOT pin.
 }
 int UsbFirmware::BootChoice() {
     return aurora_selector::ReadChoice();
@@ -156,6 +176,10 @@ int main() {
             case State::Loading:
                 SetStatus(GetColor(Color::Amber).rgb);
                 break;
+            case State::ConfirmInstall:
+                SetStatus(GetColor((now / 250U) % 2U ? Color::Red : Color::Amber).rgb);
+                break;
+            case State::RecoveryRequired:
             case State::Empty:
             case State::Error:
                 SetStatus(GetColor(Color::Red).rgb);

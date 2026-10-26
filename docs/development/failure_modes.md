@@ -17,8 +17,9 @@ remain in scope even when the vendor issues the instruction.
 
 We do not own unused-looking flash outside a vendor executable. The former
 bundle layout, resident Dirt wrapper and journal depended on that unsupported
-assumption. The current design installs only the selector at the stock
-application entry and keeps originals/settings on USB. Compression or shorter
+assumption. RAM selection keeps only the selector installed and originals/settings
+on USB. Dirt selection replaces the selector through the ordinary stock updater;
+it does not keep both applications resident. Compression or shorter
 images would not establish ownership or resolve Dirt's fixed flash address.
 
 ## Consequential failures
@@ -26,7 +27,7 @@ images would not establish ownership or resolve Dirt's fixed flash address.
 | Failure | Required behavior and evidence |
 | --- | --- |
 | Our initialization or dependencies program/erase flash or change protection | Avoid DaisySeed/Hardware initialization and persistent storage; initialize only System, panel and USB. Observe actual production commands before handoff, separating the stock loader baseline. No selector array/status/protection writes are allowed. Check internal-flash controller activity too. |
-| Changed, truncated, unsupported or flash-running file | Exact catalog hash, size and RAM vectors are required. Bound reads before staging. No filename-only admission and no patched vendor binaries. Reject without saving or launching. |
+| Changed, truncated, unsupported or flash-running file | Exact catalog hash, size and matching execution vectors are required. Only Dirt uses stock installation; direct handoff accepts RAM entries only. Bound reads before staging. No filename-only admission and no patched vendor binaries. Reject without saving or launching. |
 | Staged bytes change during USB/settings/peripheral cleanup | Hash staged bytes again at launch and after teardown. Reset memory-writing peripherals; verify the SRAM4 routine before replacing the selector. Post-teardown failure is terminal. |
 | USB absent, disconnected, unreadable or empty | Keep menu/error state; process USB insertion and allow Freeze retry. Never automatically substitute an image, spin on filesystem operations or retry saves. |
 | Choice file damaged, truncated or unsupported | Require exact version/size/hash/CRC; missing or invalid records open the menu. This file alone never authenticates firmware. |
@@ -35,6 +36,8 @@ images would not establish ownership or resolve Dirt's fixed flash address.
 | Handoff changes vendor persistent behavior | Preserve required clock/MPU/startup contract; reset DMA/USB and clear DMA RAM before entry. Compare stock-relative persistent commands and bytes in affected startup paths. Matching startup does not cover all later workloads. |
 | Vendor overwrites selector application area | Still review supported images for preservation of that area. RAM execution does not prove flash ownership; test startup and relevant settings/workloads against stock. Do not claim permanent selector retention from binary size alone. |
 | Installation interrupted or selector unusable | Stock USB restoration must work independently of selector/menu access. Preserve bootloader, calibration and configuration. Physical verification remains required; local updater models are only bounded evidence. |
+| Dirt file switch fails or power is lost | Require manual two-press confirmation and an empty root BIN set; authenticate before and after moving. Never overwrite conflicts. After rename attempts, stop writes on error without reset/rollback/retries. FAT moves are not atomic; computer inspection/drive backup is required. |
+| Dirt reset/update differs from ordinary stock installation | Observe selector reset request separately from stock-loader flash writes. Qualify real USB rediscovery, Dirt installation, restoration and interrupted updates physically. No resident wrapper, patched vectors or extra flash storage. |
 | Release accidentally includes originals | Package only our ELF/BIN/MAP and provenance/checksums. Release inventory must exclude vendor originals/composite installers. |
 
 ## Validation plan
@@ -44,7 +47,8 @@ images would not establish ownership or resolve Dirt's fixed flash address.
    Use negative controls for important admission and write-suppression checks.
 2. Build clean authenticated selector-only artifacts. Launch exact originals
    through the production RAM path in virtual tests; reject modified/short/
-   unsupported/flash images and post-load mutations. Observe flash commands,
+   unsupported images, flash images offered as RAM and post-load mutations.
+   Verify Dirt confirmation, file-switch failures and reset ordering separately. Observe flash commands,
    complete NOR readback and handoff vectors/stack/DMA. Filesystem boundary
    simulation must be labeled; it is not physical USB enumeration evidence.
 3. Compare vendor startup/persistent behavior with stock where the handoff may

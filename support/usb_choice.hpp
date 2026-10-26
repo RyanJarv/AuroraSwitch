@@ -18,7 +18,7 @@ inline std::uint32_t ChoiceCrc(const std::uint8_t* data, std::size_t size) {
 }
 inline ChoiceRecord EncodeChoice(unsigned index) {
     ChoiceRecord record{};
-    if (index >= ImageCount)
+    if (index >= ImageCount || Images[index].launch != LaunchMethod::Ram)
         return record;
     std::memcpy(record.data(), ChoiceMagic, 8);
     std::memcpy(record.data() + 8, Images[index].sha256, 64);
@@ -35,7 +35,8 @@ inline int DecodeChoice(const ChoiceRecord& record) {
         stored != ChoiceCrc(record.data(), record.size() - 4))
         return -1;
     for (unsigned index = 0; index < ImageCount; ++index)
-        if (std::memcmp(record.data() + 8, Images[index].sha256, 64) == 0)
+        if (Images[index].launch == LaunchMethod::Ram &&
+            std::memcmp(record.data() + 8, Images[index].sha256, 64) == 0)
             return static_cast<int>(index);
     return -1;
 }

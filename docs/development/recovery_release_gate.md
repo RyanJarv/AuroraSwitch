@@ -17,6 +17,10 @@ When separately authorized:
   behavior, supported firmware audio/buttons and absence/reinsertion of USB.
 - Verify changed USB choices persist; automatic/repeat choices do not write.
   Interrupt a choice save: invalid records must open the menu, with no loop.
+- Test Dirt confirmation/cancellation, automatic software-reset USB discovery,
+  stock installation, subsequent Dirt boot, and computer-assisted selector return.
+  Interrupt its file move and installation; inspect media and restore with the
+  ordinary stock procedure. Compare against installing Dirt directly.
 - Interrupt selector installation during representative erase/program phases.
   Restore through ordinary USB without requiring a functioning application/menu.
 - Also restore stock with an unusable selector/application; prove recovery is

@@ -9,6 +9,9 @@
 // grows downward, so that initial pointer can equal the end address.
 #define SELECTOR_DTCM_BASE 0x20000000
 #define SELECTOR_DTCM_END 0x20020000
+// Stock updater installs flash-linked applications here. Dirt uses this
+// address; the selector only validates its vectors and never writes this region.
+#define SELECTOR_APPLICATION_FLASH_BASE 0x90040000
 // Main program RAM starts here. Both the selector and RAM-loaded firmware
 // are linked to run at this AXI SRAM address (Daisy BOOT_SRAM layout).
 #define SELECTOR_AXI_SRAM_BASE 0x24000000

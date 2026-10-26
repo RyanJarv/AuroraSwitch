@@ -25,7 +25,8 @@ See [architecture](architecture.md), [tests](testing.md), [release packaging](re
 Add exact identity, RAM vectors, filename, family/category/color and source link
 in `firmware/images.hpp`; document controls in `docs/firmware_reference.md`.
 Host tools and menu derive from this catalog. Do not add per-image loading modes.
-Reject flash-running images. Inspect unknown files with
+Reject direct flash handoffs. Dirt is the sole stock-USB installation action;
+new flash-linked images need separate review before catalog admission. Inspect unknown files with
 `python3 scripts/inspect_firmware.py --execution sram /path/to/file.bin`; inspection
 measures identity but grants no support.
 

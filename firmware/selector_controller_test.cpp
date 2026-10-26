@@ -4,6 +4,14 @@ struct Media {
     std::array<bool, aurora_selector::ImageCount> present{};
     bool ready = true, reject = false, fail_remember = false, fail_launch = false;
     int saved = -1;
+    bool root_valid = true, fail_install = false;
+    unsigned installs = 0, resets = 0;
+    bool CanInstall() { return root_valid; }
+    void Install(unsigned) {
+        ++installs;
+        if (!fail_install)
+            ++resets;
+    }
     unsigned opens = 0, auth = 0, launches = 0, writes = 0, warnings = 0, last = 0;
     bool Ready() const { return ready; }
     bool Open(std::array<bool, aurora_selector::ImageCount>& installed) {
@@ -151,4 +159,56 @@ int main() {
     assert(empty.opens == 2 && empty.launches == 0);
     tick(none, false, false, true);
     assert(empty.launches == 1);
+    // Installation is a manual two-press action, never a remembered RAM launch.
+    const unsigned dirt = aurora_selector::ImageCount - 1;
+    for (bool fail : {false, true}) {
+        Media install;
+        install.present[dirt] = true;
+        install.saved = dirt; // Even a forged saved entry cannot auto-install.
+        install.fail_install = fail;
+        Controller pick(install);
+        tick(pick);
+        assert(install.auth == 0 && install.installs == 0);
+        tick(pick, false, false, true);
+        assert(pick.GetState() == Controller::State::ConfirmInstall);
+        for (unsigned idle = 0; idle < 100; ++idle)
+            tick(pick);
+        assert(install.auth == 1 && install.installs == 0);
+        tick(pick, false, false, true);
+        assert(install.auth == 2 && install.installs == 1 && install.resets == !fail);
+        assert(install.writes == 0 && install.launches == 0 && install.saved == int(dirt));
+        for (unsigned retry = 0; retry < 100; ++retry)
+            tick(pick, true, true, true);
+        install.ready = false;
+        tick(pick);
+        install.ready = true;
+        tick(pick, false, false, true);
+        assert(install.installs == 1); // No retry even after reconnection.
+    }
+    for (unsigned cancel = 0; cancel < 3; ++cancel) {
+        Media install;
+        install.present[dirt] = true;
+        Controller pick(install);
+        tick(pick);
+        tick(pick, false, false, true);
+        if (cancel < 2)
+            tick(pick, cancel == 0, cancel == 1);
+        else {
+            install.ready = false;
+            tick(pick);
+            install.ready = true;
+            tick(pick);
+        }
+        tick(pick, false, false, true);
+        assert(install.installs == 0 && pick.GetState() == Controller::State::ConfirmInstall);
+        install.root_valid = false;
+        tick(pick, false, false, true);
+        assert(install.installs == 0 && pick.GetState() == Controller::State::Error);
+        install.root_valid = true;
+        tick(pick, false, false, true);
+        assert(install.installs == 0 && pick.GetState() == Controller::State::ConfirmInstall);
+        install.reject = true;
+        tick(pick, false, false, true);
+        assert(install.installs == 0 && pick.GetState() == Controller::State::Error);
+    }
 }

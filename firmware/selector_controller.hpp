@@ -7,7 +7,7 @@ namespace aurora_selector {
 // An explicit menu action cancels the one automatic boot attempt.
 template <class Firmware> class SelectorController {
   public:
-    enum class State { Empty, Selected, Loading, Error };
+    enum class State { Empty, Selected, Loading, Error, ConfirmInstall, RecoveryRequired };
     explicit SelectorController(Firmware& firmware) : firmware_(firmware), menu_(Categories) {}
     void RequestMenu() { boot_pending_ = false; }
     State GetState() const { return state_; }
@@ -16,6 +16,10 @@ template <class Firmware> class SelectorController {
 
     template <class Loading>
     void Update(bool category_changed, bool selection_changed, bool load_pressed, Loading loading) {
+        // A directory mutation may have partially succeeded. Require computer
+        // inspection, even after reinsertion; this session cannot retry writes.
+        if (state_ == State::RecoveryRequired)
+            return;
         if (category_changed || selection_changed || load_pressed)
             RequestMenu();
         if (!firmware_.Ready()) {
@@ -40,7 +44,8 @@ template <class Firmware> class SelectorController {
             if (boot_pending_) {
                 boot_pending_ = false;
                 const auto saved = firmware_.BootChoice();
-                automatic = saved >= 0 && menu_.Select(saved);
+                automatic = saved >= 0 && static_cast<unsigned>(saved) < ImageCount &&
+                            Images[saved].launch == LaunchMethod::Ram && menu_.Select(saved);
             }
             state_ = menu_.HasSelection() ? State::Selected : State::Empty;
             // Freeze on an empty/error screen rescans; it must not launch an
@@ -62,11 +67,27 @@ template <class Firmware> class SelectorController {
         if (!load_pressed && !automatic)
             return;
 
+        const bool confirmed = state_ == State::ConfirmInstall;
         state_ = State::Loading;
         loading();
         const auto selected = Selected();
         if (!firmware_.Authenticate(selected)) {
             state_ = State::Error;
+            return;
+        }
+        if (Images[selected].launch == LaunchMethod::StockUsbInstall) {
+            if (!firmware_.CanInstall()) {
+                state_ = State::Error;
+                return;
+            }
+            if (!confirmed) {
+                state_ = State::ConfirmInstall;
+                return;
+            }
+            // Install owns the rename, destination authentication and reset.
+            // Any return is terminal for writes, including a failed rename.
+            state_ = State::RecoveryRequired;
+            firmware_.Install(selected);
             return;
         }
         // Running now and remembering the next boot are separate actions.

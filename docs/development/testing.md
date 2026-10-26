@@ -7,6 +7,7 @@ make check
 make test-sanitize
 make build
 make verify-images FIRMWARE_DIR=/path/to/private/originals
+python3 scripts/check_fatfs_install.py
 make package
 ```
 
@@ -15,10 +16,16 @@ source and pinned dependencies, checks ELF/BIN identity and records tool/file
 hashes. It never installs firmware or packages vendor originals.
 
 Native tests use the production controller, USB file operations, choice codec,
-menu and handoff sequence. The FatFs test boundary supplies in-memory files and
+menu and handoff sequence. Dirt tests cover two-press confirmation, cancellation,
+root conflicts/aliases, rename failures, destination authentication and reset
+ordering. A disposable FAT image exercises the pinned FatFs rename code. The FatFs test boundary supplies in-memory files and
 read/write/sync/close/disconnect failures; it does not emulate a USB controller.
 Tests cover bounded reads, corrupt records, changed/repeat saves, no automatic
 save/retry loops, missing firmware and cleanup-time staged-byte rejection.
+The real-FatFs check needs the pinned SDK, native C/C++ compilers and `mkfs.fat`.
+It uses an ordinary temporary file, never mounted media. It compiles the pinned
+filesystem code with ARM-compatible integer widths on the host.
+
 Three mutation controls remove CRC checking, repeat suppression or save readback;
 the corresponding native assertions must fail. The exact-image authenticator
 also checks user-supplied originals locally.
@@ -27,7 +34,8 @@ Virtual integration code and commands belong in their owning repository.
 Production-binary execution with modeled filesystem calls must be distinguished
 from USB enumeration/mass-storage interoperability. Require no selector flash
 program/erase/status/protection writes and unchanged on-module contents before
-vendor entry; stock loader activity is a separate baseline.
+vendor entry or the Dirt reset request; subsequent stock installation activity
+is separate from selector behavior.
 
 ## Browser checks
 

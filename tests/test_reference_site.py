@@ -117,7 +117,10 @@ class ReferenceSiteTests(unittest.TestCase):
             "renderer-sha256": hashlib.sha256(
                 (ROOT / "scripts/render_reference.py").read_bytes()
                 + json.dumps(
-                    read_catalog(), sort_keys=True, separators=(",", ":"), ensure_ascii=False
+                    read_catalog(),
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    ensure_ascii=False,
                 ).encode()
             ).hexdigest(),
             "quickstart-sha256": hashlib.sha256(
@@ -130,7 +133,9 @@ class ReferenceSiteTests(unittest.TestCase):
                     self.assertEqual(parser.metadata.get(key), digest, "Run make reference-html")
                 style_digest = hashlib.sha256((SITE / "style.css").read_bytes()).hexdigest()
                 self.assertIn(
-                    f"style.css?v={style_digest}", parser.links, "Run make reference-html"
+                    f"style.css?v={style_digest}",
+                    parser.links,
+                    "Run make reference-html",
                 )
 
     def test_links_and_fragments_resolve_on_every_page(self):
@@ -152,7 +157,7 @@ class ReferenceSiteTests(unittest.TestCase):
     def test_index_has_grouped_firmware_and_compact_install_directions(self):
         parser = self.pages["index.html"]
         self.assertEqual(parser.swatches, self.navigation_swatches * 3 // 2)
-        self.assertEqual(len(self.entries), 13)
+        self.assertEqual(len(self.entries), 14)
         page = (SITE / "index.html").read_text()
         body = re.search(r'<main id="main">\n(.*?)\n</main>', page, re.S)[1]
         self.assertIn('id="quick-start"', body)
@@ -183,7 +188,7 @@ class ReferenceSiteTests(unittest.TestCase):
         fata = [entry for entry in self.entries if "FataMorgana" in entry.name]
         self.assertEqual(len(fata), 1)
         self.assertIn("RAM", fata[0].name)
-        self.assertFalse((SITE / "dirt-verb-11.html").exists())
+        self.assertIn("returning requires a computer", (SITE / "dirt-verb-11.html").read_text())
 
     def test_firmware_pages_have_control_headings_and_version_labels(self):
         for section in self.sections:
@@ -200,7 +205,8 @@ class ReferenceSiteTests(unittest.TestCase):
                 self.assertNotIn('class="back-link"', page)
                 self.assertEqual(parser.swatches, self.navigation_swatches + 2)
                 self.assertIn(
-                    f"{swatch(CATEGORIES[entries[0].category])}{entries[0].category}</span>", page
+                    f"{swatch(CATEGORIES[entries[0].category])}{entries[0].category}</span>",
+                    page,
                 )
                 for heading in re.findall(r"^### (.+)$", section.markdown, re.M):
                     self.assertIn(slug(heading), parser.ids)
@@ -245,7 +251,8 @@ class ReferenceSiteTests(unittest.TestCase):
     def test_control_descriptions_and_caveats_are_preserved(self):
         self.assertIn("Mix is not dry/wet.", (SITE / "tempest-100.html").read_text())
         self.assertIn(
-            "USB table loading remains", (SITE / "fatamorgana-ram-experiment.html").read_text()
+            "USB table loading remains",
+            (SITE / "fatamorgana-ram-experiment.html").read_text(),
         )
         self.assertIn(
             "not been independently verified",
@@ -308,7 +315,8 @@ class ReferenceSiteTests(unittest.TestCase):
         self.assertEqual({item.get("x") for item in knobs[1::2]}, {knobs[1].get("x")})
         self.assertLess(float(knobs[0].get("x")), float(knobs[1].get("x")))
         self.assertEqual(
-            [float(item.get("y")) for item in knobs], sorted(float(item.get("y")) for item in knobs)
+            [float(item.get("y")) for item in knobs],
+            sorted(float(item.get("y")) for item in knobs),
         )
         for name in PANEL_CONTROLS:
             self.assertIn(name, " ".join(panel.itertext()))
@@ -337,7 +345,8 @@ class ReferenceSiteTests(unittest.TestCase):
         # Consume the real export rather than parsing C++ source text.
         images = read_catalog()["images"]
         self.assertEqual(
-            [entry.category for entry in self.entries], [row["category"] for row in images]
+            [entry.category for entry in self.entries],
+            [row["category"] for row in images],
         )
         self.assertEqual([entry.color for entry in self.entries], [row["color"] for row in images])
         family_pages = {

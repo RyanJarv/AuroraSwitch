@@ -38,7 +38,7 @@ class FirmwareCatalogTests(unittest.TestCase):
             lambda d: d["images"][0].update(sha256="invalid"),
             lambda d: d["images"][0].update(download="http://unsafe.example/image.bin"),
             lambda d: d["images"][7].update(color="Blue", rgb=[0, 0, 0.4]),
-            lambda d: d["images"][0].update(execution="qspi"),
+            lambda d: d["images"][0].update(execution="unknown"),
         )
         for mutate in mutations:
             data = copy.deepcopy(original)
@@ -87,7 +87,7 @@ class FirmwareCatalogTests(unittest.TestCase):
                     catalog = firmware_catalog.read_catalog()
             finally:
                 firmware_catalog.read_catalog.cache_clear()
-            self.assertEqual(len(catalog["images"]), 14)
+            self.assertEqual(len(catalog["images"]), 15)
             self.assertEqual(catalog["staging_capacity"], 200000)
             self.assertEqual(catalog["images"][-1]["category"], "Delays")
             self.assertEqual(catalog["images"][-1]["rgb"], [0, 0, 0.4])
@@ -115,7 +115,8 @@ class FirmwareCatalogTests(unittest.TestCase):
                 sections, entries = render_reference.read_reference(updated)
                 self.assertEqual(entries[-1].name, "Synthetic v1")
                 self.assertIn(
-                    "synthetic.html", render_reference.navigation(sections, entries, "index.html")
+                    "synthetic.html",
+                    render_reference.navigation(sections, entries, "index.html"),
                 )
                 with self.assertRaisesRegex(ValueError, "differs from compiled catalog"):
                     render_reference.read_reference(

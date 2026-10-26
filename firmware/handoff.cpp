@@ -108,6 +108,8 @@ bool LaunchFirmware(daisy::DaisySeed& seed, unsigned index, const std::uint8_t* 
     if (index >= ImageCount)
         return false;
     const auto& image = Images[index];
+    if (image.launch != LaunchMethod::Ram)
+        return false;
     // PrepareAndJump authenticates staged bytes before and after cleanup.
     Platform platform{seed, image, staged};
     return PrepareAndJump(platform);

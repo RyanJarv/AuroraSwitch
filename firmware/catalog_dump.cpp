@@ -69,7 +69,7 @@ int main() {
         text(image.sha256);
         std::cout << ",\"stack\":" << image.vectors.stack << ",\"reset\":" << image.vectors.reset;
         std::cout << ",\"execution\":";
-        text("sram");
+        text(image.launch == LaunchMethod::Ram ? "sram" : "stock-usb-install");
         std::cout << '}';
     }
     std::cout << "]}\n";
