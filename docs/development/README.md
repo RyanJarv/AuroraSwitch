@@ -16,6 +16,22 @@ source and pinned dependencies, seals only our ELF/BIN/MAP and manifest under
 `dist/<manifest-sha256>/`, and checks source drift. It creates no Git worktree
 and performs no installation. Generated reports stay ignored.
 
+For a native build, select the compiler before running `make`, for example:
+
+```sh
+export PATH="/path/to/gcc-arm-none-eabi-10-2020-q4-major/bin:$PATH"
+make
+```
+
+`make build` also accepts `GCC_PATH=/path/to/toolchain/bin`; both the SDK and
+selector use that directory. Homebrew's compiler-only installation may lack
+target headers such as `stdint.h`. Use the complete supported toolchain, or
+build with the pinned Docker environment:
+
+```sh
+sh scripts/docker_build.sh make build
+```
+
 See [architecture](architecture.md), [tests](testing.md), [release packaging](releases.md),
 [USB choice](persistent_boot.md), [failure priorities](failure_modes.md) and the
 [physical gate](recovery_release_gate.md).

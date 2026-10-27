@@ -1,5 +1,8 @@
 # Build and test the selector; module installation remains manual.
-.PHONY: all build setup dependencies test test-sanitize check verify-images package fata-ram-probe help reference-html
+.PHONY: all build setup dependencies check-toolchain test test-sanitize check verify-images package fata-ram-probe help reference-html
+# Use the same compiler directory for the SDK and selector sub-makes.
+GCC_PATH ?= $(shell dirname "$$(command -v arm-none-eabi-gcc)")
+export GCC_PATH
 all: build
 reference-html:
 	python3 scripts/render_reference.py
@@ -7,7 +10,13 @@ build: dependencies
 	$(MAKE) -C firmware BUILD_DIR=build-experimental-dma
 setup:
 	python3 scripts/setup_dependencies.py
-dependencies: setup
+check-toolchain:
+	@"$(GCC_PATH)/arm-none-eabi-gcc" --version 2>/dev/null | grep -q '10-2020-q4-major' || { \
+		echo 'GNU Arm 10-2020-q4-major required. Put its bin directory first on PATH or set GCC_PATH.' >&2; \
+		echo 'Alternatively: sh scripts/docker_build.sh make build' >&2; \
+		exit 1; \
+	}
+dependencies: check-toolchain setup
 	$(MAKE) -C .deps/Aurora-SDK/libs/libDaisy
 test:
 	python3 -m unittest discover -s tests -v
