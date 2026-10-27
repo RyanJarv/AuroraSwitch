@@ -1,9 +1,13 @@
 # Build and test the selector; module installation remains manual.
-.PHONY: all build setup dependencies check-toolchain test test-sanitize check verify-images package fata-ram-probe help reference-html
+.PHONY: all build setup dependencies check-toolchain test test-sanitize check verify-images package fata-ram-probe help reference-html dev
 # Use the same compiler directory for the SDK and selector sub-makes.
 GCC_PATH ?= $(shell dirname "$$(command -v arm-none-eabi-gcc)")
 export GCC_PATH
+HOST ?= 127.0.0.1
+PORT ?= 8000
 all: build
+dev:
+	python3 -m http.server "$(PORT)" --bind "$(HOST)" --directory site
 reference-html:
 	python3 scripts/render_reference.py
 build: dependencies
@@ -31,4 +35,4 @@ package:
 fata-ram-probe:
 	python3 scripts/build_fatamorgana.py
 help:
-	@printf '%s\n' 'make check' 'make build' 'make package'
+	@printf '%s\n' 'make check' 'make build' 'make package' 'make dev (http://127.0.0.1:8000; override HOST/PORT as needed)'

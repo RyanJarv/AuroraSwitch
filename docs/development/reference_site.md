@@ -3,6 +3,19 @@
 GitHub Pages serves the checked-in files in `site/`: no Jekyll or deployment-time
 build. Firmware and evidence are not uploaded.
 
+Preview the checked-in site locally:
+
+```sh
+make dev
+```
+
+Open <http://127.0.0.1:8000/>; stop the server with Ctrl+C. Override the port
+with `make dev PORT=8080`. For access from the host browser when running in a
+VM, use `make dev HOST=0.0.0.0` and open the VM's IP address on that port.
+This serves only `site/` and needs no SDK, compiler, GitHub login or network.
+After editing the Markdown or renderer, regenerate with `make reference-html`
+and refresh the browser. CSS changes are served directly.
+
 The home page groups firmware into blue Reverbs, green Delays, and amber
 Synths / Other. Firmware pages share the same grouped sidebar/mobile directory.
 The startup strip labels Shift, Reverse, and Freeze directly; firmware colors
