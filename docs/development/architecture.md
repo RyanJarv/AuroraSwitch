@@ -15,7 +15,7 @@ See [How it works](../how_it_works.md) for the design and memory contract.
 | `support/selector_constants.h` | Shared hardware bounds and binary-format constants |
 | `scripts/package.py`, `scripts/sealed_bundle.py` | Reproducible selector-only build and authentication |
 
-Dirt uses a checked USB rename and normal reset to delegate installation to the
+Dirt uses checked USB backup/text creation, a verified copy and normal reset to delegate installation to the
 stock updater. It never uses the RAM handoff or selector flash programming.
 
 The linker reserves staging and SRAM4. USB/FatFs transfer buffers use the DMA

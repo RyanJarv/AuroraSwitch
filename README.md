@@ -13,9 +13,8 @@ Switch RAM firmware without a computer.
 1. Build `AuroraSwitch.bin` with `make package` ([build setup](docs/development/README.md)).
 2. Back up a FAT32 USB drive. Put the selector BIN at its root as the only root BIN.
    Follow the stock USB installation procedure.
-3. Remove the root installer after installation, or rename it to `AuroraSwitch.img`
-   to keep it for later restoration. Put exact supported originals
-   in an `aurora/` folder on that drive, using their catalog filenames.
+3. Put exact supported originals in an `aurora/` folder on that drive, using
+   their catalog filenames. The selector installer can stay at the root.
 4. Keep the drive connected and restart. Select and launch firmware from the menu.
 
 ### Select firmware
@@ -33,11 +32,12 @@ reconnect the drive and press Freeze to retry.
 
 **Dirt Verb replaces the selector; returning requires a computer.** Select Dirt
 and press Freeze to verify. Alternating amber/red Freeze asks for a second press
-to move Dirt to the USB root and restart into the stock updater. Shift or Reverse
-cancels. The USB root must contain no BIN files before confirming.
-To return, use a computer to move root `DIRTVERB.BIN` back to
-`aurora/DirtVerb 1.1.bin`, then rename `AuroraSwitch.img` to `AuroraSwitch.bin`
-(or copy a fresh selector installer) and restart. Dirt is never an automatic
+to copy Dirt to the USB root and restart into the stock updater. Shift or Reverse
+cancels. The switch preserves the selector as `AuroraSwitch.disabled`, leaves
+Dirt's original in `aurora/`, and writes `RETURN TO AURORASWITCH.txt` at the root.
+Other root BINs or conflicting backup/instruction files block the switch.
+To return on a computer: delete `DIRTVERB.BIN`, then rename `AuroraSwitch.disabled`
+to `AuroraSwitch.bin`. Safely eject and restart. Dirt is never an automatic
 selector choice; your previous RAM choice stays remembered.
 
 To restore stock firmware, use its original BIN as the only root BIN and follow

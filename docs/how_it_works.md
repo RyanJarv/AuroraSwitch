@@ -34,19 +34,32 @@ selector delegates installation to the stock updater. Two separate Freeze
 presses authenticate/confirm the action. Navigation or disconnection cancels.
 Dirt is neither saved as a boot choice nor automatically installed.
 
-The concrete FatFs path rejects root BIN conflicts (including short-name aliases
-and case-insensitive substring matches), moves `aurora/DirtVerb 1.1.bin` to
-`DIRTVERB.BIN`, checks the source is absent, verifies the complete destination and
-sole-root-BIN invariant, then unmounts, stops USB and requests a normal MCU reset.
-The stock bootloader programs Dirt over the installed selector. Computer file
-changes are required to reinstall the selector. No other flash space is claimed.
+The concrete FatFs path permits a root `AuroraSwitch.bin` only when it matches
+our entire installed image byte-for-byte. Its size comes from the pinned SRAM
+linker's initialized-data extent. The selector reads its original from the stock
+application flash mapping, never its mutable running RAM; it issues no flash commands.
+It rejects other root BINs, including case-insensitive substring/short-name matches.
 
-`f_rename` synchronizes metadata before returning success; unmount alone does not
-flush. The pinned USB disk driver treats `CTRL_SYNC` as success without an extra
-device cache flush, so neither checked results nor readback prove power-loss
-durability. After any rename attempt, a failure latches a red error for the rest
-of the session, with no reset, rollback or write retry. Inspect the drive on a
-computer. Software-reset discovery and physical recovery remain unqualified.
+Only after confirmation does it rename that exact installer to
+`AuroraSwitch.disabled`. If the installer was removed, it writes the installed
+image to a new backup instead. Existing backup/text files must match exactly and
+must not be hidden; files are never overwritten. It writes the short
+`RETURN TO AURORASWITCH.txt` instructions, reloads/authenticates Dirt after using
+the staging buffer as scratch, then copies its bytes to a new `DIRTVERB.BIN`.
+The original stays in `aurora/`. Complete destination authentication and the
+sole-root-BIN check precede unmount, USB shutdown and normal MCU reset.
+
+The stock updater replaces the selector with Dirt. To return, delete the root
+Dirt copy and rename the disabled selector back to `AuroraSwitch.bin` on a
+computer. No other on-module flash space is claimed.
+
+Rename synchronizes metadata; new files check every write, sync, close and full
+readback. Unmount alone does not flush. The pinned disk driver's `CTRL_SYNC`
+does not issue a device cache flush, so checked results do not establish
+power-loss durability. Any failed write/rename/readback after entering the
+confirmed operation latches a red error, with no reset, rollback or write retry.
+Inspect the drive on a computer. Software-reset discovery and physical recovery
+remain unqualified.
 
 ## RAM handoff
 

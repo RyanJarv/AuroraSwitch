@@ -16,7 +16,7 @@ template <class Firmware> class SelectorController {
 
     template <class Loading>
     void Update(bool category_changed, bool selection_changed, bool load_pressed, Loading loading) {
-        // A directory mutation may have partially succeeded. Require computer
+        // A file operation may have partially succeeded. Require computer
         // inspection, even after reinsertion; this session cannot retry writes.
         if (state_ == State::RecoveryRequired)
             return;
@@ -84,8 +84,8 @@ template <class Firmware> class SelectorController {
                 state_ = State::ConfirmInstall;
                 return;
             }
-            // Install owns the rename, destination authentication and reset.
-            // Any return is terminal for writes, including a failed rename.
+            // Install owns the USB backups/copy, destination authentication and reset.
+            // Any return is terminal for writes, including a failed create or rename.
             state_ = State::RecoveryRequired;
             firmware_.Install(selected);
             return;

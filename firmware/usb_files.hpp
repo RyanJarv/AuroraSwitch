@@ -54,6 +54,22 @@ inline bool ReadOriginal(unsigned index, std::uint8_t* staged, std::size_t capac
 }
 
 constexpr const char* InstallPath = "0:/DIRTVERB.BIN";
+constexpr const char* SelectorPath = "0:/AuroraSwitch.bin";
+constexpr const char* SelectorBackupPath = "0:/AuroraSwitch.disabled";
+constexpr const char* ReturnPath = "0:/RETURN TO AURORASWITCH.txt";
+constexpr char ReturnInstructions[] =
+    "Delete DIRTVERB.BIN, then rename AuroraSwitch.disabled to AuroraSwitch.bin.\r\n"
+    "Safely eject and restart.\r\n";
+
+inline bool SameFilename(const char* left, const char* right) {
+    for (; *left && *right; ++left, ++right) {
+        const auto fold = [](char c) { return c >= 'A' && c <= 'Z' ? c + ('a' - 'A') : c; };
+        if (fold(*left) != fold(*right))
+            return false;
+    }
+    return *left == *right;
+}
+enum class InstallRoot { Empty, SelectorAllowed, DirtOnly };
 // The stock loader matches substrings, not just filename extensions. Be more
 // conservative about case and hidden files, and inspect 8.3 aliases as well.
 inline bool IsBinName(const char* name) {
@@ -64,7 +80,7 @@ inline bool IsBinName(const char* name) {
     }
     return false;
 }
-inline bool CheckInstallRoot(bool installed = false) {
+inline bool CheckInstallRoot(InstallRoot state = InstallRoot::Empty) {
     DIR directory{};
     if (f_opendir(&directory, "0:/") != FR_OK)
         return false;
@@ -81,37 +97,118 @@ inline bool CheckInstallRoot(bool installed = false) {
             break;
         if (!(info.fattrib & AM_DIR) && (IsBinName(info.fname) || IsBinName(info.altname))) {
             ++matches;
-            if (!installed || (info.fattrib & AM_HID) ||
-                std::strcmp(info.fname, "DIRTVERB.BIN") != 0) {
+            const char* allowed =
+                state == InstallRoot::DirtOnly ? "DIRTVERB.BIN" : "AuroraSwitch.bin";
+            if (state == InstallRoot::Empty || (info.fattrib & AM_HID) ||
+                !SameFilename(info.fname, allowed)) {
                 valid = false;
                 break;
             }
         }
     }
-    return f_closedir(&directory) == FR_OK && valid && matches == (installed ? 1U : 0U);
+    return f_closedir(&directory) == FR_OK && valid &&
+           (state == InstallRoot::DirtOnly ? matches == 1U : matches <= 1U);
 }
 inline bool CheckInstallFiles(unsigned index) {
     if (index >= ImageCount || Images[index].launch != LaunchMethod::StockUsbInstall ||
-        !CheckInstallRoot())
+        !CheckInstallRoot(InstallRoot::SelectorAllowed))
         return false;
     char source[128];
     FirmwarePath(source, sizeof(source), index);
     FILINFO info{};
-    // Rename preserves attributes. A hidden original would be ignored by the
-    // stock loader after moving, so refuse it before changing the directory.
+    // Keep the supported source visible and refuse directories before any
+    // confirmed operation changes the drive.
     return f_stat(source, &info) == FR_OK && !(info.fattrib & (AM_DIR | AM_HID));
 }
-// Once rename is attempted, its failure can leave directory changes behind.
-// The controller latches that boundary; never roll back or retry automatically.
-inline bool MoveToInstallRoot(unsigned index) {
-    if (index >= ImageCount || Images[index].launch != LaunchMethod::StockUsbInstall)
+// Read a complete file and compare it byte-for-byte with a known local copy.
+// The caller supplies DMA-accessible scratch; no filesystem transfer uses DTCM.
+inline bool MatchesFile(const char* path, const std::uint8_t* expected, std::size_t size,
+                        std::uint8_t* scratch, std::size_t capacity) {
+    if (!expected || !scratch || !size || !capacity || f_open(&usb_file, path, FA_READ) != FR_OK)
         return false;
-    char source[128];
-    FirmwarePath(source, sizeof(source), index);
-    if (f_rename(source, InstallPath) != FR_OK)
-        return false;
+    bool valid = f_size(&usb_file) == size;
+    for (std::size_t offset = 0; valid && offset < size;) {
+        const auto count =
+            static_cast<UINT>(std::min({size - offset, capacity, std::size_t(4096)}));
+        UINT read = 0;
+        valid = f_read(&usb_file, scratch, count, &read) == FR_OK && read == count &&
+                std::memcmp(scratch, expected + offset, count) == 0;
+        offset += count;
+    }
+    return f_close(&usb_file) == FR_OK && valid;
+}
+inline bool VisibleFile(const char* path) {
     FILINFO info{};
-    return f_stat(source, &info) == FR_NO_FILE && CheckInstallRoot(true);
+    return f_stat(path, &info) == FR_OK && !(info.fattrib & (AM_DIR | AM_HID));
+}
+inline bool MissingFile(const char* path) {
+    FILINFO info{};
+    return f_stat(path, &info) == FR_NO_FILE;
+}
+// Never replace an existing file. Sync and close before any subsequent readback.
+inline bool WriteNewFile(const char* path, const std::uint8_t* bytes, std::size_t size,
+                         std::uint8_t* scratch, std::size_t capacity) {
+    if (!bytes || !scratch || !size || !capacity ||
+        f_open(&usb_file, path, FA_WRITE | FA_CREATE_NEW) != FR_OK)
+        return false;
+    bool valid = true;
+    for (std::size_t offset = 0; valid && offset < size;) {
+        const auto count =
+            static_cast<UINT>(std::min({size - offset, capacity, std::size_t(4096)}));
+        if (scratch != bytes + offset)
+            std::memmove(scratch, bytes + offset, count);
+        UINT written = 0;
+        valid = f_write(&usb_file, scratch, count, &written) == FR_OK && written == count;
+        offset += count;
+    }
+    valid = valid && f_sync(&usb_file) == FR_OK;
+    return f_close(&usb_file) == FR_OK && valid;
+}
+inline const std::uint8_t* ReturnBytes() {
+    return reinterpret_cast<const std::uint8_t*>(ReturnInstructions);
+}
+// Only our exact installed selector may be renamed. A different backup or text
+// file is a conflict; nothing is overwritten, even if its name looks familiar.
+inline bool CheckReturnFiles(const std::uint8_t* selector, std::size_t size, std::uint8_t* scratch,
+                             std::size_t capacity) {
+    if (!CheckInstallRoot(InstallRoot::SelectorAllowed))
+        return false;
+    if (!MissingFile(SelectorPath)) {
+        if (!MissingFile(SelectorBackupPath) ||
+            !MatchesFile(SelectorPath, selector, size, scratch, capacity))
+            return false;
+    } else if (!MissingFile(SelectorBackupPath) &&
+               (!VisibleFile(SelectorBackupPath) ||
+                !MatchesFile(SelectorBackupPath, selector, size, scratch, capacity))) {
+        return false;
+    }
+    return MissingFile(ReturnPath) ||
+           (VisibleFile(ReturnPath) &&
+            MatchesFile(ReturnPath, ReturnBytes(), sizeof(ReturnInstructions) - 1, scratch,
+                        capacity));
+}
+// Called only after confirmation and the controller's terminal-write boundary.
+// If the installer was removed, save a copy of the installed image instead.
+// Any failed rename/write/readback stops the operation without rollback/reset.
+inline bool PrepareReturnFiles(const std::uint8_t* selector, std::size_t size,
+                               std::uint8_t* scratch, std::size_t capacity) {
+    if (!CheckReturnFiles(selector, size, scratch, capacity))
+        return false;
+    if (!MissingFile(SelectorPath)) {
+        if (f_rename(SelectorPath, SelectorBackupPath) != FR_OK || !MissingFile(SelectorPath))
+            return false;
+    } else if (MissingFile(SelectorBackupPath) &&
+               !WriteNewFile(SelectorBackupPath, selector, size, scratch, capacity)) {
+        return false;
+    }
+    if (!MatchesFile(SelectorBackupPath, selector, size, scratch, capacity))
+        return false;
+    if (MissingFile(ReturnPath) &&
+        !WriteNewFile(ReturnPath, ReturnBytes(), sizeof(ReturnInstructions) - 1, scratch, capacity))
+        return false;
+    return MatchesFile(ReturnPath, ReturnBytes(), sizeof(ReturnInstructions) - 1, scratch,
+                       capacity) &&
+           CheckInstallRoot();
 }
 
 inline int ReadChoice() {

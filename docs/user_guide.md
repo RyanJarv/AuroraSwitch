@@ -8,8 +8,7 @@ build still needs physical installation, handoff and stock recovery qualificatio
 1. Build `AuroraSwitch.bin` with `make package` ([build setup](development/README.md)).
 2. Back up a FAT32 USB drive. Put that selector BIN at the root as the only root BIN.
 3. Safely eject, insert into Aurora, then follow the ordinary stock USB update procedure.
-4. After installation, remove `AuroraSwitch.bin` from the root, or rename it
-   `AuroraSwitch.img` to keep a restoration copy. Create `aurora/`
+4. Leave `AuroraSwitch.bin` at the root. Create `aurora/`
    and put supported original firmware BINs there with their exact catalog filenames.
 5. Keep the drive connected for firmware selection and automatic boot.
 
@@ -47,13 +46,17 @@ New versions need review before entering the catalog.
 
 **Dirt replaces the selector; returning requires a computer.**
 
-Put the exact `DirtVerb 1.1.bin` in `aurora/`. Leave no BIN files in the USB root;
-`AuroraSwitch.img` is an optional inactive backup. Dirt must not be a hidden file. Names such as
-`AuroraSwitch.bin.disabled` still count as BIN files and must be removed.
+Put the exact `DirtVerb 1.1.bin` in `aurora/`. The root `AuroraSwitch.bin` may
+stay: the selector verifies it and renames it to `AuroraSwitch.disabled` when
+switching. If the installer was removed, the selector saves its installed image
+under that name instead. Other root BINs and conflicting backup/instruction
+files block the switch. Dirt must not be hidden. Names such as
+`AuroraSwitch.bin.disabled` still count as active BIN files.
 
 Select Dirt (pink, Reverbs) and press Freeze to verify. When Freeze alternates
 amber/red, press Freeze again to confirm, or Shift/Reverse to cancel. The selector
-moves Dirt to root `DIRTVERB.BIN`, verifies it there, and restarts. The stock
+preserves its own installer, writes `RETURN TO AURORASWITCH.txt`, copies Dirt to
+root `DIRTVERB.BIN`, verifies it there, and restarts. Dirt's original stays in `aurora/`. The stock
 bootloader installs Dirt, replacing the selector. Do not remove USB or power
 while switching/installing. Dirt then boots normally, including without USB.
 Your remembered RAM choice is unchanged; the selector never automatically
@@ -65,11 +68,13 @@ leave damaged directory entries; keep the drive backed up.
 
 To return to AuroraSwitch, use a computer:
 
-1. Move root `DIRTVERB.BIN` back to `aurora/DirtVerb 1.1.bin`.
-2. Rename `AuroraSwitch.img` to `AuroraSwitch.bin`, or copy a fresh installer to
-   the root. It must be the only root BIN.
-3. Restart using the stock USB update procedure. Remove or rename the root
-   installer afterward. Your previous valid RAM choice can automatically boot.
+1. Delete root `DIRTVERB.BIN`.
+2. Rename `AuroraSwitch.disabled` to `AuroraSwitch.bin`.
+3. Safely eject and restart using the stock USB update procedure.
+
+These steps are also in `RETURN TO AURORASWITCH.txt` on the drive. Keep only one
+active root BIN. Your previous RAM choice may start automatically after restoration;
+hold Shift + Reverse at power-on to open the menu.
 
 Software-reset USB discovery, Dirt installation and interrupted-update recovery
 remain physically unqualified. If the automatic restart does not discover USB,

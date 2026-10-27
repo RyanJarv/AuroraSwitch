@@ -17,8 +17,8 @@ hashes. It never installs firmware or packages vendor originals.
 
 Native tests use the production controller, USB file operations, choice codec,
 menu and handoff sequence. Dirt tests cover two-press confirmation, cancellation,
-root conflicts/aliases, rename failures, destination authentication and reset
-ordering. A disposable FAT image exercises the pinned FatFs rename code. The FatFs test boundary supplies in-memory files and
+root conflicts/aliases, exact selector backups, checked copy/text creation, failures, destination authentication and reset
+ordering. A disposable FAT image exercises the pinned FatFs backup/copy and restoration operations. The FatFs test boundary supplies in-memory files and
 read/write/sync/close/disconnect failures; it does not emulate a USB controller.
 Tests cover bounded reads, corrupt records, changed/repeat saves, no automatic
 save/retry loops, missing firmware and cleanup-time staged-byte rejection.

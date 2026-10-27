@@ -14,3 +14,11 @@ SECTIONS
 }
 ASSERT(selector_staging_start == SELECTOR_STAGING_BASE, "Unexpected selector staging base")
 ASSERT(selector_staging_end <= SELECTOR_STAGING_END, "Selector staging exceeds SRAM1/2")
+
+/* The pinned SRAM linker places initialized .data last in the installer.
+ * This extent lets USB backup verification compare the complete installed BIN. */
+selector_installer_size = LOADADDR(.data) + SIZEOF(.data) - ADDR(.isr_vector);
+ASSERT(selector_installer_size > 0 && selector_installer_size <= LENGTH(SRAM),
+       "Unexpected selector installer extent")
+ASSERT(SIZEOF(.qspiflash_text) == 0 && SIZEOF(.qspiflash_data) == 0,
+       "Selector installer must contain only SRAM-linked application data")

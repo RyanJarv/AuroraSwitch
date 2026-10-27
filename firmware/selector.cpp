@@ -6,7 +6,15 @@
 #include "mbedtls/sha256.h"
 #include "handoff.hpp"
 
+extern "C" const std::uint8_t selector_installer_size[];
 namespace {
+// The stock loader leaves this exact installer mapped in flash. Read it only;
+// do not compare against live RAM, where startup has changed writable data.
+const auto* const selector_original =
+    reinterpret_cast<const std::uint8_t*>(SELECTOR_APPLICATION_FLASH_BASE);
+std::size_t SelectorSize() {
+    return reinterpret_cast<std::uintptr_t>(selector_installer_size);
+}
 daisy::DaisySeed seed;
 daisy::Switch next_button, load_button;
 daisy::Switch category_button;
@@ -23,7 +31,7 @@ struct UsbFirmware {
     bool Open(std::array<bool, aurora_selector::ImageCount>& present);
     bool Authenticate(unsigned index);
     bool AuthenticatePath(unsigned index, const char* path);
-    bool CanInstall(unsigned index) { return Ready() && aurora_selector::CheckInstallFiles(index); }
+    bool CanInstall(unsigned index);
     void Install(unsigned index);
     bool Launch(unsigned index);
     int BootChoice();
@@ -83,12 +91,25 @@ bool UsbFirmware::AuthenticatePath(unsigned index, const char* path) {
            aurora_selector::VerifyImage(staged, aurora_selector::Images[index].size,
                                         aurora_selector::Images[index], digest);
 }
+bool UsbFirmware::CanInstall(unsigned index) {
+    return Ready() && aurora_selector::CheckInstallFiles(index) &&
+           aurora_selector::CheckReturnFiles(selector_original, SelectorSize(), staged,
+                                             sizeof(staged));
+}
 void UsbFirmware::Install(unsigned index) {
-    if (!aurora_selector::MoveToInstallRoot(index) ||
+    // Return-file checks use staging as scratch. Reload/authenticate Dirt after
+    // those operations, then copy its verified bytes while preserving the source.
+    if (!aurora_selector::PrepareReturnFiles(selector_original, SelectorSize(), staged,
+                                             sizeof(staged)) ||
+        !Authenticate(index) ||
+        !aurora_selector::WriteNewFile(aurora_selector::InstallPath, staged,
+                                       aurora_selector::Images[index].size, staged,
+                                       sizeof(staged)) ||
         !AuthenticatePath(index, aurora_selector::InstallPath) ||
+        !aurora_selector::CheckInstallRoot(aurora_selector::InstallRoot::DirtOnly) ||
         f_mount(nullptr, filesystem.GetUSBPath(), 0) != FR_OK)
         return;
-    // f_rename synchronizes its directory changes before reporting success.
+    // Rename synchronizes metadata; every new file is synced, closed and read back.
     // Unmount alone does not flush or make FAT operations power-loss atomic.
     usb.Deinit();
     NVIC_SystemReset(); // Normal restart through stock loader; never drive BOOT pin.

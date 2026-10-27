@@ -446,7 +446,10 @@ Other controls follow the [stock Aurora reference](#aurora-144--green).
 Driven reverb with chorus and pitch shifting. **Dirt replaces the selector;
 returning requires a computer.** Use exact `DirtVerb 1.1.bin` in `aurora/`.
 Freeze verifies; a second press during alternating amber/red confirms installation
-and restart. Shift/Reverse cancels. Keep the USB root free of BINs beforehand.
+and restart. Shift/Reverse cancels. The switch preserves `AuroraSwitch.bin` as
+`AuroraSwitch.disabled`, keeps Dirt's original, and writes return instructions.
+To return: delete root `DIRTVERB.BIN`, rename `AuroraSwitch.disabled` to
+`AuroraSwitch.bin`, safely eject and restart.
 See [installation and return steps](user_guide.md#dirt-verb-install-and-restart).
 
 ### Knobs

@@ -45,7 +45,9 @@ FRESULT f_rename(const char* source, const char* target) {
     if (files.count(target))
         return FR_EXIST;
     files[target] = files[source];
+    attributes[target] = attributes[source];
     files.erase(source);
+    attributes.erase(source);
     return FR_OK;
 }
 FRESULT f_stat(const char* path, FILINFO* info) {
@@ -60,7 +62,9 @@ FRESULT f_stat(const char* path, FILINFO* info) {
 FRESULT f_open(FIL* file, const char* path, unsigned mode) {
     if (!connected)
         return FR_DISK_ERR;
-    if (mode & FA_CREATE_ALWAYS) {
+    if ((mode & FA_CREATE_NEW) && files.count(path))
+        return FR_EXIST;
+    if (mode & (FA_CREATE_ALWAYS | FA_CREATE_NEW)) {
         files[path].clear();
         ++creates;
     }
@@ -87,7 +91,10 @@ FRESULT f_write(FIL* file, const void* input, UINT count, UINT* written) {
         return FR_DISK_ERR;
     *written = count - (short_write ? 1 : 0);
     auto* bytes = static_cast<const std::uint8_t*>(input);
-    files[file->path].assign(bytes, bytes + *written);
+    auto& data = files[file->path];
+    data.resize(file->position + *written);
+    std::copy(bytes, bytes + *written, data.begin() + file->position);
+    file->position += *written;
     if (corrupt_readback)
         files[file->path].back() ^= 1;
     return FR_OK;
@@ -194,18 +201,65 @@ int main() {
     assert(!CheckInstallFiles(dirt) && renames == 0 && files[path] == original);
     attributes[path] = 0;
     assert(CheckInstallFiles(dirt));
+    std::vector<std::uint8_t> selector(10003);
+    for (std::size_t i = 0; i < selector.size(); ++i)
+        selector[i] = i % 251;
+    auto preflight = [&] {
+        return CheckReturnFiles(selector.data(), selector.size(), staged.data(), staged.size());
+    };
+    auto prepare = [&] {
+        return PrepareReturnFiles(selector.data(), selector.size(), staged.data(), staged.size());
+    };
+    files[SelectorPath] = selector;
+    assert(CheckInstallFiles(dirt) && preflight() && renames == 0);
+    files[SelectorPath].back() ^= 1;
+    assert(!preflight() && renames == 0);
+    files[SelectorPath] = selector;
+    files[SelectorBackupPath] = {1};
+    assert(!preflight()); // Never overwrite an existing backup.
+    files.erase(SelectorBackupPath);
+    files[ReturnPath] = {1};
+    assert(!preflight()); // Nor an unrelated file with the instructions' name.
+    files.erase(ReturnPath);
     fail_rename = true;
-    assert(!MoveToInstallRoot(dirt) && files[path] == original);
+    assert(!prepare() && files[SelectorPath] == selector && !files.count(InstallPath));
     fail_rename = false;
-    assert(MoveToInstallRoot(dirt));
-    assert(!files.count(path) && files[InstallPath] == original);
-    assert(CheckInstallRoot(true) && !CheckInstallRoot());
+    assert(prepare());
+    assert(!files.count(SelectorPath) && files[SelectorBackupPath] == selector);
+    const std::vector<std::uint8_t> instructions(ReturnBytes(),
+                                                 ReturnBytes() + sizeof(ReturnInstructions) - 1);
+    assert(files[ReturnPath] == instructions);
+    assert(files[path] == original && !files.count(InstallPath));
+    attributes[SelectorBackupPath] = AM_HID;
+    assert(!preflight()); // A hidden backup would stay hidden when re-enabled.
+    attributes[SelectorBackupPath] = 0;
+    const auto saved_writes = writes;
+    assert(prepare() && writes == saved_writes); // Reuse exact backup/text without rewriting.
+    assert(ReadOriginal(dirt, staged.data(), staged.size()));
+    assert(
+        WriteNewFile(InstallPath, staged.data(), Images[dirt].size, staged.data(), staged.size()));
+    assert(files[path] == original && files[InstallPath] == original);
+    assert(CheckInstallRoot(InstallRoot::DirtOnly) && !CheckInstallRoot());
     assert(ReadImageFile(InstallPath, dirt, staged.data(), staged.size()));
-    assert(!MoveToInstallRoot(0));
+    assert(
+        !WriteNewFile(InstallPath, selector.data(), selector.size(), staged.data(), staged.size()));
+    assert(files[InstallPath] == original);
     assert(files["0:/harmless.img"] == std::vector<std::uint8_t>{1});
     connected = false;
-    assert(!CheckInstallRoot(true));
+    assert(!CheckInstallRoot(InstallRoot::DirtOnly));
     connected = true;
     attributes[InstallPath] = AM_HID;
-    assert(!CheckInstallRoot(true)); // The stock loader would skip hidden Dirt.
+    assert(!CheckInstallRoot(InstallRoot::DirtOnly));
+    files.erase(InstallPath);
+    attributes.erase(InstallPath);
+    // Removed installer: reconstruct the same complete backup from installed bytes.
+    files.erase(SelectorBackupPath);
+    files.erase(ReturnPath);
+    assert(prepare() && files[SelectorBackupPath] == selector && files[ReturnPath] == instructions);
+    for (auto* failure : {&fail_write, &short_write, &fail_sync, &fail_close, &corrupt_readback}) {
+        files.erase(SelectorBackupPath);
+        *failure = true;
+        assert(!prepare());
+        *failure = false;
+    }
 }
