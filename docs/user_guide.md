@@ -1,153 +1,83 @@
-# User guide
+# Installation and firmware selection
 
-Beta software: keep the original Aurora firmware and a backup of your USB drive.
+**USB is required for RAM firmware, including automatic boot, and to install Dirt.** This development
+build still needs physical installation, handoff and stock recovery qualification.
 
-For release downloads and USB setup without a checkout, use the
-[README quick start](../README.md#quick-start).
+## Prepare and install
 
-For selector colors and each firmware's knobs, buttons, gates and modes, use the
-[firmware control reference](firmware_reference.md).
+1. Build `AuroraSwitch.bin` with `make package` ([build setup](development/README.md)).
+2. Back up a FAT32 USB drive. Put that selector BIN at the root as the only root BIN.
+3. Safely eject, insert into Aurora, then follow the ordinary stock USB update procedure.
+4. After installation, remove `AuroraSwitch.bin` from the root, or rename it
+   `AuroraSwitch.img` to keep a restoration copy. Create `aurora/`
+   and put supported original firmware BINs there with their exact catalog filenames.
+5. Keep the drive connected for firmware selection and automatic boot.
+
+RAM selection keeps our selector installed. Original vendor files are read into RAM unchanged;
+no private composite installer or preparer is needed. Firmware-owned tables/options
+keep their ordinary USB locations. FataMorgana's USB wavetable path remains unqualified.
+
+## Controls
+
+**Shift — next category. Reverse — next firmware. Freeze — verify & launch.**
+Hold **Shift + Reverse at power-on** for the menu. Otherwise the valid saved choice
+starts when USB and the exact firmware are available. An absent, corrupt or
+unsupported choice opens the menu without substituting another firmware.
+
+Menu colors and firmware controls are in the [reference](firmware_reference.md).
+The arc shows position within the category; Reverse shows the firmware color.
+Amber Freeze means loading; persistent red means unavailable USB, no usable files
+or a failed load. Reconnect USB to rescan, or press Freeze to retry. If a retry
+finds files on an empty menu, review the selection and press Freeze again to launch.
+
+The selector saves changed authenticated choices to `aurora/choice.dat`. A brief
+red Freeze warning before launch means saving failed; verified firmware can run
+for this session. Automatic boot and selecting the saved choice do not rewrite
+settings. A damaged choice file can be deleted to return to the menu.
 
 ## Supported firmware
 
-Obtain these files from their authors; they are not included here.
-Only the exact supported versions work. Public download commands are in
-[firmware support](alternative_firmware.md#obtain-files).
+Use the exact versions and filenames in the [reference](firmware_reference.md).
+Files are checked by complete SHA-256, size and their catalog startup vectors.
+Changed, truncated and unsupported images are rejected. Dirt is the only stock
+USB installation entry; it cannot use the direct RAM launch. Adding/removing supported originals on USB changes the available menu.
+New versions need review before entering the catalog.
 
-| Firmware | Filename | Reverse color |
-| --- | --- | --- |
-| FDN 1.2.2 | `AR_FDN_v1_2_2.bin` | Blue |
-| Aurora 1.4.4 | `Aurora_v1_4_4.bin` | Green |
-| EchoGarden 0.3.1 | `AuroraEchoGarden_v0_3_1_STABLE.bin` | Cyan |
-| CloudscapeX | `AuroraCloudscapeX.bin` | Magenta |
-| The Oscillator Is a Lie 0.0.2 | `TheOscillatorIsALie_v0_0_2.bin` | Amber |
-| Flux Capacitor 0.3.0 | `flux-capacitor-0.3.0.bin` | Yellow |
-| Morse 0.2.0 | `aurora-morse-0.2.0.bin` | White |
+## Dirt Verb: install and restart
 
-Copy the supported BINs into an `aurora/` folder on a FAT USB drive,
-alongside the downloaded selector BIN:
+**Dirt replaces the selector; returning requires a computer.**
 
-```text
-USB root/
-  AuroraSwitch.bin
-  aurora/
-    AR_FDN_v1_2_2.bin
-    Aurora_v1_4_4.bin
-```
+Put the exact `DirtVerb 1.1.bin` in `aurora/`. Leave no BIN files in the USB root;
+`AuroraSwitch.img` is an optional inactive backup. Dirt must not be a hidden file. Names such as
+`AuroraSwitch.bin.disabled` still count as BIN files and must be removed.
 
-Keep `AuroraSwitch.bin` as the only BIN at the root; preserve existing settings.
-Safely eject, insert into Aurora, and power cycle to install using
-[Qu-Bit's normal updater](https://www.qubitelectronix.com/faq).
-Do not interrupt the update. To restore stock, replace the root BIN with the
-original Aurora BIN and repeat; this still needs testing with AuroraSwitch.
+Select Dirt (pink, Reverbs) and press Freeze to verify. When Freeze alternates
+amber/red, press Freeze again to confirm, or Shift/Reverse to cancel. The selector
+moves Dirt to root `DIRTVERB.BIN`, verifies it there, and restarts. The stock
+bootloader installs Dirt, replacing the selector. Do not remove USB or power
+while switching/installing. Dirt then boots normally, including without USB.
+Your remembered RAM choice is unchanged; the selector never automatically
+performs a Dirt installation.
 
-Building and optional host-side file verification are covered in the
-[development guide](development/README.md). They are not required to install
-a published release. Never install a virtual build.
+Persistent red after a failed file switch requires computer inspection. Do not
+retry or power-cycle with an unverified root BIN. Interrupted FAT operations can
+leave damaged directory entries; keep the drive backed up.
 
-## Select firmware
+To return to AuroraSwitch, use a computer:
 
-1. Wait for scanning to finish.
-2. Press **Shift** to change category; empty categories are skipped.
-3. Press **Reverse** to choose by its existing firmware color.
-4. Press **Freeze** to verify and start it. Red means failure; choose or retry.
+1. Move root `DIRTVERB.BIN` back to `aurora/DirtVerb 1.1.bin`.
+2. Rename `AuroraSwitch.img` to `AuroraSwitch.bin`, or copy a fresh installer to
+   the root. It must be the only root BIN.
+3. Restart using the stock USB update procedure. Remove or rename the root
+   installer afterward. Your previous valid RAM choice can automatically boot.
 
-These controls apply to the current source build. The older published release
-uses Reverse to choose, Freeze to verify, and Shift to start.
+Software-reset USB discovery, Dirt installation and interrupted-update recovery
+remain physically unqualified. If the automatic restart does not discover USB,
+power-cycle with verified media prepared for the intended stock update.
 
-The lit arc shows the position within the category:
+## Stock restoration
 
-| Arc color | Category | Firmware |
-| --- | --- | --- |
-| Blue | Reverbs | FDN, Aurora, Dirt Verb, HP-filter Aurora |
-| Green | Delays | EchoGarden, Cloudscape, Flux Capacitor |
-| Amber | Synths / Other | Oscillator Is a Lie, Morse, Tempest, FataMorgana |
-
-Only available files appear. Selection changes take priority over simultaneous
-Freeze presses; no separate verification approval is retained.
-
-Power cycle to return to the menu. After changing files, reconnect the drive
-to rescan. Every launch rereads and verifies the selected file.
-Morse needs an external Freeze-gate clock and Mix above zero.
-
-Colors are fixed per firmware family across versions and installs. Keep one
-version per family on the drive: multiple versions have the same menu color.
-
-## Source-build additions
-
-<!-- Keep the old guide link usable. -->
-<a id="development-branch-additions"></a>
-
-The current source includes these exact images. Prior virtual
-launch/control/audio checks pass; physical testing remains open. Build from
-source; the published release does not include these entries yet.
-Download the named BIN from each linked release and place it in `aurora/`.
-
-| Firmware | Filename | Reverse color |
-| --- | --- | --- |
-| [Flux 0.1.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/tag/v0.1.0) | `flux-capacitor-0.1.0.bin` | Yellow |
-| [Flux 0.2.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/tag/v0.2.0) | `flux-capacitor-0.2.0.bin` | Yellow |
-| [Morse 0.1.0](https://github.com/DaveParr/Aurora-Morse/releases/tag/v0.1.0) | `aurora-morse-0.1.0.bin` | White |
-| [Tempest 1.0.0](https://github.com/jfriess/Aurora-Firmwares/releases/tag/Tempest-v1.0.0) | `Tempest_v1_0_0.bin` | Pale red |
-
-Tempest saves its settings in QSPI. This is payload behavior, not selector
-flashing; do not assume its settings are isolated from other alternative apps.
-
-### FataMorgana
-
-Current source admits one exact RAM build from source commit `d5504d7`,
-not the upstream QSPI configuration. Virtual handoff/control/audio checks pass;
-USB wavetable loading and physical compatibility remain unverified.
-RAM is our preferred build: it avoids programming application flash on launch.
-The duplicate QSPI build is no longer offered in the selector.
-
-With the pinned GNU Arm 10 toolchain on PATH:
-
-```sh
-make fata-ram-probe
-```
-
-The command prints a bundle path. Its `FataMorgana.bin` belongs in `aurora/`
-on the test drive; the selector menu color is azure. Use only the development
-selector, not the published release. Do not rename another build to this filename.
-Tempest and Fata share a settings sector with different formats, so switching
-can change retained settings.
-
-### QSPI development branch
-
-Every build of `codex/qspi-dirt-verb` also supports these exact files:
-
-| Firmware | Filename | Reverse color |
-| --- | --- | --- |
-| Dirt Verb 1.1 | `DirtVerb 1.1.bin` | Red-pink |
-| HP-filter Aurora | `Aurora_v1-4-6_hpfilt.bin` | Lime |
-
-Earlier exact-build virtual screening passes; physical tests remain open.
-Only Dirt uses QSPI; HP-filter still launches from RAM. QSPI launching replaces
-the installed application. Returning to the selector depends on ready USB media
-containing its root BIN. Do not treat reset alone
-as guaranteed menu re-entry or recovery.
-
-With the pinned GNU Arm 10 toolchain on PATH:
-
-```sh
-make package
-```
-
-Use `AuroraSwitch.bin` from the printed sealed bundle. For incremental build
-and USB copy, use `make usb USB_DIR="/path/to/drive"`.
-Authenticate and name user-supplied Dirt/HP binaries without accessing a drive:
-
-```sh
-python3 scripts/prepare_payloads.py --output prepared-payloads /path/to/DirtVerb.bin /path/to/Aurora_v1-4-6_hpfilt.bin
-```
-
-Use the emitted filenames under `prepared-payloads/aurora/` and keep the selector
-as the only root BIN. No alternative firmware is included in our releases.
-Hardware testing and ordinary stock recovery are still required before release.
-
-## Unsupported firmware
-
-Only catalog versions with matching bytes and filenames are accepted. Other
-images need memory-layout review and a new catalog entry; renaming is not enough.
-The duplicate QSPI FataMorgana option is retired in favor of RAM.
+Put the original stock BIN at the USB root as the only root BIN and follow
+[Qu-Bit's updater instructions](https://www.qubitelectronix.com/faq).
+Restoration uses the stock bootloader and must not depend on a working selector
+or access to its menu. Power-interruption recovery remains physically unverified.

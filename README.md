@@ -1,36 +1,47 @@
 # AuroraSwitch
 
-Allows you to select which Aurora firmware you want to load when starting the module. This does not replace the official boot loader, to uninstall just change the file on the SD Card back to whatever you used before.
+Switch RAM firmware without a computer.
 
 **Important**
-* Constantly booting Dirt Verb (or other non-RAM builds) can wear out flash faster than normal. Avoid using Dirt Verb or check back for an update if that's a concern.
-  * You shouldn't run into this unless you are loading Dirt Verb 10+ times a day for 10+ years.
 * You may want to avoid using this for performances until this is better tested.
+
 
 ## Quick start
 
-Back up a FAT USB drive. No repository checkout or build tools are needed.
+**USB is required for RAM firmware, including automatic boot, and to install Dirt.**
 
-1. [Download AuroraSwitch.bin](https://github.com/RyanJarv/AuroraSwitch/releases/latest/download/AuroraSwitch.bin)
-   to the drive's root. Keep it as the only BIN there.
-2. Create an `aurora/` folder. Add [Aurora 1.4.4](https://www.qubitelectronix.com/s/Aurora_v1_4_4.zip)
-   (unzip first), [FDN 1.2.2](https://www.qubitelectronix.com/s/AR_FDN_v1_2_2.bin), or both.
-3. Safely eject, insert the drive into Aurora, and power cycle to install.
+1. Build `AuroraSwitch.bin` with `make package` ([build setup](docs/development/README.md)).
+2. Back up a FAT32 USB drive. Put the selector BIN at its root as the only root BIN.
+   Follow the stock USB installation procedure.
+3. Remove the root installer after installation, or rename it to `AuroraSwitch.img`
+   to keep it for later restoration. Put exact supported originals
+   in an `aurora/` folder on that drive, using their catalog filenames.
+4. Keep the drive connected and restart. Select and launch firmware from the menu.
 
 ### Select firmware
 
-For the current source build:
+- **Shift** — next category: blue reverbs, green delays, amber synths/other.
+- **Reverse** — next firmware; the arc shows its position and category color.
+- **Freeze** — verify, remember and launch. A brief red warning means saving failed;
+  the firmware can still run for this session.
+- **Shift + Reverse held at power-on** — open the menu.
 
-1. **Shift** changes category: blue reverbs, green delays, amber synths/other.
-2. **Reverse** selects firmware, keeping its original color. One arc shows its position and category color.
-3. **Freeze** verifies and launches. Red means loading failed; choose or retry.
+The last valid saved choice starts on the next boot when USB and its firmware
+are available. Choices live in `aurora/choice.dat`. Automatic boots and repeated
+choices do not rewrite that file. Missing or invalid files leave the menu open;
+reconnect the drive and press Freeze to retry.
 
-The older published release uses Reverse → Freeze → Shift instead.
+**Dirt Verb replaces the selector; returning requires a computer.** Select Dirt
+and press Freeze to verify. Alternating amber/red Freeze asks for a second press
+to move Dirt to the USB root and restart into the stock updater. Shift or Reverse
+cancels. The USB root must contain no BIN files before confirming.
+To return, use a computer to move root `DIRTVERB.BIN` back to
+`aurora/DirtVerb 1.1.bin`, then rename `AuroraSwitch.img` to `AuroraSwitch.bin`
+(or copy a fresh selector installer) and restart. Dirt is never an automatic
+selector choice; your previous RAM choice stays remembered.
 
-Power cycle to return to the selector.
-
-Other supported firmware BINs go in the same `aurora/` folder. Files shared on
-Discord must be added manually. See the [user guide](docs/user_guide.md).
+To restore stock firmware, use its original BIN as the only root BIN and follow
+[Qu-Bit's normal USB update procedure](https://www.qubitelectronix.com/faq).
 
 ## Firmware
 
@@ -49,9 +60,10 @@ The published release supports these exact versions:
 ### Source-build additions
 
 Current source adds Flux 0.1.0/0.2.0, Morse 0.1.0, Tempest 1.0.0, and one
-FataMorgana RAM build. This branch also includes Dirt Verb 1.1 (QSPI) and
-HP-filter Aurora (RAM), with no extra build options. See the
-[user guide](docs/user_guide.md#source-build-additions) for files and commands.
+FataMorgana RAM build. This branch also includes
+HP-filter Aurora (RAM) and Dirt Verb 1.1 (stock USB installation), with no extra
+build options. Other flash-running images are unsupported. See the
+[user guide](docs/user_guide.md#supported-firmware) for files and commands.
 
 Earlier exact-build virtual screens pass; physical reliability and stock USB
 recovery remain open. Fata's USB wavetable path is unverified. Unsupported
@@ -61,7 +73,7 @@ versions or changed files are rejected.
 
 - [Online firmware reference](https://aurora-switch.ryanjarv.sh/): color lookup and controls.
 - [Firmware control reference](docs/firmware_reference.md): colors and controls for every catalog entry.
-- [User guide](docs/user_guide.md): build, USB layout, and firmware selection.
+- [User guide](docs/user_guide.md): installation, USB layout, and firmware selection.
 - [How it works](docs/how_it_works.md): RAM handoff, memory layout, design choices.
 - [Development guide](docs/development/README.md): tests and adding firmware.
-- [Documentation index](docs/README.md): current plans and historical evidence.
+- [Documentation index](docs/README.md): current guides and validation evidence.

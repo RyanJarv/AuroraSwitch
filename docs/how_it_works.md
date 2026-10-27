@@ -1,108 +1,86 @@
 # How it works
 
-AuroraSwitch is a `BOOT_SRAM` application, not a bootloader replacement.
-Aurora's existing updater installs and starts it. The selector loads and
-authenticates a catalog image in separate SRAM, then launches it.
-This branch supports both RAM and QSPI images in one build.
+For RAM selection, AuroraSwitch is installed at the stock application's flash address,
+`0x90040000`. The stock bootloader copies this RAM-linked selector to
+`0x24000000` at startup. Supported original firmware stays unchanged in
+`aurora/` on USB; the selector never programs or erases on-module flash,
+initializes persistent settings there, or changes flash protection.
 
-## Why this approach?
+The selector scans catalog filenames and sizes when USB becomes available.
+Presence is not authentication. On launch it reads the chosen file into separate
+staging RAM, authenticates its complete hash, size and vectors, and rechecks the
+actual staged bytes during handoff. Unsupported images cannot launch. The exact Dirt original is an installation
+action, never a direct flash handoff.
 
-RAM payloads are linked to execute at `0x24000000`, the same address as
-the selector. Staging them elsewhere and copying at handoff avoids relocating
-their code or writing a new application to flash on each selection. The existing
-updater remains unchanged.
+## Remembered choice
 
-This works without modifying payload source. Selection is not persisted;
-payloads may retain their own settings.
+`aurora/choice.dat` contains a version marker, exact catalog image hash and CRC.
+A valid saved image launches automatically once at startup when USB is available.
+Hold Shift + Reverse during power-on to open the menu. Invalid/missing settings,
+missing firmware or unavailable USB leave a menu/error state. Reinsertion scans
+again; Freeze provides an explicit retry. Failures never cause automatic load or
+save loops or fallback to a different image.
 
-The tradeoff is inherited state: a branch to a reset handler is not a hardware
-reset. Cleanup must remove selector-owned activity while retaining the clocks,
-MPU policy, and external-memory mappings expected by `BOOT_SRAM` startup.
+Only a changed, authenticated manual selection writes the choice file. Repeat
+choices and automatic boots do not write it. Saves check write, sync, close and
+readback. A failed save warns briefly, then permits the verified session launch.
+A torn replacement can lose the choice; next boot opens the menu. The file is
+not a transactional filesystem guarantee, so keep the USB backed up.
 
-## Memory layout
+## Dirt installation
+
+Dirt runs at the stock application flash address. Instead of writing flash, the
+selector delegates installation to the stock updater. Two separate Freeze
+presses authenticate/confirm the action. Navigation or disconnection cancels.
+Dirt is neither saved as a boot choice nor automatically installed.
+
+The concrete FatFs path rejects root BIN conflicts (including short-name aliases
+and case-insensitive substring matches), moves `aurora/DirtVerb 1.1.bin` to
+`DIRTVERB.BIN`, checks the source is absent, verifies the complete destination and
+sole-root-BIN invariant, then unmounts, stops USB and requests a normal MCU reset.
+The stock bootloader programs Dirt over the installed selector. Computer file
+changes are required to reinstall the selector. No other flash space is claimed.
+
+`f_rename` synchronizes metadata before returning success; unmount alone does not
+flush. The pinned USB disk driver treats `CTRL_SYNC` as success without an extra
+device cache flush, so neither checked results nor readback prove power-loss
+durability. After any rename attempt, a failure latches a red error for the rest
+of the session, with no reset, rollback or write retry. Inspect the drive on a
+computer. Software-reset discovery and physical recovery remain unqualified.
+
+## RAM handoff
 
 | Region | Role |
 | --- | --- |
-| AXI SRAM, `0x24000000` | Selector code; overwritten by the payload |
-| DTCM, `0x20000000` | Globals and stack; not accessible to USB DMA |
-| D2, `[0x30000000, 0x30008000)` | 32-KiB SDK DMA arena; cleared during terminal handoff |
-| D2, `[0x30008000, 0x300347e0)` | 182240-byte staging buffer |
-| SRAM4, `[0x38000000, 0x38000400)` | Reserved space for the copy/jump trampoline |
-| SDRAM | Inherited mapping; not globally cleared |
-| QSPI, `0x90040000` | Installed application; Dirt launch replaces it and executes here |
+| `0x24000000` | Selector, then the chosen firmware |
+| `0x30000000`–`0x30008000` | DMA-accessible USB/FatFs and LED buffers |
+| `0x30008000`–`0x30040000` | Staged original image |
+| `0x38000000`–`0x38000400` | Stackless terminal copy/jump routine |
 
-Staging capacity is the largest catalog image rounded to 32 bytes. Linker
-assertions keep it outside the DMA arena and below `0x30040000`, and pin the
-trampoline to SRAM4.
+The selector masks interrupts, resets memory-writing DMA/USB/peripherals, disables
+runtime/cache state, rechecks staged bytes, and copies/verifies the small jump
+routine into separate SRAM4. That routine replaces the selector in AXI RAM,
+clears the DMA arena, sets interrupt vectors and stack, then enters the original
+reset handler. Vendor binaries and reset vectors are never patched. Existing
+bootloader clock/MPU state is retained as required by BOOT_SRAM startup.
 
-## Loading and authentication
+## Why USB
 
-Initialization starts USB/FatFs, buttons, and LED output, but not audio, ADC, or
-persistence. It skips the full hardware initializer to avoid calibration writes
-and external-memory reconfiguration. Data caching stays disabled for USB-DMA
-coherence.
+The former installed bundle assumed that space outside vendor executables was
+unused. We have not established that: vendor firmware may use it for settings or
+other data. Smaller binaries and startup passes do not prove ownership. Dirt also
+requires the same fixed flash entry as the stock application. Keeping both
+installed required reset-word patching and a resident wrapper. Compression would
+resolve neither problem.
 
-Discovery reads catalog filenames into the reusable staging buffer. Each match
-must have the exact length, SHA-256, initial stack pointer, and Thumb reset
-vector recorded in [images.hpp](../firmware/images.hpp). Discovery alone does
-not authorize execution.
+USB-backed RAM loading and stock installation for Dirt remove those layout
+assumptions. Dirt deliberately replaces the selector instead of coexisting.
+There are no installed vendor slots, wrapper, flash journal or selector flash-write
+driver. Our responsibility is preventing added lasting damage, wear or recovery
+problems caused by our code and handoff. Equivalent stock vendor behavior is the
+baseline. We still need to establish that supported firmware preserves the
+selector's application region and that our inherited state causes no harmful
+persistent differences. A RAM jump is not a hardware reset or sandbox.
 
-An explicit load must read the complete file and close it successfully before
-authentication. Launch rehashes that same RAM buffer; it never reopens the file
-and runs a different, unchecked copy. Freeze performs loading and handoff in one
-iteration, without retaining approval for a later button press. Simultaneous
-selection/category changes block launch. Upstream USB/FatFs calls have no
-overall load deadline.
-
-## Irreversible handoff
-
-[PrepareAndJump](../firmware/handoff_sequence.hpp) defines the ordering:
-
-1. Revalidate staging and unmount FatFs. Failure refuses launch unless QSPI
-   programming already replaced the application; then it halts.
-2. Stop USB and mask interrupts.
-3. Force-reset DMA1/2, MDMA, BDMA, USB1 OTG HS, I2C1, and SAI1/2.
-4. Deinitialize the Seed runtime, clean/disable caches, disable SysTick, and
-   clear NVIC enables/pending bits plus pending SysTick/PendSV. Preserve MPU,
-   clocks, FMC, and QSPI configuration.
-5. Revalidate staging after cleanup, then copy and read back the trampoline
-   in SRAM4. Failure now halts; returning to the dismantled selector is unsafe.
-6. Enter the trampoline without an expected return.
-
-The [assembly trampoline](../firmware/copy_jump.s) uses no stack, external
-calls, or references to overwritten selector storage. It copies the exact
-payload to AXI SRAM, zeros the DMA arena, and applies memory barriers. It sets
-`VTOR` to `0x24000000`, loads MSP and the reset PC from the payload vectors,
-clears `CONTROL`, `BASEPRI`, `FAULTMASK`, and PSP, then unmasks interrupts and
-branches to the reset handler. An unexpected return loops in SRAM4.
-
-The target now owns execution. This does not reproduce power-on memory or
-controller state; the target must initialize state it uses. DMA clearing occurs
-only in the terminal routine because earlier clearing could destroy live
-selector buffers.
-
-## QSPI launch
-
-The catalog admits only exact Dirt Verb 1.1 for QSPI execution. Before
-shared cleanup, it authenticates staging, initializes the pinned flash driver,
-and erases offsets `[0x40000, 0x58000)` in 4-KiB sectors. Each page write is
-checked, then the entire payload is compared with mapped flash.
-
-Cleanup preserves QSPI mapping. A separate SRAM4 trampoline clears the DMA
-arena and enters the QSPI vectors without copying into AXI SRAM. Any failure
-after an erase attempt halts: the installed selector may no longer be intact.
-
-On reset, the normal updater can reinstall the selector from its root USB BIN.
-Missing or slow media can instead boot the installed payload. Physical re-entry,
-interrupted-programming recovery, and stock restore remain unverified.
-
-## Boundaries
-
-RAM loading and handoff do not program flash. Initial installation
-and Dirt launch do. Launched firmware is not sandboxed and may write
-persistent settings. Exact hashes establish expected bytes, not firmware safety.
-Virtual switching checks
-do not establish physical handoff reliability or ordinary stock recovery;
-those remain hardware test requirements.
-
-See the [source map](development/architecture.md) for implementation files.
+Local and virtual checks do not qualify physical USB, audio, interrupted updates
+or stock recovery. See the [release gate](development/recovery_release_gate.md).

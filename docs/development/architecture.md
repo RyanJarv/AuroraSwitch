@@ -1,27 +1,24 @@
 # Source map
 
-For the overview and rationale, read [how it works](../how_it_works.md).
+See [How it works](../how_it_works.md) for the design and memory contract.
 
-| File / directory | Responsibility |
+| Source | Responsibility |
 | --- | --- |
-| [firmware/selector.cpp](../../firmware/selector.cpp) | USB setup, discovery, buttons, LED states, staged loading |
-| [firmware/images.hpp](../../firmware/images.hpp) | Exact-image catalog and authentication predicate |
-| [firmware/handoff_sequence.hpp](../../firmware/handoff_sequence.hpp) | Validation and irreversible cleanup ordering |
-| [firmware/handoff.cpp](../../firmware/handoff.cpp) | Hardware cleanup, final verification, trampoline installation |
-| [firmware/copy_jump.s](../../firmware/copy_jump.s) | Stackless payload copy, DMA clearing, target entry |
-| [support/qspi_image_programming.hpp](../../support/qspi_image_programming.hpp) | Opt-in sector/page bounds, driver errors, complete mapped readback |
-| [support/](../../support/) | Small staging, menu, vector, initialization, and timing helpers |
-| [scripts/](../../scripts/) | Pinned dependency setup, payload preparation, isolated packaging |
-| [tests/](../../tests/) | Portable host tests; compiled C++ probes live in `firmware/` |
+| `firmware/images.hpp` | Exact image identities, launch methods and shared presentation metadata |
+| `firmware/selector.cpp` | Minimal hardware initialization, USB host, panel and authentication |
+| `firmware/selector_controller.hpp` | Startup, one-shot automatic launch and explicit retries |
+| `firmware/usb_files.hpp` | Concrete FatFs discovery, bounded reads and checked choice-file saves |
+| `support/usb_choice.hpp` | Version/hash/CRC choice format, independent of menu positions |
+| `firmware/handoff_sequence.hpp` | Validation and cleanup ordering |
+| `firmware/handoff.cpp` | Peripheral cleanup, staged-byte rechecks and trampoline validation |
+| `firmware/copy_jump.s` | Stackless RAM copy, DMA clearing, VTOR/MSP and terminal jump |
+| `support/selector_constants.h` | Shared hardware bounds and binary-format constants |
+| `scripts/package.py`, `scripts/sealed_bundle.py` | Reproducible selector-only build and authentication |
 
-The `.ld` fragments assert staging and trampoline placement. USB/FatFs objects
-use the SDK's DMA-accessible arena; ordinary globals and the stack use DTCM.
+Dirt uses a checked USB rename and normal reset to delegate installation to the
+stock updater. It never uses the RAM handoff or selector flash programming.
 
-Default builds use real USB/FatFs. The backed reader and `--virtual` package
-are synthetic development facilities, not installable firmware.
-No emulator or payload binaries are distributed here.
-
-See the [development guide](README.md) for commands and onboarding.
-
-Memory layout, launch invariants, and cleanup ordering are documented once in
-[how it works](../how_it_works.md#memory-layout).
+The linker reserves staging and SRAM4. USB/FatFs transfer buffers use the DMA
+arena because USB DMA cannot reach DTCM. No transport macros or alternate
+firmware modes exist for tests; native tests supply the FatFs boundary and
+virtualization lives in its owning repository.

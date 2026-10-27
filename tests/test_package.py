@@ -1,4 +1,5 @@
 """Synthetic packaging controls, independent of firmware/hardware qualification."""
+
 import importlib.util
 import json
 from pathlib import Path
@@ -24,54 +25,55 @@ class PackageTests(unittest.TestCase):
         self.build.mkdir(parents=True)
         for suffix in ("elf", "bin", "map"):
             (self.build / f"AuroraSwitch.{suffix}").write_bytes(suffix.encode())
-        for patcher in (mock.patch.object(bundle, "ROOT", self.root),
-                        mock.patch.object(bundle, "setup"),
-                        mock.patch.object(bundle, "fresh_build", self.fresh),
-                        mock.patch.object(bundle.subprocess, "check_output", side_effect=["", "a" * 40, "a" * 40, ""] * 4),
-                        mock.patch.object(bundle.subprocess, "run", side_effect=self.convert)):
+        for patcher in (
+            mock.patch.object(bundle, "ROOT", self.root),
+            mock.patch.object(bundle, "setup"),
+            mock.patch.object(bundle, "fresh_build", self.fresh),
+            mock.patch.object(
+                bundle.subprocess, "check_output", side_effect=["", "a" * 40, "a" * 40, ""] * 4
+            ),
+            mock.patch.object(bundle.subprocess, "run", side_effect=self.convert),
+        ):
             patcher.start()
             self.addCleanup(patcher.stop)
 
     @contextmanager
-    def fresh(self, commit, *, virtual=False):
+    def fresh(self, commit):
         """Stand in for compilation while exercising real bundle sealing."""
-        yield self.build, {"gcc": {"version": "synthetic", "sha256": "b" * 64}}, Path("/synthetic-tools")
+        yield self.build, {"gcc": {"version": "synthetic", "sha256": "b" * 64}}, Path(
+            "/synthetic-tools"
+        )
 
     def convert(self, command, **kwargs):
         """Fake objcopy output; mismatch tests replace this adapter."""
-        target = "AuroraSwitchVirtual" if "AuroraSwitchVirtual.elf" in command[-2] else "AuroraSwitch"
+        target = (
+            "AuroraSwitchVirtual" if "AuroraSwitchVirtual.elf" in command[-2] else "AuroraSwitch"
+        )
         Path(command[-1]).write_bytes((self.build / (target + ".bin")).read_bytes())
-
-    def test_virtual_companion_has_distinct_files_and_configuration(self):
-        for suffix in ("elf", "bin", "map"):
-            (self.build / f"AuroraSwitchVirtual.{suffix}").write_bytes(b"virtual-" + suffix.encode())
-        path = bundle.package(virtual=True)
-        manifest = json.loads((path / "manifest.json").read_text())
-        self.assertEqual(manifest["build_provenance"]["configuration"]["VIRTUAL_TRANSPORT"], 1)
-        self.assertEqual(set(manifest["files"]),
-                         {f"AuroraSwitchVirtual.{suffix}" for suffix in ("elf", "bin", "map")})
-        self.assertFalse(manifest["physical_qualified"])
-        self.assertNotIn("AuroraSwitch.bin", manifest["files"])
-
-    def test_virtual_configuration_rejects_non_boolean(self):
-        with self.assertRaises(ValueError):
-            bundle.package(virtual=1)
 
     def test_exact_reuse(self):
         first = bundle.package()
         self.assertEqual(first, bundle.package())
-        self.assertEqual({path.name for path in first.iterdir()},
-                         {"AuroraSwitch.elf", "AuroraSwitch.bin", "AuroraSwitch.map", "manifest.json"})
+        self.assertEqual(
+            {path.name for path in first.iterdir()},
+            {"AuroraSwitch.elf", "AuroraSwitch.bin", "AuroraSwitch.map", "manifest.json"},
+        )
 
     def test_manifest_records_build_dependency_pins(self):
         path = bundle.package()
         manifest = json.loads((path / "manifest.json").read_text())
-        self.assertEqual(manifest["dependency_revisions"],
-                         {**{name: revision for name, (_, revision) in bundle.PINS.items()},
-                          "libDaisy": bundle.DAISY})
+        self.assertEqual(
+            manifest["dependency_revisions"],
+            {
+                **{name: revision for name, (_, revision) in bundle.PINS.items()},
+                "libDaisy": bundle.DAISY,
+            },
+        )
 
     def test_dirty_source_rejects(self):
-        with mock.patch.object(bundle.subprocess, "check_output", return_value=" M firmware/selector.cpp"):
+        with mock.patch.object(
+            bundle.subprocess, "check_output", return_value=" M firmware/selector.cpp"
+        ):
             with self.assertRaisesRegex(RuntimeError, "clean committed"):
                 bundle.package()
         self.assertFalse((self.root / "dist").exists())
@@ -88,7 +90,9 @@ class PackageTests(unittest.TestCase):
         self.assertEqual((ambient / "AuroraSwitch.bin").read_bytes(), b"bin")
 
     def test_source_drift_rejects(self):
-        with mock.patch.object(bundle.subprocess, "check_output", side_effect=["", "a" * 40, "c" * 40]):
+        with mock.patch.object(
+            bundle.subprocess, "check_output", side_effect=["", "a" * 40, "c" * 40]
+        ):
             with self.assertRaisesRegex(RuntimeError, "HEAD changed"):
                 bundle.package()
         self.assertFalse((self.root / "dist").exists())
@@ -100,8 +104,11 @@ class PackageTests(unittest.TestCase):
         self.assertFalse((self.root / "dist").exists())
 
     def test_mismatched_elf_rejects(self):
-        with mock.patch.object(bundle.subprocess, "run",
-                               side_effect=lambda command, **kwargs: Path(command[-1]).write_bytes(b"different")):
+        with mock.patch.object(
+            bundle.subprocess,
+            "run",
+            side_effect=lambda command, **kwargs: Path(command[-1]).write_bytes(b"different"),
+        ):
             with self.assertRaisesRegex(RuntimeError, "ELF/BIN"):
                 bundle.package()
         self.assertFalse((self.root / "dist").exists())
