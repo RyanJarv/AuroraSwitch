@@ -32,6 +32,8 @@ compatibility or recovery testing. FataMorgana uses the reviewed RAM build.
 
 [Download](https://www.qubitelectronix.com/s/AR_FDN_v1_2_2.bin)
 
+By [Qu-Bit Electronix](https://www.qubitelectronix.com/) · [Firmware details](https://www.qubitelectronix.com/alternate-firmware/p/fdn-verb)
+
 Stereo feedback-delay-network reverb. Start with moderate Time; high settings feed back.
 
 ### Knobs and CV
@@ -65,6 +67,8 @@ Source: Qu-Bit's [FDN getting started guide](https://www.qubitelectronix.com/alt
 ## Aurora 1.4.4 — Green
 
 [Download ZIP](https://www.qubitelectronix.com/s/Aurora_v1_4_4.zip)
+
+By [Qu-Bit Electronix](https://www.qubitelectronix.com/) · [Firmware details](https://www.qubitelectronix.com/alternate-firmware/p/aurora-spectral-reverb)
 
 Stock spectral reverb: pitch manipulation, spectral smearing and stereo delays.
 
@@ -117,6 +121,8 @@ covering firmware 1.4.4. Calibration is maintenance, not a performance control.
 
 [Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
 
+By **andy** on the QuBit Discord.
+
 Multi-line echoes with diffusion/reverb around the repeats.
 
 ### Knobs
@@ -150,6 +156,8 @@ Source: author-supplied EchoGarden v0.3.1 Parameter Manual.
 ## CloudscapeX — Magenta
 
 [Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
+
+By **andy** on the QuBit Discord.
 
 Modulated delay, diffusion and filter delay.
 
@@ -190,6 +198,8 @@ identified as the only release paired with `CloudscapeX.bin`.
 
 [Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
 
+By **jonmackenzie** on the QuBit Discord.
+
 Aliasing/ring-mod oscillator, not a reverb. Raise Blur above zero to hear it.
 
 ### Knobs
@@ -227,6 +237,8 @@ Source: supplied author notes, February 10–11, 2026.
 [Download 0.3.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/download/v0.3.0/flux-capacitor-0.3.0.bin)
 [Download 0.2.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/download/v0.2.0/flux-capacitor-0.2.0.bin)
 [Download 0.1.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/download/v0.1.0/flux-capacitor-0.1.0.bin)
+
+By [Dave Parr](https://github.com/DaveParr) · [Project & releases](https://github.com/DaveParr/aurora-flux-capacitor)
 
 Stereo tape-style pitch, braking, delay and coloration.
 
@@ -272,6 +284,8 @@ and versioned `main.cpp` / `tape_delay.h` at tags 0.1.0 and 0.2.0.
 [Download 0.2.0](https://github.com/DaveParr/Aurora-Morse/releases/download/v0.2.0/aurora-morse-0.2.0.bin)
 [Download 0.1.0](https://github.com/DaveParr/Aurora-Morse/releases/download/v0.1.0/aurora-morse-0.1.0.bin)
 
+By [Dave Parr](https://github.com/DaveParr) · [Project & releases](https://github.com/DaveParr/Aurora-Morse)
+
 Clocked stereo VCA: **audio input + clock into Freeze gate + Mix above zero**.
 Freeze button alone does not clock it.
 
@@ -309,6 +323,8 @@ and `main.cpp`, `pattern.h`, `envelope.h` at tags 0.1.0/0.2.0.
 ## Tempest 1.0.0 — Red
 
 [Download](https://github.com/jfriess/Aurora-Firmwares/releases/download/Tempest-v1.0.0/Tempest_v1_0_0.bin)
+
+By [jfriess](https://github.com/jfriess) · [Project details](https://github.com/jfriess/Aurora-Firmwares/tree/main/Tempest)
 
 Stereo distortion with a clean low-frequency bypass. **Mix is not dry/wet.**
 
@@ -357,6 +373,8 @@ and [algorithm details](https://github.com/jfriess/Aurora-Firmwares/blob/d5504d7
 ## FataMorgana RAM experiment — Azure
 
 [Build RAM firmware](user_guide.md#fatamorgana)
+
+By [jfriess](https://github.com/jfriess) · [Upstream project](https://github.com/jfriess/Aurora-Firmwares/tree/main/FataMorgana)
 
 Dual wavetable synth: A left, B right. External audio can modulate or be waveshaped.
 Only the exact development RAM build is supported, not upstream QSPI.
@@ -413,13 +431,19 @@ and `src/FataMorgana.cpp` at the same commit.
 
 No selector color; these cannot launch with the published RAM selector.
 
-- **HSO, tape-delay WIP and Phazr:** mentioned in community notes, but not onboarded;
-  controls and compatibility are not covered here.
+Mentioned in community notes; controls and compatibility are not covered here.
+
+- **Harmonic Shift Operator:** Andrew Groot · [Project](https://github.com/thesquaregroot/aurora-hso)
+- **Aurora Tape Delay:** bread on the QuBit Discord.
+- **Phazr:** As'teka on the QuBit Discord.
+- **FFT Jump Select:** michael on the QuBit Discord.
 
 
 ## Aurora HP-filter variant — Yellow
 
 [Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
+
+By **michael** on the QuBit Discord.
 
 Stock Aurora controls with two shifted changes. Add the exact supplied
 `Aurora_v1-4-6_hpfilt.bin` in the USB `aurora/` folder.
@@ -442,6 +466,8 @@ Other controls follow the [stock Aurora reference](#aurora-144--green).
 ## Dirt Verb 1.1 — Pink
 
 [Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
+
+By **SarahRex** on the QuBit Discord.
 
 Driven reverb with chorus and pitch shifting. **Dirt replaces the selector;
 returning requires a computer.** Use exact `DirtVerb 1.1.bin` in `aurora/`.
