@@ -5,13 +5,6 @@
 
 int main() {
     using namespace aurora_selector;
-    constexpr auto count = sizeof(Images) / sizeof(Images[0]);
-    static_assert(count >= 13);
-    static_assert(StagingCapacity() >= 182240);
-    constexpr std::array<unsigned, 13> groups{0, 0, 1, 1, 2, 1, 2, 1, 1, 2, 2, 2, 0};
-    for (unsigned i = 0; i < groups.size(); ++i) {
-        assert(Categories[i] == groups[i]);
-    }
     // Six arcs must represent every available entry even with old versions present.
     for (unsigned category = 0; category < CategoryColors.size(); ++category) {
         unsigned members = 0;
@@ -20,19 +13,9 @@ int main() {
         }
         assert(members <= 6);
     }
-    assert(Images[0].menu_color == (std::array<float, 3>{0.f, 0.f, .4f}));
-    assert(Images[1].menu_color == (std::array<float, 3>{0.f, .4f, 0.f}));
-    // Freeze the public mapping independently of the shared constants. Versions
-    // share a family color; unrelated families must remain distinguishable.
-    constexpr unsigned families[] = {0, 1, 2, 3, 4, 5, 6, 5, 5, 6, 7, 8, 9};
-    constexpr std::array<float, 3> colors[] = {
-        {0.f, 0.f, .4f}, {0.f, .4f, 0.f}, {0.f, .4f, .4f}, {.4f, 0.f, .4f}, {.4f, .2f, 0.f},
-        {.4f, .4f, 0.f}, {.4f, .4f, .4f}, {.4f, 0.f, 0.f}, {0.f, .2f, .4f}, {.4f, .4f, 0.f},
-    };
-    for (unsigned i = 0; i < count; ++i) {
-        if (i < 13) {
-            assert(Images[i].menu_color == colors[families[i]]);
-        }
+    // Exact historical identities, colors and positions live in the independent
+    // catalog_launch_v1.json regression. Check catalog-wide invariants here.
+    for (unsigned i = 0; i < ImageCount; ++i) {
         assert(std::strlen(Images[i].sha256) == 64);
         assert(Images[i].size <= StagingCapacity());
         for (unsigned j = 0; j < i; ++j) {
@@ -59,11 +42,4 @@ int main() {
             assert(std::strcmp(Images[i].sha256, Images[j].sha256) != 0);
         }
     }
-    // Same-family versions are distinct byte contracts, not filename aliases.
-    assert(Images[7].size == 91200 && Images[8].size == 92208);
-    assert(Images[9].size == 86952);
-    assert(Images[7].vectors.reset == 0x24001675U);
-    assert(Images[9].vectors.reset == 0x24000f4dU);
-    assert(Images[11].size == 151420);
-    assert(Images[11].vectors.reset == 0x24000a49U);
 }

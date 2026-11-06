@@ -1,4 +1,4 @@
-// Run our USB move helpers against the pinned, real FatFs on a disposable image.
+// Run our USB installation helpers against the pinned, real FatFs on a disposable image.
 // Disk calls use an ordinary local file, never a USB device or mounted volume.
 #include "usb_files.hpp"
 #include "diskio.h"
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
                        readback.size()));
     assert(MatchesFile(ReturnPath, ReturnBytes(), sizeof(ReturnInstructions) - 1, readback.data(),
                        readback.size()));
-    assert(ReadOriginal(dirt, readback.data(), readback.size()));
+    assert(ReadImageFile(source, dirt, readback.data(), readback.size()));
     assert(WriteNewFile(InstallPath, readback.data(), original.size(), readback.data(),
                         readback.size()));
     assert(f_mount(nullptr, "0:/", 0) == FR_OK);
@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
     assert(CheckInstallRoot(InstallRoot::DirtOnly));
     assert(ReadImageFile(InstallPath, dirt, readback.data(), readback.size()));
     assert(std::equal(original.begin(), original.end(), readback.begin()));
-    assert(ReadOriginal(dirt, readback.data(), readback.size()));
+    assert(ReadImageFile(source, dirt, readback.data(), readback.size()));
     assert(std::equal(original.begin(), original.end(), readback.begin()));
     // The computer only needs to delete Dirt's copy and re-enable the selector.
     assert(f_unlink(InstallPath) == FR_OK);

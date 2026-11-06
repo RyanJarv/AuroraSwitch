@@ -45,13 +45,6 @@ inline bool ReadImageFile(const char* path, unsigned index, std::uint8_t* staged
     valid = f_close(&file) == FR_OK && valid;
     return valid;
 }
-inline bool ReadOriginal(unsigned index, std::uint8_t* staged, std::size_t capacity) {
-    if (index >= ImageCount)
-        return false;
-    char path[128];
-    FirmwarePath(path, sizeof(path), index);
-    return ReadImageFile(path, index, staged, capacity);
-}
 
 constexpr const char* InstallPath = "0:/DIRTVERB.BIN";
 constexpr const char* SelectorPath = "0:/AuroraSwitch.bin";

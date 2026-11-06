@@ -157,23 +157,23 @@ int main() {
     DiscoverFiles(present);
     assert(present[0]);
     std::vector<std::uint8_t> staged(StagingCapacity(), 0);
-    assert(ReadOriginal(0, staged.data(), staged.size()));
+    assert(ReadImageFile(path, 0, staged.data(), staged.size()));
     assert(staged[0] == 0x5a && staged[Images[0].size - 1] == 0x5a);
-    assert(!ReadOriginal(0, staged.data(), Images[0].size - 1));
-    assert(!ReadOriginal(ImageCount, staged.data(), staged.size()));
+    assert(!ReadImageFile(path, 0, staged.data(), Images[0].size - 1));
+    assert(!ReadImageFile(path, ImageCount, staged.data(), staged.size()));
     short_read = true;
-    assert(!ReadOriginal(0, staged.data(), staged.size()));
+    assert(!ReadImageFile(path, 0, staged.data(), staged.size()));
     short_read = false;
     files[path].pop_back();
-    assert(!ReadOriginal(0, staged.data(), staged.size()));
+    assert(!ReadImageFile(path, 0, staged.data(), staged.size()));
     files[path].resize(Images[0].size + 1);
-    assert(!ReadOriginal(0, staged.data(), staged.size()));
+    assert(!ReadImageFile(path, 0, staged.data(), staged.size()));
     connected = false;
-    assert(!ReadOriginal(0, staged.data(), staged.size()));
+    assert(!ReadImageFile(path, 0, staged.data(), staged.size()));
     assert(!WriteChoice(0) && ReadChoice() == -1);
     connected = true;
     files[path].resize(Images[0].size);
-    assert(ReadOriginal(0, staged.data(), staged.size()));
+    assert(ReadImageFile(path, 0, staged.data(), staged.size()));
     // Root conflicts include substring matches and short-name aliases. Never
     // overwrite an existing file, even one with the expected install name.
     files.clear();
@@ -235,7 +235,7 @@ int main() {
     attributes[SelectorBackupPath] = 0;
     const auto saved_writes = writes;
     assert(prepare() && writes == saved_writes); // Reuse exact backup/text without rewriting.
-    assert(ReadOriginal(dirt, staged.data(), staged.size()));
+    assert(ReadImageFile(path, dirt, staged.data(), staged.size()));
     assert(
         WriteNewFile(InstallPath, staged.data(), Images[dirt].size, staged.data(), staged.size()));
     assert(files[path] == original && files[InstallPath] == original);
