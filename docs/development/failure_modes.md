@@ -58,6 +58,21 @@ images would not establish ownership or resolve Dirt's fixed flash address.
    Local/virtual tests do not qualify electrical behavior, power interruption,
    USB interoperability, audio or stock restoration. Audio comparisons are paused.
 
+## Open Tempest investigation
+
+Tempest 1.0.0 has been reported to freeze after control changes when launched
+through AuroraSwitch, while the same behavior has not been reproduced with
+Tempest installed normally. Power cycling restores operation. Treat this as an
+unresolved compatibility issue; reaching the reset handler or `main()` does not
+establish runtime reliability.
+
+Tempest is built for RAM execution and stores settings at flash offset `0x2000`.
+Its settings writes are normal vendor behavior, but differences caused by our
+handoff remain in scope. Compare equivalent controls and initial settings on
+both routes, and verify that a workload actually reaches its delayed save before
+drawing conclusions about that path. A short control sequence without a freeze
+does not clear the reported issue.
+
 The selector and vendor run privileged. Software checks bound our supported
 paths, not arbitrary vendor code or a compromised device. Do not claim universal
 containment or add broad infrastructure solely for hypothetical vendor faults.
