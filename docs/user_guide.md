@@ -18,7 +18,7 @@ build still needs physical installation, handoff and stock recovery qualificatio
 
 ### Startup and status
 
-Hold **Shift + Reverse at power-on** for the menu. Keep USB connected: your last
+Hold **any button at power-on** for the menu. Keep USB connected: your last
 RAM firmware choice starts automatically when its file is available. Missing or
 invalid files leave the menu open.
 
@@ -27,10 +27,22 @@ firmware files, then press Freeze to retry.
 
 ## Saved choice
 
-The selector saves changed authenticated choices to `aurora/choice.dat`. A brief
-red Freeze warning before launch means saving failed; verified firmware can run
-for this session. Automatic boot and selecting the saved choice do not rewrite
-settings. A damaged choice file can be deleted to return to the menu.
+`aurora/choice.txt` contains one exact supported RAM firmware filename, for example:
+
+```text
+Aurora_v1_4_4.bin
+```
+
+Edit that line on a computer to choose the next automatic boot. Use the filename
+from the catalog, without a folder or quotes. LF, CRLF or no final newline are
+accepted. Unknown names, extra lines and Dirt leave the menu open. The selected
+firmware is still fully authenticated before launch.
+
+Manual selections update the file only when the authenticated choice changes.
+Automatic boots and repeats do not rewrite it, including user-edited line endings.
+A brief red warning means saving failed; verified firmware can run for this session.
+Delete the file to open the menu. The old binary `choice.dat` is ignored; select
+once or create `choice.txt` to set the choice in the new format.
 
 ## Supported firmware
 
@@ -90,7 +102,7 @@ To return to AuroraSwitch, use a computer:
 
 These steps are also in `RETURN TO AURORASWITCH.txt` on the drive. Keep only one
 active root BIN. Your previous RAM choice may start automatically after restoration;
-hold Shift + Reverse at power-on to open the menu.
+hold any button at power-on to open the menu.
 
 Software-reset USB discovery, Dirt installation and interrupted-update recovery
 remain physically unqualified. If the automatic restart does not discover USB,

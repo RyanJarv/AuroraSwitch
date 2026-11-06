@@ -24,11 +24,15 @@ class FirmwareCatalogTests(unittest.TestCase):
     def test_existing_launch_contracts_match_frozen_baseline(self):
         catalog = firmware_catalog.read_catalog()
         expected = json.loads((ROOT / "tests/fixtures/catalog_launch_v1.json").read_text())
-        for index, frozen in enumerate(expected):
-            row = catalog["images"][index]
+        by_id = {row["id"]: row for row in catalog["images"]}
+        for frozen in expected:
+            row = by_id[frozen["id"]]
             actual = {key: row[key] for key in frozen if key != "category"}
             actual["category"] = [c["name"] for c in catalog["categories"]].index(row["category"])
             self.assertEqual(actual, frozen)
+
+    def test_stock_aurora_is_first(self):
+        self.assertEqual(firmware_catalog.read_catalog()["images"][0]["id"], "spectral")
 
     def test_invalid_metadata_rejects(self):
         original = firmware_catalog.read_catalog()

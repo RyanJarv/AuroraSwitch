@@ -110,26 +110,34 @@ int main() {
     assert(ReadChoice() == -1);
     assert(!WriteChoice(ImageCount) && writes == 0);
     unsigned ram_images = 0;
+    ChoiceRecord record{};
     for (unsigned index = 0; index < ImageCount; ++index) {
+        const auto size = EncodeChoice(index, record);
         if (Images[index].launch != LaunchMethod::Ram) {
             assert(!WriteChoice(index));
-            assert(DecodeChoice(EncodeChoice(index)) == -1);
+            assert(size == 0 && DecodeChoice(record, size) == -1);
+            // A manually edited filename still cannot select an installation.
+            const auto length = std::strlen(Images[index].filename);
+            std::memcpy(record.data(), Images[index].filename, length);
+            assert(DecodeChoice(record, length) == -1);
             continue;
         }
         ++ram_images;
-        const auto record = EncodeChoice(index);
-        assert(DecodeChoice(record) == static_cast<int>(index));
-        for (unsigned byte = 0; byte < record.size(); ++byte) {
-            auto torn = record;
-            torn[byte] ^= 1;
-            assert(DecodeChoice(torn) == -1);
-        }
+        assert(DecodeChoice(record, size) == static_cast<int>(index));
         assert(WriteChoice(index));
         const auto previous = writes;
         assert(ReadChoice() == static_cast<int>(index));
-        for (unsigned repeat = 0; repeat < 100; ++repeat)
-            assert(WriteChoice(index));
-        assert(writes == previous);
+        // Accept ordinary editor line endings without normalizing/re-writing.
+        const auto* name = Images[index].filename;
+        const std::string filename(name);
+        for (const auto* ending : {"", "\n", "\r\n"}) {
+            const auto text = filename + ending;
+            files[ChoicePath].assign(text.begin(), text.end());
+            assert(ReadChoice() == static_cast<int>(index));
+            for (unsigned repeat = 0; repeat < 100; ++repeat)
+                assert(WriteChoice(index));
+            assert(writes == previous);
+        }
     }
     assert(writes == ram_images && creates == ram_images);
     // Every save error is reported; the controller owns any explicit retry.
@@ -143,13 +151,13 @@ int main() {
         files[ChoicePath].assign(size, 0);
         assert(ReadChoice() == -1);
     }
-    // Correct CRC with an unsupported hash still cannot select anything.
-    auto unknown = EncodeChoice(0);
-    std::memset(unknown.data() + 8, 'a', 64);
-    const auto crc = ChoiceCrc(unknown.data(), 72);
-    for (unsigned byte = 0; byte < 4; ++byte)
-        unknown[72 + byte] = crc >> (8 * byte);
-    assert(DecodeChoice(unknown) == -1);
+    for (const auto* text : {"unknown.bin\n", "../Aurora_v1_4_4.bin", "Aurora_v1_4_4.bin\nextra",
+                             "Aurora_v1_4_4.bin ", "Aurora_v1_4_4.bi"}) {
+        const std::string invalid(text);
+        files[ChoicePath].assign(invalid.begin(), invalid.end());
+        assert(ReadChoice() == -1);
+    }
+    assert(DecodeChoice(record, record.size() + 1) == -1);
     char path[128];
     FirmwarePath(path, sizeof(path), 0);
     files[path].assign(Images[0].size, 0x5a);

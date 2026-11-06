@@ -22,13 +22,6 @@ class FailureControls(unittest.TestCase):
                 "writes == previous",
             ),
             (
-                "CRC",
-                "support/usb_choice.hpp",
-                "stored != ChoiceCrc(record.data(), record.size() - 4)",
-                "(false && stored != ChoiceCrc(record.data(), record.size() - 4))",
-                "DecodeChoice(torn) == -1",
-            ),
-            (
                 "readback",
                 "firmware/usb_files.hpp",
                 "saved && closed && ReadChoice() == static_cast<int>(index)",

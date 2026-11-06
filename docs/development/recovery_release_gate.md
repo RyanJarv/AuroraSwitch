@@ -13,7 +13,7 @@ stock as selector faults, but investigate changes introduced by our handoff.
 When separately authorized:
 
 - Install only the selector through the ordinary stock USB updater.
-- Test connected-drive automatic boot, held Shift + Reverse menu, press/release
+- Test connected-drive automatic boot, menu entry with each button held alone, press/release
   behavior, supported firmware audio/buttons and absence/reinsertion of USB.
 - Verify changed USB choices persist; automatic/repeat choices do not write.
   Interrupt a choice save: invalid records must open the menu, with no loop.

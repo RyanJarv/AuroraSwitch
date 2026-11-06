@@ -28,15 +28,8 @@
 // Tell the CPU where to find the new firmware's interrupt vectors: the
 // Cortex-M7 System Control Block vector-table offset register (VTOR).
 #define SELECTOR_VTOR_REGISTER 0xe000ed08
-// CRC-32/ISO-HDLC reflected polynomial used for saved-choice records.
-#define SELECTOR_BOOT_CRC_POLYNOMIAL 0xedb88320
-// Word arithmetic and NVIC write-one masks have different meanings despite
-// sharing the same numeric value.
-#define SELECTOR_U32_MASK 0xffffffff
+// NVIC write-one mask for disabling/clearing external interrupts.
 #define SELECTOR_NVIC_ALL_INTERRUPTS 0xffffffff
 // PCA9685 address-pin bits; libDaisy ORs these with its I2C base address 0x40.
 #define SELECTOR_LED_DRIVER_A 0x00
 #define SELECTOR_LED_DRIVER_B 0x01
-
-// USB choice format: eight version bytes, catalog SHA-256 text, CRC-32.
-#define SELECTOR_CHOICE_FILE_SIZE 76

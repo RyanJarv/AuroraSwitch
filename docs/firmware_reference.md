@@ -4,8 +4,8 @@
 
 | Category | Selector color | Firmware | What it does | Availability |
 | --- | --- | --- | --- | --- |
-| Reverbs | Blue | [FDN 1.2.2](#fdn-122--blue) | Conventional reverb | Release |
 | Reverbs | Green | [Aurora 1.4.4](#aurora-144--green) | Spectral reverb | Release |
+| Reverbs | Blue | [FDN 1.2.2](#fdn-122--blue) | Conventional reverb | Release |
 | Delays | Cyan | [EchoGarden 0.3.1](#echogarden-031--cyan) | Multi-line echo and ambience | Release |
 | Delays | Magenta | [CloudscapeX](#cloudscapex--magenta) | Modulated delay, diffusion and filter delay | Release |
 | Synths / Other | Amber | [The Oscillator Is a Lie 0.0.2](#the-oscillator-is-a-lie-002--amber) | Aliasing/ring-mod oscillator | Release |
@@ -16,14 +16,14 @@
 | Synths / Other | White | [Morse 0.1.0](#morse--white) | Three-pattern rhythmic VCA | Development |
 | Synths / Other | Red | [Tempest 1.0.0](#tempest-100--red) | Multi-bank distortion | Development |
 | Synths / Other | Azure | [FataMorgana RAM experiment](#fatamorgana-ram-experiment--azure) | Dual wavetable synthesizer | Development |
-| Reverbs | Yellow | [Aurora HP-filter variant](#aurora-hp-filter-variant--yellow) | Spectral reverb with dry-input high-pass | Development |
+| Reverbs | Lime | [Aurora HP-filter variant](#aurora-hp-filter-variant--lime) | Spectral reverb with dry-input high-pass | Development |
 | Reverbs | Pink | [Dirt Verb 1.1](#dirt-verb-11--pink) | Installs Dirt; computer required to return | Development |
 
 Current source build: **Shift** → category, **Reverse** → firmware,
 **Freeze** → verify and launch. Category colors: blue reverbs, green delays,
 amber synths/other.
 The older published release uses Reverse → Freeze → Shift.
-Hold **Shift + Reverse at power-on** for the menu. USB is required to launch firmware, including automatic boot. [Setup guide](user_guide.md).
+Hold **any button at power-on** for the menu. USB is required to launch firmware, including automatic boot. [Setup guide](user_guide.md).
 
 The HP-filter variant is a source-build addition. Virtual screening is not physical
 compatibility or recovery testing. FataMorgana uses the reviewed RAM build.
@@ -439,7 +439,7 @@ Mentioned in community notes; controls and compatibility are not covered here.
 - **FFT Jump Select:** michael on the QuBit Discord.
 
 
-## Aurora HP-filter variant — Yellow
+## Aurora HP-filter variant — Lime
 
 [Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
 

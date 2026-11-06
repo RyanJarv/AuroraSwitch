@@ -35,7 +35,7 @@ int main() {
                     distance_squared += delta * delta;
                 }
                 // At least 0.4 apart in normalized RGB: rejects the old
-                // green/lime and white/pale-red pairs, including dimmer copies.
+                // near-green and white/pale-red pairs, including dimmer copies.
                 assert(distance_squared >= .16f);
             }
             assert(std::strcmp(Images[i].filename, Images[j].filename) != 0);

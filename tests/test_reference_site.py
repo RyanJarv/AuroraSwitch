@@ -179,7 +179,7 @@ class ReferenceSiteTests(unittest.TestCase):
         self.assertIn('<dialog id="setup-dialog" aria-labelledby="setup-title">', page)
         self.assertIn("only root BIN", page)
         self.assertIn("automatic boot", page)
-        self.assertIn("Shift + Reverse at power-on", page)
+        self.assertIn("any button at power-on", page)
         self.assertNotIn("Choose your sound", body)
         for category in CATEGORIES:
             self.assertIn(category, body)
@@ -193,7 +193,7 @@ class ReferenceSiteTests(unittest.TestCase):
                 self.assertEqual(body.count(f'href="{section.filename}"'), 1)
 
     def test_additional_images_are_development_only_and_ram_fata_is_unique(self):
-        for name, color in (("Aurora HP-filter variant", "Yellow"),):
+        for name, color in (("Aurora HP-filter variant", "Lime"),):
             entry = next(entry for entry in self.entries if entry.name == name)
             self.assertEqual(entry.color, color)
             self.assertEqual(entry.availability, "Development")
@@ -391,11 +391,6 @@ class ReferenceSiteTests(unittest.TestCase):
     def test_navigation_rejects_missing_link_targets(self):
         with self.assertRaisesRegex(ValueError, "Missing firmware section"):
             read_reference(self.source.replace("## FDN 1.2.2 — Blue", "## Missing firmware", 1))
-
-    def test_colors_may_repeat_across_categories(self):
-        yellow = [entry for entry in self.entries if entry.color == "Yellow"]
-        self.assertEqual({entry.category for entry in yellow}, {"Reverbs", "Delays"})
-        self.assertEqual(len({entry.anchor for entry in yellow}), 2)
 
     def test_versions_share_stable_family_colors(self):
         for anchor, color, count in (

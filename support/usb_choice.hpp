@@ -2,42 +2,42 @@
 #include "../firmware/images.hpp"
 
 namespace aurora_selector {
-// A USB record identifies exact bytes, not a menu position that can move when
-// the catalog changes. CRC rejects interrupted/corrupt saves; it is not a
-// substitute for authenticating the actual firmware before launch.
-using ChoiceRecord = std::array<std::uint8_t, SELECTOR_CHOICE_FILE_SIZE>;
-constexpr char ChoiceMagic[] = "AURUSB01";
-inline std::uint32_t ChoiceCrc(const std::uint8_t* data, std::size_t size) {
-    std::uint32_t crc = SELECTOR_U32_MASK;
-    for (std::size_t i = 0; i < size; ++i) {
-        crc ^= data[i];
-        for (unsigned bit = 0; bit < 8; ++bit)
-            crc = (crc >> 1) ^ ((crc & 1U) ? SELECTOR_BOOT_CRC_POLYNOMIAL : 0U);
+// One editable catalog filename, with optional LF or CRLF. This only chooses an
+// entry; the complete firmware is authenticated independently before launch.
+constexpr std::size_t ChoiceCapacity() {
+    std::size_t maximum = 0;
+    for (const auto& image : Images) {
+        std::size_t length = 0;
+        while (image.filename[length])
+            ++length;
+        if (length > maximum)
+            maximum = length;
     }
-    return ~crc;
+    return maximum + 2; // Longest filename plus CRLF, never an unbounded text read.
 }
-inline ChoiceRecord EncodeChoice(unsigned index) {
-    ChoiceRecord record{};
+using ChoiceRecord = std::array<std::uint8_t, ChoiceCapacity()>;
+inline std::size_t EncodeChoice(unsigned index, ChoiceRecord& record) {
     if (index >= ImageCount || Images[index].launch != LaunchMethod::Ram)
-        return record;
-    std::memcpy(record.data(), ChoiceMagic, 8);
-    std::memcpy(record.data() + 8, Images[index].sha256, 64);
-    const auto crc = ChoiceCrc(record.data(), record.size() - 4);
-    for (unsigned byte = 0; byte < 4; ++byte)
-        record[record.size() - 4 + byte] = static_cast<std::uint8_t>(crc >> (8 * byte));
-    return record;
+        return 0;
+    const auto length = std::strlen(Images[index].filename);
+    std::memcpy(record.data(), Images[index].filename, length);
+    record[length] = '\n';
+    return length + 1;
 }
-inline int DecodeChoice(const ChoiceRecord& record) {
-    std::uint32_t stored = 0;
-    for (unsigned byte = 0; byte < 4; ++byte)
-        stored |= std::uint32_t(record[record.size() - 4 + byte]) << (8 * byte);
-    if (std::memcmp(record.data(), ChoiceMagic, 8) != 0 ||
-        stored != ChoiceCrc(record.data(), record.size() - 4))
+inline int DecodeChoice(const ChoiceRecord& record, std::size_t size) {
+    if (size == 0 || size > record.size())
         return -1;
-    for (unsigned index = 0; index < ImageCount; ++index)
-        if (Images[index].launch == LaunchMethod::Ram &&
-            std::memcmp(record.data() + 8, Images[index].sha256, 64) == 0)
+    if (record[size - 1] == '\n') {
+        --size;
+        if (size && record[size - 1] == '\r')
+            --size;
+    }
+    for (unsigned index = 0; index < ImageCount; ++index) {
+        const auto* name = Images[index].filename;
+        if (Images[index].launch == LaunchMethod::Ram && std::strlen(name) == size &&
+            std::memcmp(record.data(), name, size) == 0)
             return static_cast<int>(index);
+    }
     return -1;
 }
 } // namespace aurora_selector

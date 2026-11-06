@@ -12,8 +12,9 @@ Presence alone does not authorize launch: it reads the chosen file into separate
 staging RAM and checks its complete SHA-256, size and startup vectors against the
 catalog. Changed, truncated and unsupported files are rejected.
 
-A valid saved choice in `aurora/choice.dat` launches once at startup when USB and
-its firmware are available. Hold Shift + Reverse at power-on to open the menu.
+The editable `aurora/choice.txt` holds a catalog filename, not a menu index.
+A valid saved choice launches once at startup when USB and
+its firmware are available. Hold any button at power-on to open the menu.
 Missing or invalid files leave the menu/error state; reconnect USB and press
 Freeze to retry. The selector never automatically substitutes another image.
 

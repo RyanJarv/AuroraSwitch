@@ -7,7 +7,7 @@
 #include <cstring>
 
 namespace aurora_selector {
-enum class Color { Blue, Green, Cyan, Magenta, Amber, Yellow, White, Red, Azure, Pink };
+enum class Color { Blue, Green, Cyan, Magenta, Amber, Yellow, White, Red, Azure, Pink, Lime };
 struct ColorInfo {
     const char* name;
     const char* css;
@@ -18,7 +18,8 @@ constexpr ColorInfo Palette[] = {
     {"Cyan", "#32c9ce", {0.f, 0.4f, 0.4f}},  {"Magenta", "#d855d5", {0.4f, 0.f, 0.4f}},
     {"Amber", "#dc9a25", {0.4f, 0.2f, 0.f}}, {"Yellow", "#ead342", {0.4f, 0.4f, 0.f}},
     {"White", "#fff", {0.4f, 0.4f, 0.4f}},   {"Red", "#e84444", {0.4f, 0.f, 0.f}},
-    {"Azure", "#3ea7dc", {0.f, 0.2f, 0.4f}}, {"Pink", "#e84c82", {0.4f, 0.f, 0.1f}},
+    {"Azure", "#3ea7dc", {0.f, 0.2f, 0.4f}}, {"Pink", "#e84c82", {0.4f, 0.04f, 0.3f}},
+    {"Lime", "#9bd43b", {0.2f, 0.4f, 0.f}},
 };
 constexpr const ColorInfo& GetColor(Color color) {
     return Palette[static_cast<unsigned>(color)];
@@ -67,8 +68,8 @@ constexpr FamilyInfo Families[] = {
     {"fatamorgana", "FataMorgana", Category::Other, Color::Azure,
      "fatamorgana-ram-experiment--azure"},
     {"dirt-verb", "Dirt Verb", Category::Reverbs, Color::Pink, "dirt-verb-11--pink"},
-    {"hp-filter", "Aurora HP-filter", Category::Reverbs, Color::Yellow,
-     "aurora-hp-filter-variant--yellow"},
+    {"hp-filter", "Aurora HP-filter", Category::Reverbs, Color::Lime,
+     "aurora-hp-filter-variant--lime"},
 };
 static_assert(sizeof(Families) / sizeof(Families[0]) == static_cast<unsigned>(Family::Count),
               "Each family needs one metadata record in enum order");
@@ -98,20 +99,10 @@ struct Firmware {
     const char* download; // Optional direct download of the original BIN/ZIP.
     Image image;
 };
-// Catalog order is the existing menu/discovery order. Every version keeps
-// its own size/hash/vectors; these words come from the authenticated binary.
+// Stock Aurora comes first in menu/discovery order. Each version keeps its own
+// size/hash/vectors; these words come from the authenticated binary.
 // Colors and categories are inherited from its family, never duplicated.
 constexpr Firmware FirmwareCatalog[] = {
-    {Family::Fdn,
-     "fdn",
-     "FDN 1.2.2",
-     "Conventional reverb",
-     true,
-     "https://www.qubitelectronix.com/s/AR_FDN_v1_2_2.bin",
-     {"AR_FDN_v1_2_2.bin",
-      "13e774782ce3367675bcee895900f63915d414127d1c2d797e254e020c55f916",
-      104196U,
-      {SELECTOR_DTCM_END, 0x24000959U}}},
     {Family::Aurora,
      "spectral",
      "Aurora 1.4.4",
@@ -122,6 +113,16 @@ constexpr Firmware FirmwareCatalog[] = {
       "0ec2dc67748c6864edad7b7910bf65c26d2db4f6c38034f07cfcf286615882e4",
       181868U,
       {SELECTOR_DTCM_END, 0x2400070dU}}},
+    {Family::Fdn,
+     "fdn",
+     "FDN 1.2.2",
+     "Conventional reverb",
+     true,
+     "https://www.qubitelectronix.com/s/AR_FDN_v1_2_2.bin",
+     {"AR_FDN_v1_2_2.bin",
+      "13e774782ce3367675bcee895900f63915d414127d1c2d797e254e020c55f916",
+      104196U,
+      {SELECTOR_DTCM_END, 0x24000959U}}},
     {Family::EchoGarden,
      "echogarden-0.3.1",
      "EchoGarden 0.3.1",

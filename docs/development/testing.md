@@ -27,7 +27,7 @@ ordinary disposable file, never mounted media. It compiles the pinned filesystem
 with ARM-compatible integer widths and needs the SDK, native C/C++ compilers and
 `mkfs.fat` (`dosfstools`). CI runs it alongside host tests and sanitizers.
 
-Three mutation controls remove CRC checking, repeat suppression or save readback;
+Two mutation controls remove repeat suppression or save readback;
 the corresponding native assertions must fail. The exact-image authenticator
 also checks user-supplied originals locally.
 

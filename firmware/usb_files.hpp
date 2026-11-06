@@ -12,7 +12,7 @@ namespace aurora_selector {
 // and partial-sector choice transfers therefore use the existing DMA arena.
 inline __attribute__((section(".sram1_bss.usb_file"), aligned(32))) FIL usb_file;
 inline __attribute__((section(".sram1_bss.usb_choice"), aligned(32))) ChoiceRecord usb_choice;
-constexpr const char* ChoicePath = "0:/aurora/choice.dat";
+constexpr const char* ChoicePath = "0:/aurora/choice.txt";
 inline void FirmwarePath(char* path, std::size_t size, unsigned index) {
     std::snprintf(path, size, "0:/aurora/%s", Images[index].filename);
 }
@@ -210,11 +210,11 @@ inline int ReadChoice() {
         return -1;
     auto& record = usb_choice;
     UINT read = 0;
-    const bool valid = f_size(&file) == record.size() &&
-                       f_read(&file, record.data(), record.size(), &read) == FR_OK &&
-                       read == record.size();
+    const auto size = f_size(&file);
+    const bool valid = size > 0 && size <= record.size() &&
+                       f_read(&file, record.data(), size, &read) == FR_OK && read == size;
     const bool closed = f_close(&file) == FR_OK;
-    return valid && closed ? DecodeChoice(record) : -1;
+    return valid && closed ? DecodeChoice(record, read) : -1;
 }
 inline bool WriteChoice(unsigned index) {
     if (index >= ImageCount || Images[index].launch != LaunchMethod::Ram)
@@ -224,13 +224,13 @@ inline bool WriteChoice(unsigned index) {
     // One replace-in-place record. A torn save can lose the remembered choice,
     // which only opens the menu next boot. No journal or recovery copy needed.
     auto& record = usb_choice;
-    record = EncodeChoice(index);
+    const auto size = EncodeChoice(index, record);
     auto& file = usb_file;
     if (f_open(&file, ChoicePath, FA_WRITE | FA_CREATE_ALWAYS) != FR_OK)
         return false;
     UINT written = 0;
-    const bool saved = f_write(&file, record.data(), record.size(), &written) == FR_OK &&
-                       written == record.size() && f_sync(&file) == FR_OK;
+    const bool saved = f_write(&file, record.data(), size, &written) == FR_OK &&
+                       written == size && f_sync(&file) == FR_OK;
     const bool closed = f_close(&file) == FR_OK;
     return saved && closed && ReadChoice() == static_cast<int>(index);
 }

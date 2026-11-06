@@ -23,10 +23,11 @@ Switch RAM firmware without a computer.
 - **Reverse** — next firmware; the arc shows its position and category color.
 - **Freeze** — verify, remember and launch. A brief red warning means saving failed;
   the firmware can still run for this session.
-- **Shift + Reverse held at power-on** — open the menu.
+- **Any button held at power-on** — open the menu.
 
 The last valid saved choice starts on the next boot when USB and its firmware
-are available. Choices live in `aurora/choice.dat`. Automatic boots and repeated
+are available. Edit `aurora/choice.txt` with an exact catalog filename to change
+the automatic boot choice. Automatic boots and repeated
 choices do not rewrite that file. Missing or invalid files leave the menu open;
 reconnect the drive and press Freeze to retry.
 

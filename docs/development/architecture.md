@@ -10,7 +10,7 @@ See [How it works](../how_it_works.md) for the design and memory contract.
 | `firmware/selector.cpp` | Minimal hardware initialization, USB host, panel and authentication |
 | `firmware/selector_controller.hpp` | Startup, one-shot automatic launch and explicit retries |
 | `firmware/usb_files.hpp` | Concrete FatFs discovery, bounded reads and checked choice-file saves |
-| `support/usb_choice.hpp` | Version/hash/CRC choice format, independent of menu positions |
+| `support/usb_choice.hpp` | Bounded, editable filename choice format, independent of menu positions |
 | `firmware/handoff_sequence.hpp` | Validation and cleanup ordering |
 | `firmware/handoff.cpp` | Peripheral cleanup, staged-byte rechecks and trampoline validation |
 | `firmware/copy_jump.s` | Stackless RAM copy, DMA clearing, VTOR/MSP and terminal jump |
@@ -47,12 +47,13 @@ not exact reproduction of every register and RAM byte after power-on.
 
 ## Saved choice
 
-`0:/aurora/choice.dat` is exactly 76 bytes: `AURUSB01`, 64 lowercase SHA-256
-characters identifying a current RAM catalog image, then a little-endian
-CRC-32/ISO-HDLC over the preceding 72 bytes. Wrong versions, lengths, hashes or
-CRCs cannot authorize automatic boot; the firmware file is still authenticated.
+`0:/aurora/choice.txt` contains one exact RAM catalog filename, optionally followed
+by LF or CRLF. The read buffer is sized from the longest catalog filename plus
+CRLF; empty/oversized files, unknown names, extra bytes and installation entries
+provide no automatic launch authority. There is no checksum for users to maintain.
+The actual firmware is still authenticated by its full hash, size and vectors.
 
-Read the choice after the first successful scan. The startup combination or an
+Read the choice after the first successful scan. Any held startup button or an
 explicit menu action cancels automatic boot. Reinsertion after an attempted boot
 does not retry it. Dirt installation entries are excluded.
 

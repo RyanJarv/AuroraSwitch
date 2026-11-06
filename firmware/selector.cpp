@@ -169,6 +169,7 @@ int main() {
 
     std::uint32_t last_control = daisy::System::GetNow();
     const std::uint32_t buttons_started = last_control;
+    bool startup_buttons_released = false;
     while (true) {
         if (usb_initialized)
             usb.Process();
@@ -179,15 +180,22 @@ int main() {
         next_button.Debounce();
         load_button.Debounce();
         category_button.Debounce();
-        if (category_button.RawState() && next_button.RawState())
+        const bool any_button_held = category_button.RawState() || next_button.RawState() ||
+                                     load_button.RawState();
+        if (any_button_held)
             controller.RequestMenu();
-        // Allow a stable held combination before the first possible autoboot.
+        // Allow startup holds to cancel the first automatic boot attempt.
         if (now - buttons_started < 30U)
             continue;
-        // Act on presses, so releasing the startup menu combination does not navigate.
+        // Ignore the startup hold until release, especially Freeze: entering
+        // the menu must never also launch an image. Later actions use press edges.
+        if (!any_button_held)
+            startup_buttons_released = true;
         const bool category_changed = category_button.RisingEdge();
         const bool selection_changed = next_button.RisingEdge();
-        controller.Update(category_changed, selection_changed, load_button.RisingEdge(),
+        controller.Update(startup_buttons_released && category_changed,
+                          startup_buttons_released && selection_changed,
+                          startup_buttons_released && load_button.RisingEdge(),
                           [] { SetStatus(GetColor(Color::Amber).rgb); });
         if (now % 20U == 0U) {
             switch (controller.GetState()) {
