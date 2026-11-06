@@ -60,7 +60,7 @@ def fresh_build(commit: str):
             check=True,
             env=build_environment,
         )
-        build_directory = "build-experimental-dma"
+        build_directory = "build"
         subprocess.run(
             [
                 "make",

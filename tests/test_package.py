@@ -21,7 +21,7 @@ class PackageTests(unittest.TestCase):
         directory = tempfile.TemporaryDirectory(prefix="aurora-package-test-")
         self.addCleanup(directory.cleanup)
         self.root = Path(directory.name)
-        self.build = self.root / "firmware/build-experimental-dma"
+        self.build = self.root / "firmware/build"
         self.build.mkdir(parents=True)
         for suffix in ("elf", "bin", "map"):
             (self.build / f"AuroraSwitch.{suffix}").write_bytes(suffix.encode())
@@ -79,7 +79,7 @@ class PackageTests(unittest.TestCase):
         self.assertFalse((self.root / "dist").exists())
 
     def test_ambient_outputs_not_used(self):
-        ambient = self.root / "firmware/build-experimental-dma"
+        ambient = self.root / "firmware/build"
         isolated = self.root / "fresh"
         isolated.mkdir()
         for suffix in ("elf", "bin", "map"):

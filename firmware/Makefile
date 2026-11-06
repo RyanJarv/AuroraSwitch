@@ -1,6 +1,6 @@
 # Compilation only. Deliberately no local programming targets or bootloader BIN.
 TARGET = AuroraSwitch
-BUILD_DIR ?= build-experimental-dma
+BUILD_DIR ?= build
 override BUILD_DIR := $(BUILD_DIR)
 # Preserve link order for stable exact-image diagnostic bindings.
 CPP_SOURCES = handoff.cpp selector.cpp

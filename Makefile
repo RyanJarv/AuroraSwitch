@@ -11,7 +11,7 @@ dev:
 reference-html:
 	python3 scripts/render_reference.py
 build: dependencies
-	$(MAKE) -C firmware BUILD_DIR=build-experimental-dma
+	$(MAKE) -C firmware BUILD_DIR=build
 setup:
 	python3 scripts/setup_dependencies.py
 check-toolchain:

@@ -1,7 +1,9 @@
 # Development
 
 Build the USB-backed RAM selector in the base checkout. Development artifacts
-are not physically qualified releases.
+are not physically qualified releases. `make` writes the selector to
+`firmware/build/AuroraSwitch.bin`; there are no separate experimental or virtual
+selector build configurations. Sealed packages remain separate under `dist/`.
 
 ```sh
 make setup
