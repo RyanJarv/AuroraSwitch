@@ -11,22 +11,21 @@ python3 scripts/check_fatfs_install.py
 make package
 ```
 
-Use GNU Arm 10-2020-q4-major for firmware. Packaging fresh-builds clean committed
-source and pinned dependencies, checks ELF/BIN identity and records tool/file
-hashes. It never installs firmware or packages vendor originals.
+Use the [build setup](README.md) and [packaging contract](releases.md) for pinned
+inputs and selector-only artifacts.
 
-Native tests use the production controller, USB file operations, choice codec,
-menu and handoff sequence. Dirt tests cover two-press confirmation, cancellation,
-root conflicts/aliases, exact selector backups, checked copy/text creation, failures, destination authentication and reset
-ordering. A disposable FAT image exercises the pinned FatFs backup/copy and restoration operations. The FatFs test boundary supplies in-memory files and
-read/write/sync/close/disconnect failures; it does not emulate a USB controller.
-Tests cover bounded reads, corrupt records, changed/repeat saves, no automatic
-save/retry loops, missing firmware and cleanup-time staged-byte rejection.
-The real-FatFs check needs the pinned SDK, native C/C++ compilers and `mkfs.fat`.
-It uses an ordinary temporary file, never mounted media. It compiles the pinned
-filesystem code with ARM-compatible integer widths on the host.
-CI runs this check alongside the native tests and sanitizers, fetching pinned
-dependencies with `make setup` and installing `dosfstools` for `mkfs.fat`.
+Native tests exercise the production controller, USB files, choice codec, menu
+and handoff sequence. They cover unavailable USB, corrupt records, bounded reads,
+changed/repeat saves, failures without retry loops, and cleanup-time staged-byte
+rejection. Dirt coverage includes confirmation/cancellation, conflicts and aliases,
+exact backups, copy/text failures, destination authentication and reset ordering.
+The in-memory FatFs boundary injects read/write/sync/close/disconnect failures;
+it does not emulate a USB controller.
+
+The real-FatFs test checks backup/copy, remount/readback and restoration on an
+ordinary disposable file, never mounted media. It compiles the pinned filesystem
+with ARM-compatible integer widths and needs the SDK, native C/C++ compilers and
+`mkfs.fat` (`dosfstools`). CI runs it alongside host tests and sanitizers.
 
 Three mutation controls remove CRC checking, repeat suppression or save readback;
 the corresponding native assertions must fail. The exact-image authenticator
@@ -48,8 +47,8 @@ geckodriver --port 4444
 python3 scripts/check_reference_browser.py --webdriver http://127.0.0.1:4444
 ```
 
-The smoke checks narrow layouts, dark mode, keyboard navigation and static
-no-JavaScript pages. Add `--firefox /path/to/firefox` if needed.
+The smoke checks both dialogs, narrow layouts, dark mode, keyboard navigation
+and static no-JavaScript pages. Add `--firefox /path/to/firefox` if needed.
 
 ## Evidence limits
 

@@ -12,13 +12,12 @@ build still needs physical installation, handoff and stock recovery qualificatio
    and put supported original firmware BINs there with their exact catalog filenames.
 5. Keep the drive connected for firmware selection and automatic boot.
 
-RAM selection keeps our selector installed. Original vendor files are read into RAM unchanged;
-no private composite installer or preparer is needed. Firmware-owned tables/options
-keep their ordinary USB locations. FataMorgana's USB wavetable path remains unqualified.
-
 ## Controls
 
 **Shift — next category. Reverse — next firmware. Freeze — verify & launch.**
+
+### Startup and status
+
 Hold **Shift + Reverse at power-on** for the menu. Keep USB connected: your last
 RAM firmware choice starts automatically when its file is available. Missing or
 invalid files leave the menu open.
@@ -40,6 +39,24 @@ Files are checked by complete SHA-256, size and their catalog startup vectors.
 Changed, truncated and unsupported images are rejected. Dirt is the only stock
 USB installation entry; it cannot use the direct RAM launch. Adding/removing supported originals on USB changes the available menu.
 New versions need review before entering the catalog.
+
+Firmware-owned tables/options keep their ordinary USB locations. FataMorgana's
+USB wavetable path remains unqualified.
+
+### Download public releases
+
+For supported Flux Capacitor and Morse releases:
+
+```sh
+mkdir -p local-firmware
+gh release download v0.3.0 --repo DaveParr/aurora-flux-capacitor \
+  --pattern flux-capacitor-0.3.0.bin --dir local-firmware
+gh release download v0.2.0 --repo DaveParr/Aurora-Morse \
+  --pattern aurora-morse-0.2.0.bin --dir local-firmware
+```
+
+Obtain other originals from their authors using the reference links. Discord
+files must be supplied manually; no third-party firmware is included here.
 
 ## Dirt Verb: install and restart
 

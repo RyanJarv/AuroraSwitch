@@ -146,13 +146,18 @@ def check(args, base):
                     """
                     ), (width, page)
                     if javascript:
-                        browser.execute("document.querySelector('iframe').contentDocument.getElementById('setup-open').click()")
-                        assert browser.execute("""const frame = document.querySelector('iframe');
-                            const dialog = frame.contentDocument.getElementById('setup-dialog');
-                            const bounds = dialog.getBoundingClientRect();
-                            return dialog.open && bounds.left >= 0 && bounds.right <= frame.contentWindow.innerWidth
-                                && dialog.scrollWidth <= dialog.clientWidth;"""), (width, page, 'setup')
-                        browser.execute("document.querySelector('iframe').contentDocument.querySelector('#setup-dialog button').click()")
+                        for name in ("setup", "guide"):
+                            browser.execute(
+                                f"document.querySelector('iframe').contentDocument.getElementById('{name}-open').click()"
+                            )
+                            assert browser.execute(f"""const frame = document.querySelector('iframe');
+                                const dialog = frame.contentDocument.getElementById('{name}-dialog');
+                                const bounds = dialog.getBoundingClientRect();
+                                return dialog.open && bounds.left >= 0 && bounds.right <= frame.contentWindow.innerWidth
+                                    && dialog.scrollWidth <= dialog.clientWidth;"""), (width, page, name)
+                            browser.execute(
+                                f"document.querySelector('iframe').contentDocument.querySelector('#{name}-dialog button').click()"
+                            )
             browser.open(base + "morse.html")
             browser.wait("document.title.startsWith('Morse')")
             assert browser.execute(

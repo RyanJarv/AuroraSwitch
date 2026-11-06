@@ -45,29 +45,13 @@ To restore stock firmware, use its original BIN as the only root BIN and follow
 
 ## Firmware
 
-### Supported
+The [firmware reference](docs/firmware_reference.md) lists exact supported
+versions, download sources, creator credits, colors and controls. Release and
+development entries are marked separately. Current source includes Dirt Verb
+1.1 through stock USB installation; other flash-running images are unsupported.
 
-The published release supports these exact versions:
-
-* [Aurora 1.4.4](https://www.qubitelectronix.com/alternate-firmware/p/aurora-spectral-reverb)
-* [FDN 1.2.2](https://www.qubitelectronix.com/alternate-firmware/p/fdn-verb)
-* [EchoGarden 0.3.1](https://discord.com/channels/1171549067122311298/1257378715944484864)
-* [CloudscapeX](https://discord.com/channels/1171549067122311298/1257378715944484864)
-* [The Oscillator Is a Lie 0.0.2](https://discord.com/channels/1171549067122311298/1257378715944484864)
-* [Flux Capacitor 0.3.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/tag/v0.3.0)
-* [Morse 0.2.0](https://github.com/DaveParr/Aurora-Morse/releases/tag/v0.2.0)
-
-### Source-build additions
-
-Current source adds Flux 0.1.0/0.2.0, Morse 0.1.0, Tempest 1.0.0, and one
-FataMorgana RAM build. This branch also includes
-HP-filter Aurora (RAM) and Dirt Verb 1.1 (stock USB installation), with no extra
-build options. Other flash-running images are unsupported. See the
-[user guide](docs/user_guide.md#supported-firmware) for files and commands.
-
-Earlier exact-build virtual screens pass; physical reliability and stock USB
-recovery remain open. Fata's USB wavetable path is unverified. Unsupported
-versions or changed files are rejected.
+Unsupported versions or changed files are rejected. Physical reliability and
+stock USB recovery remain open; FataMorgana's USB wavetable path is unverified.
 
 ## More Info
 

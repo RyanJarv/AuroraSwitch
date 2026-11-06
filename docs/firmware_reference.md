@@ -372,7 +372,7 @@ and [algorithm details](https://github.com/jfriess/Aurora-Firmwares/blob/d5504d7
 
 ## FataMorgana RAM experiment — Azure
 
-[Build RAM firmware](user_guide.md#fatamorgana)
+[Build RAM firmware](development/README.md#fatamorgana-build)
 
 By [jfriess](https://github.com/jfriess) · [Upstream project](https://github.com/jfriess/Aurora-Firmwares/tree/main/FataMorgana)
 

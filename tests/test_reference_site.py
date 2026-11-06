@@ -14,6 +14,7 @@ from scripts.render_reference import (
     CATEGORIES,
     PANEL_CONTROLS,
     label_controls,
+    guide_section,
     navigation,
     read_reference,
     slug,
@@ -70,6 +71,19 @@ class ReferenceParser(HTMLParser):
 
 
 class ReferenceSiteTests(unittest.TestCase):
+    def test_guide_sections_follow_headings_and_reject_missing_instructions(self):
+        source = (
+            "## Controls\nButtons.\n\n### Startup and status\nHold buttons.\n"
+            "#### Detail\nKeep this.\n## Saved choice\nExclude this.\n"
+        )
+        self.assertEqual(
+            guide_section(source, "Startup and status", level=3),
+            "Hold buttons.\n#### Detail\nKeep this.",
+        )
+        for invalid in ("", "### Startup and status\n\n", source + source):
+            with self.subTest(source=invalid), self.assertRaisesRegex(ValueError, "guide section"):
+                guide_section(invalid, "Startup and status", level=3)
+
     @classmethod
     def setUpClass(cls):
         cls.source = (ROOT / "docs/firmware_reference.md").read_text()

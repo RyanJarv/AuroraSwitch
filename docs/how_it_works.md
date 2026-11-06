@@ -1,104 +1,58 @@
 # How it works
 
-For RAM selection, AuroraSwitch is installed at the stock application's flash address,
-`0x90040000`. The stock bootloader copies this RAM-linked selector to
-`0x24000000` at startup. Supported original firmware stays unchanged in
-`aurora/` on USB; the selector never programs or erases on-module flash,
-initializes persistent settings there, or changes flash protection.
+AuroraSwitch keeps the selector installed and loads supported original firmware
+from USB into RAM. The selector never programs or erases on-module flash,
+initializes persistent settings there, or changes flash protection. Installing
+it through the stock updater necessarily writes its application image.
+
+## Loading and automatic boot
 
 The selector scans catalog filenames and sizes when USB becomes available.
-Presence is not authentication. On launch it reads the chosen file into separate
-staging RAM, authenticates its complete hash, size and vectors, and rechecks the
-actual staged bytes during handoff. Unsupported images cannot launch. The exact Dirt original is an installation
-action, never a direct flash handoff.
+Presence alone does not authorize launch: it reads the chosen file into separate
+staging RAM and checks its complete SHA-256, size and startup vectors against the
+catalog. Changed, truncated and unsupported files are rejected.
 
-## Remembered choice
+A valid saved choice in `aurora/choice.dat` launches once at startup when USB and
+its firmware are available. Hold Shift + Reverse at power-on to open the menu.
+Missing or invalid files leave the menu/error state; reconnect USB and press
+Freeze to retry. The selector never automatically substitutes another image.
 
-`aurora/choice.dat` contains a version marker, exact catalog image hash and CRC.
-A valid saved image launches automatically once at startup when USB is available.
-Hold Shift + Reverse during power-on to open the menu. Invalid/missing settings,
-missing firmware or unavailable USB leave a menu/error state. Reinsertion scans
-again; Freeze provides an explicit retry. Failures never cause automatic load or
-save loops or fallback to a different image.
-
-Only a changed, authenticated manual selection writes the choice file. Repeat
-choices and automatic boots do not write it. Saves check write, sync, close and
-readback. A failed save warns briefly, then permits the verified session launch.
-A torn replacement can lose the choice; next boot opens the menu. The file is
-not a transactional filesystem guarantee, so keep the USB backed up.
-
-## Dirt installation
-
-Dirt runs at the stock application flash address. Instead of writing flash, the
-selector delegates installation to the stock updater. Two separate Freeze
-presses authenticate/confirm the action. Navigation or disconnection cancels.
-Dirt is neither saved as a boot choice nor automatically installed.
-
-The concrete FatFs path permits a root `AuroraSwitch.bin` only when it matches
-our entire installed image byte-for-byte. Its size comes from the pinned SRAM
-linker's initialized-data extent. The selector reads its original from the stock
-application flash mapping, never its mutable running RAM; it issues no flash commands.
-It rejects other root BINs, including case-insensitive substring/short-name matches.
-
-Only after confirmation does it rename that exact installer to
-`AuroraSwitch.disabled`. If the installer was removed, it writes the installed
-image to a new backup instead. Existing backup/text files must match exactly and
-must not be hidden; files are never overwritten. It writes the short
-`RETURN TO AURORASWITCH.txt` instructions, reloads/authenticates Dirt after using
-the staging buffer as scratch, then copies its bytes to a new `DIRTVERB.BIN`.
-The original stays in `aurora/`. Complete destination authentication and the
-sole-root-BIN check precede unmount, USB shutdown and normal MCU reset.
-
-The stock updater replaces the selector with Dirt. To return, delete the root
-Dirt copy and rename the disabled selector back to `AuroraSwitch.bin` on a
-computer. No other on-module flash space is claimed.
-
-Rename synchronizes metadata; new files check every write, sync, close and full
-readback. Unmount alone does not flush. The pinned disk driver's `CTRL_SYNC`
-does not issue a device cache flush, so checked results do not establish
-power-loss durability. Any failed write/rename/readback after entering the
-confirmed operation latches a red error, with no reset, rollback or write retry.
-Inspect the drive on a computer. Software-reset discovery and physical recovery
-remain unqualified.
+Only changed, authenticated manual choices write settings. Automatic boots and
+repeat choices do not. A failed save warns and still permits the verified launch
+for that session. An interrupted save may lose the choice, returning to the menu
+next boot; it cannot change on-module settings.
 
 ## RAM handoff
 
-| Region | Role |
-| --- | --- |
-| `0x24000000` | Selector, then the chosen firmware |
-| `0x30000000`–`0x30008000` | DMA-accessible USB/FatFs and LED buffers |
-| `0x30008000`–`0x30040000` | Staged original image |
-| `0x38000000`–`0x38000400` | Stackless terminal copy/jump routine |
+The selector and RAM firmware run at the same address. To replace itself safely,
+the selector authenticates the staged bytes, stops memory-writing peripherals,
+disables its runtime and caches, and authenticates those bytes again. A small
+routine in separate SRAM copies the image over the selector, clears its DMA
+buffers, sets the new interrupt table and stack, and enters the original reset
+handler. Vendor binaries and reset vectors are never patched.
 
-The selector masks interrupts, resets memory-writing DMA/USB/peripherals, disables
-runtime/cache state, rechecks staged bytes, and copies/verifies the small jump
-routine into separate SRAM4. That routine replaces the selector in AXI RAM,
-clears the DMA arena, sets interrupt vectors and stack, then enters the original
-reset handler. Vendor binaries and reset vectors are never patched. Existing
-bootloader clock/MPU state is retained as required by BOOT_SRAM startup.
-The DMA clear removes selector buffer contents; it does not reproduce all stock
-RAM contents. Each supported RAM original has its own startup code to copy
-initialized globals and clear BSS. Other RAM, including memory marked `NOLOAD`,
-can retain earlier contents. A jump therefore relies on the vendor startup
-contract, rather than recreating every register and RAM byte after power-on.
+This is not a hardware reset or sandbox. Vendor startup initializes its globals;
+other RAM can retain earlier contents. The handoff preserves the bootloader's
+clock and memory policy required by the supported images. See the
+[architecture](development/architecture.md) for memory bounds and startup details.
 
-## Why USB
+## Dirt installation
 
-The former installed bundle assumed that space outside vendor executables was
-unused. We have not established that: vendor firmware may use it for settings or
-other data. Smaller binaries and startup passes do not prove ownership. Dirt also
-requires the same fixed flash entry as the stock application. Keeping both
-installed required reset-word patching and a resident wrapper. Compression would
-resolve neither problem.
+Dirt must run from the stock application flash address. It uses a manual stock
+installation action instead of the RAM handoff: verify, confirm with a separate
+Freeze press, prepare USB, and restart into the stock updater. Navigation or USB
+disconnection cancels confirmation. Dirt is never remembered or auto-installed.
 
-USB-backed RAM loading and stock installation for Dirt remove those layout
-assumptions. Dirt deliberately replaces the selector instead of coexisting.
-There are no installed vendor slots, wrapper, flash journal or selector flash-write
-driver. Our responsibility is preventing added lasting damage, wear or recovery
-problems caused by our code and handoff. Equivalent stock vendor behavior is the
-baseline. We still need to establish that supported firmware preserves the
-selector's application region and that our inherited state causes no harmful
-persistent differences. A RAM jump is not a hardware reset or sandbox.
+The selector preserves its own installer as `AuroraSwitch.disabled`, writes
+return instructions, and copies Dirt to root `DIRTVERB.BIN`. The original stays
+in `aurora/`. It checks every resulting file before resetting. After a failed
+file-changing operation it stops without reset, rollback or write retries;
+inspect the drive on a computer. FAT operations are not power-loss atomic.
+
+The stock updater replaces the selector with Dirt. Returning requires a computer:
+[delete the Dirt copy and re-enable the selector](user_guide.md#dirt-verb-install-and-restart).
+The selector itself issues no flash commands; the subsequent stock installation
+writes flash in the ordinary way.
 
 Local and virtual checks do not qualify physical USB, audio, interrupted updates
-or stock recovery. See the [release gate](development/recovery_release_gate.md).
+or stock recovery. See the [physical gate](development/recovery_release_gate.md).

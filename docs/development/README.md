@@ -13,12 +13,7 @@ make build
 make package
 ```
 
-Use GNU Arm 10-2020-q4-major on PATH. `make package` fresh-builds clean committed
-source and pinned dependencies, seals only our ELF/BIN/MAP and manifest under
-`dist/<manifest-sha256>/`, and checks source drift. It creates no Git worktree
-and performs no installation. Generated reports stay ignored.
-
-For a native build, select the compiler before running `make`, for example:
+Use GNU Arm 10-2020-q4-major for native builds:
 
 ```sh
 export PATH="/path/to/gcc-arm-none-eabi-10-2020-q4-major/bin:$PATH"
@@ -35,7 +30,7 @@ sh scripts/docker_build.sh make build
 ```
 
 See [architecture](architecture.md), [tests](testing.md), [release packaging](releases.md),
-[USB choice](persistent_boot.md), [failure priorities](failure_modes.md) and the
+[failure priorities](failure_modes.md) and the
 [physical gate](recovery_release_gate.md).
 
 ## Add firmware
@@ -53,3 +48,15 @@ selector's application area. Keep originals unchanged and obtain them separately
 from authors. FataMorgana's reviewed RAM build is an explicit source-build image;
 its USB tables remain separate. Run affected authentication/handoff checks and
 regenerate the [reference site](reference_site.md).
+
+## FataMorgana build
+
+With the pinned toolchain on PATH, `make fata-ram-probe` builds the pinned public
+source as BOOT_SRAM in temporary clones. It writes ELF/BIN/MAP and provenance to
+`.deps/fatamorgana-builds/<manifest-sha256>/`, never a drive or release asset.
+
+Compare the resulting BIN with the exact catalog entry using
+`python3 scripts/inspect_firmware.py --execution sram /path/to/FataMorgana.bin`.
+A build alone does not grant admission: only the exact catalog bytes can launch.
+USB wavetable loading and physical behavior remain unqualified; keep the
+firmware's tables in their ordinary USB locations.

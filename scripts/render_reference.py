@@ -80,6 +80,18 @@ def slug(heading: str) -> str:
     return re.sub(r"[^\w\- ]", "", html.unescape(heading).lower()).replace(" ", "-")
 
 
+def guide_section(source: str, heading: str, level: int = 2) -> str:
+    """Read one named guide section, ending at the next peer or parent heading."""
+    pattern = (
+        rf"^{'#' * level} {re.escape(heading)}\n"
+        rf"(.*?)(?=^#{{1,{level}}} |\Z)"
+    )
+    matches = re.findall(pattern, source, re.M | re.S)
+    if len(matches) != 1 or not matches[0].strip():
+        raise ValueError(f"Expected one nonempty guide section: {heading}")
+    return matches[0].strip()
+
+
 @dataclass(frozen=True)
 class Section:
     """A source section owns its stable legacy anchor and generated page."""
@@ -319,10 +331,8 @@ def render_pages() -> dict[str, str]:
     home += navigation(sections, entries, "index.html") + "</nav>"
     home += '<p class="beta-status">Beta · Limited testing. Keep original Aurora firmware for recovery.</p>'
     guide = (ROOT / "docs/user_guide.md").read_text()
-    installation = guide.split("## Prepare and install\n", 1)[1].split("\nRAM selection", 1)[0]
-    controls = guide.split("## Controls\n", 1)[1].split("\n## ", 1)[0].strip()
-    # The button strip supplies the first line; keep the remaining guidance shared.
-    controls = controls.split("\n", 1)[1]
+    installation = guide_section(guide, "Prepare and install")
+    controls = guide_section(guide, "Startup and status", level=3)
     setup = render_markdown(installation, [], ROOT / "docs")
     guide = render_markdown(controls, [], ROOT / "docs")
     pages = {
