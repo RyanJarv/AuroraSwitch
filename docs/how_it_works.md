@@ -76,6 +76,11 @@ routine into separate SRAM4. That routine replaces the selector in AXI RAM,
 clears the DMA arena, sets interrupt vectors and stack, then enters the original
 reset handler. Vendor binaries and reset vectors are never patched. Existing
 bootloader clock/MPU state is retained as required by BOOT_SRAM startup.
+The DMA clear removes selector buffer contents; it does not reproduce all stock
+RAM contents. Each supported RAM original has its own startup code to copy
+initialized globals and clear BSS. Other RAM, including memory marked `NOLOAD`,
+can retain earlier contents. A jump therefore relies on the vendor startup
+contract, rather than recreating every register and RAM byte after power-on.
 
 ## Why USB
 
