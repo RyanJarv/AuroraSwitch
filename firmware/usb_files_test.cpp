@@ -243,14 +243,15 @@ int main() {
     attributes[SelectorBackupPath] = 0;
     const auto saved_writes = writes;
     assert(prepare() && writes == saved_writes); // Reuse exact backup/text without rewriting.
-    assert(ReadImageFile(path, dirt, staged.data(), staged.size()));
-    assert(
-        WriteNewFile(InstallPath, staged.data(), Images[dirt].size, staged.data(), staged.size()));
-    assert(files[path] == original && files[InstallPath] == original);
+    const auto before_move_writes = writes;
+    fail_rename = true;
+    assert(!MoveInstallFile(dirt) && files[path] == original && !files.count(InstallPath));
+    fail_rename = false;
+    assert(MoveInstallFile(dirt));
+    assert(!files.count(path) && files[InstallPath] == original && writes == before_move_writes);
     assert(CheckInstallRoot(InstallRoot::DirtOnly) && !CheckInstallRoot());
     assert(ReadImageFile(InstallPath, dirt, staged.data(), staged.size()));
-    assert(
-        !WriteNewFile(InstallPath, selector.data(), selector.size(), staged.data(), staged.size()));
+    assert(!MoveInstallFile(dirt)); // Never retry/overwrite an existing root installer.
     assert(files[InstallPath] == original);
     assert(files["0:/harmless.img"] == std::vector<std::uint8_t>{1});
     connected = false;
@@ -258,14 +259,17 @@ int main() {
     connected = true;
     attributes[InstallPath] = AM_HID;
     assert(!CheckInstallRoot(InstallRoot::DirtOnly));
-    files.erase(InstallPath);
+    attributes[InstallPath] = 0;
+    assert(f_rename(InstallPath, path) == FR_OK);
     attributes.erase(InstallPath);
-    // Removed installer: reconstruct the same complete backup from installed bytes.
+    // Missing installer and backup must fail without reconstructing/writing a BIN.
     files.erase(SelectorBackupPath);
     files.erase(ReturnPath);
-    assert(prepare() && files[SelectorBackupPath] == selector && files[ReturnPath] == instructions);
+    const auto before_refusal = writes;
+    assert(!preflight() && !prepare() && writes == before_refusal);
+    files[SelectorBackupPath] = selector;
     for (auto* failure : {&fail_write, &short_write, &fail_sync, &fail_close, &corrupt_readback}) {
-        files.erase(SelectorBackupPath);
+        files.erase(ReturnPath);
         *failure = true;
         assert(!prepare());
         *failure = false;

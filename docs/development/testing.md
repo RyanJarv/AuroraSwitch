@@ -18,11 +18,11 @@ Native tests exercise the production controller, USB files, choice codec, menu
 and handoff sequence. They cover unavailable USB, corrupt records, bounded reads,
 changed/repeat saves, failures without retry loops, and cleanup-time staged-byte
 rejection. Dirt coverage includes confirmation/cancellation, conflicts and aliases,
-exact backups, copy/text failures, destination authentication and reset ordering.
+exact backups, rename/text failures, destination authentication and reset ordering.
 The in-memory FatFs boundary injects read/write/sync/close/disconnect failures;
 it does not emulate a USB controller.
 
-The real-FatFs test checks backup/copy, remount/readback and restoration on an
+The real-FatFs test checks renames, unchanged data-chain identity, remount/readback and restoration on an
 ordinary disposable file, never mounted media. It compiles the pinned filesystem
 with ARM-compatible integer widths and needs the SDK, native C/C++ compilers and
 `mkfs.fat` (`dosfstools`). CI runs it alongside host tests and sanitizers.

@@ -8,8 +8,8 @@ investigation; they do not establish physical installation or recovery.
 - The updater searches the USB root for a BIN. Keep only one root BIN; filenames
   are not a panel-selection mechanism. It matches `.bin`/`.BIN` substrings;
   inactive backups must contain neither. Dirt selection accepts our exact
-  root installer, preserves it as `AuroraSwitch.disabled`, copies the authenticated
-  original to `DIRTVERB.BIN` and resets only when it is the sole root BIN.
+  root installer, preserves it as `AuroraSwitch.disabled`, moves the authenticated
+  original to root `DirtVerb 1.1.bin`, preserving its filename, and resets only when it is the sole root BIN.
 - It compares file bytes against flash beginning at `0x90040000` and skips an
   unchanged file. The comparison covers file length, not the unused flash tail.
 - Its application destination is fixed. Storing a vendor image at another

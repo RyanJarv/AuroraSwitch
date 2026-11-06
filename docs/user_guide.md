@@ -74,35 +74,36 @@ files must be supplied manually; no third-party firmware is included here.
 
 **Dirt replaces the selector; returning requires a computer.**
 
-Put the exact `DirtVerb 1.1.bin` in `aurora/`. The root `AuroraSwitch.bin` may
-stay: the selector verifies it and renames it to `AuroraSwitch.disabled` when
-switching. If the installer was removed, the selector saves its installed image
-under that name instead. Other root BINs and conflicting backup/instruction
-files block the switch. Dirt must not be hidden. Names such as
-`AuroraSwitch.bin.disabled` still count as active BIN files.
+Put the exact `DirtVerb 1.1.bin` in `aurora/`. Leave the current `AuroraSwitch.bin`
+at the root, or retain its exact `AuroraSwitch.disabled` backup. The switch
+requires one of these; it never reconstructs/copies a selector BIN. Other root
+BINs and conflicting backup/instruction files block it. Dirt must not be hidden.
+`AuroraSwitch.bin.disabled` still counts as an active BIN.
 
 Select Dirt (pink, Reverbs) and press Freeze to verify. When Freeze alternates
 amber/red, press Freeze again to confirm, or Shift/Reverse to cancel. The selector
-preserves its own installer, writes `RETURN TO AURORASWITCH.txt`, copies Dirt to
-root `DIRTVERB.BIN`, verifies it there, and restarts. Dirt's original stays in `aurora/`. The stock
-bootloader installs Dirt, replacing the selector. Do not remove USB or power
-while switching/installing. Dirt then boots normally, including without USB.
-Your remembered RAM choice is unchanged; the selector never automatically
-performs a Dirt installation.
+renames its own installer if necessary, writes `RETURN TO AURORASWITCH.txt`, moves
+Dirt to the root **without changing its filename**, verifies it there, and restarts.
+It copies no BIN payload; the original file now lives at root `DirtVerb 1.1.bin`.
+The stock bootloader installs Dirt, replacing the selector. Do not remove USB or
+power while switching/installing. Dirt then boots normally, including without USB.
+Your RAM choice is unchanged; the selector never automatically installs Dirt.
 
-Persistent red after a failed file switch requires computer inspection. Do not
-retry or power-cycle with an unverified root BIN. Interrupted FAT operations can
-leave damaged directory entries; keep the drive backed up.
+Persistent red after a failed switch requires computer inspection. A long orange
+state can mean a synchronous USB operation has not returned. Do not restart with
+an unverified root BIN. FAT operations are not atomic; keep a drive backup.
+When preparing a new selector version, retain old backups on your computer and
+remove conflicting old disabled-selector/return-text files from the drive.
 
 To return to AuroraSwitch, use a computer:
 
-1. Delete root `DIRTVERB.BIN`.
+1. Move root `DirtVerb 1.1.bin` back into `aurora/`, keeping its filename.
 2. Rename `AuroraSwitch.disabled` to `AuroraSwitch.bin`.
 3. Safely eject and restart using the stock USB update procedure.
 
-These steps are also in `RETURN TO AURORASWITCH.txt` on the drive. Keep only one
-active root BIN. Your previous RAM choice may start automatically after restoration;
-hold any button at power-on to open the menu.
+These steps are also in `RETURN TO AURORASWITCH.txt`. Keep only one active root
+BIN. Your previous RAM choice may start after restoration; hold any button at
+power-on to open the selector menu.
 
 Software-reset USB discovery, Dirt installation and interrupted-update recovery
 remain physically unqualified. If the automatic restart does not discover USB,

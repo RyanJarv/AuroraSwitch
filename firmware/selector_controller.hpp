@@ -84,7 +84,7 @@ template <class Firmware> class SelectorController {
                 state_ = State::ConfirmInstall;
                 return;
             }
-            // Install owns the USB backups/copy, destination authentication and reset.
+            // Install owns the USB renames/text, destination authentication and reset.
             // Any return is terminal for writes, including a failed create or rename.
             state_ = State::RecoveryRequired;
             firmware_.Install(selected);

@@ -33,13 +33,14 @@ reconnect the drive and press Freeze to retry.
 
 **Dirt Verb replaces the selector; returning requires a computer.** Select Dirt
 and press Freeze to verify. Alternating amber/red Freeze asks for a second press
-to copy Dirt to the USB root and restart into the stock updater. Shift or Reverse
-cancels. The switch preserves the selector as `AuroraSwitch.disabled`, leaves
-Dirt's original in `aurora/`, and writes `RETURN TO AURORASWITCH.txt` at the root.
+to move Dirt to the USB root and restart into the stock updater. Shift or Reverse
+cancels. The switch renames the exact selector installer to `AuroraSwitch.disabled`
+(or reuses an exact existing backup), writes `RETURN TO AURORASWITCH.txt`, and moves
+`aurora/DirtVerb 1.1.bin` to root `DirtVerb 1.1.bin`. No BIN payload is copied.
 Other root BINs or conflicting backup/instruction files block the switch.
-To return on a computer: delete `DIRTVERB.BIN`, then rename `AuroraSwitch.disabled`
-to `AuroraSwitch.bin`. Safely eject and restart. Dirt is never an automatic
-selector choice; your previous RAM choice stays remembered.
+To return on a computer: move root `DirtVerb 1.1.bin` back into `aurora/`, then
+rename `AuroraSwitch.disabled` to `AuroraSwitch.bin`. Safely eject and restart.
+Dirt is never an automatic selector choice; the RAM choice stays remembered.
 
 To restore stock firmware, use its original BIN as the only root BIN and follow
 [Qu-Bit's normal USB update procedure](https://www.qubitelectronix.com/faq).

@@ -19,7 +19,7 @@ When separately authorized:
   Interrupt a choice save: invalid records must open the menu, with no loop.
 - Test Dirt confirmation/cancellation, automatic software-reset USB discovery,
   stock installation, subsequent Dirt boot, and computer-assisted selector return.
-  Interrupt USB backup/copy preparation and stock installation; inspect media and restore with the
+  Interrupt USB renames/return-text preparation and stock installation; inspect media and restore with the
   ordinary stock procedure. Compare against installing Dirt directly.
 - Interrupt selector installation during representative erase/program phases.
   Restore through ordinary USB without requiring a functioning application/menu.

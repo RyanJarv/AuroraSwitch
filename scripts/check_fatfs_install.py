@@ -66,7 +66,7 @@ def check():
             stream.truncate(64 * 1024 * 1024)
         subprocess.run(["mkfs.fat", "-F", "32", str(image)], check=True)
         subprocess.run([str(executable), str(image)], check=True)
-        print("PASS: real FatFs backup/copy, remount/readback and restoration on disposable FAT32")
+        print("PASS: real FatFs renames, unchanged payload/data chain, remount/readback and restoration on disposable FAT32")
 
 
 if __name__ == "__main__":

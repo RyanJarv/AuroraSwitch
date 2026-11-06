@@ -46,12 +46,12 @@ inline bool ReadImageFile(const char* path, unsigned index, std::uint8_t* staged
     return valid;
 }
 
-constexpr const char* InstallPath = "0:/DIRTVERB.BIN";
+constexpr const char* InstallPath = "0:/DirtVerb 1.1.bin";
 constexpr const char* SelectorPath = "0:/AuroraSwitch.bin";
 constexpr const char* SelectorBackupPath = "0:/AuroraSwitch.disabled";
 constexpr const char* ReturnPath = "0:/RETURN TO AURORASWITCH.txt";
 constexpr char ReturnInstructions[] =
-    "Delete DIRTVERB.BIN, then rename AuroraSwitch.disabled to AuroraSwitch.bin.\r\n"
+    "Move DirtVerb 1.1.bin back into aurora/, then rename AuroraSwitch.disabled to AuroraSwitch.bin.\r\n"
     "Safely eject and restart.\r\n";
 
 inline bool SameFilename(const char* left, const char* right) {
@@ -91,7 +91,7 @@ inline bool CheckInstallRoot(InstallRoot state = InstallRoot::Empty) {
         if (!(info.fattrib & AM_DIR) && (IsBinName(info.fname) || IsBinName(info.altname))) {
             ++matches;
             const char* allowed =
-                state == InstallRoot::DirtOnly ? "DIRTVERB.BIN" : "AuroraSwitch.bin";
+                state == InstallRoot::DirtOnly ? InstallPath + 3 : SelectorPath + 3;
             if (state == InstallRoot::Empty || (info.fattrib & AM_HID) ||
                 !SameFilename(info.fname, allowed)) {
                 valid = false;
@@ -170,9 +170,8 @@ inline bool CheckReturnFiles(const std::uint8_t* selector, std::size_t size, std
         if (!MissingFile(SelectorBackupPath) ||
             !MatchesFile(SelectorPath, selector, size, scratch, capacity))
             return false;
-    } else if (!MissingFile(SelectorBackupPath) &&
-               (!VisibleFile(SelectorBackupPath) ||
-                !MatchesFile(SelectorBackupPath, selector, size, scratch, capacity))) {
+    } else if (!VisibleFile(SelectorBackupPath) ||
+               !MatchesFile(SelectorBackupPath, selector, size, scratch, capacity)) {
         return false;
     }
     return MissingFile(ReturnPath) ||
@@ -181,7 +180,7 @@ inline bool CheckReturnFiles(const std::uint8_t* selector, std::size_t size, std
                         capacity));
 }
 // Called only after confirmation and the controller's terminal-write boundary.
-// If the installer was removed, save a copy of the installed image instead.
+// Require the installer or an existing exact backup; never copy a BIN payload.
 // Any failed rename/write/readback stops the operation without rollback/reset.
 inline bool PrepareReturnFiles(const std::uint8_t* selector, std::size_t size,
                                std::uint8_t* scratch, std::size_t capacity) {
@@ -190,9 +189,6 @@ inline bool PrepareReturnFiles(const std::uint8_t* selector, std::size_t size,
     if (!MissingFile(SelectorPath)) {
         if (f_rename(SelectorPath, SelectorBackupPath) != FR_OK || !MissingFile(SelectorPath))
             return false;
-    } else if (MissingFile(SelectorBackupPath) &&
-               !WriteNewFile(SelectorBackupPath, selector, size, scratch, capacity)) {
-        return false;
     }
     if (!MatchesFile(SelectorBackupPath, selector, size, scratch, capacity))
         return false;
@@ -202,6 +198,16 @@ inline bool PrepareReturnFiles(const std::uint8_t* selector, std::size_t size,
     return MatchesFile(ReturnPath, ReturnBytes(), sizeof(ReturnInstructions) - 1, scratch,
                        capacity) &&
            CheckInstallRoot();
+}
+
+// Metadata-only move: preserve the supported filename and never overwrite a root file.
+inline bool MoveInstallFile(unsigned index) {
+    if (!CheckInstallFiles(index) || !CheckInstallRoot())
+        return false;
+    char source[128];
+    FirmwarePath(source, sizeof(source), index);
+    return f_rename(source, InstallPath) == FR_OK && MissingFile(source) &&
+           VisibleFile(InstallPath);
 }
 
 inline int ReadChoice() {

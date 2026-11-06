@@ -8,10 +8,11 @@
 
 extern "C" const std::uint8_t selector_installer_size[];
 namespace {
-// The stock loader leaves this exact installer mapped in flash. Read it only;
-// do not compare against live RAM, where startup has changed writable data.
+// The loader leaves the complete BIN in AXI RAM. The pinned linker copies
+// mutable .data into DTCM, leaving its AXI load bytes intact. Verify the USB
+// installer against that read-only image without depending on QSPI mapping.
 const auto* const selector_original =
-    reinterpret_cast<const std::uint8_t*>(SELECTOR_APPLICATION_FLASH_BASE);
+    reinterpret_cast<const std::uint8_t*>(SELECTOR_AXI_SRAM_BASE);
 std::size_t SelectorSize() {
     return reinterpret_cast<std::uintptr_t>(selector_installer_size);
 }
@@ -98,13 +99,11 @@ bool UsbFirmware::CanInstall(unsigned index) {
 }
 void UsbFirmware::Install(unsigned index) {
     // Return-file checks use staging as scratch. Reload/authenticate Dirt after
-    // those operations, then copy its verified bytes while preserving the source.
+    // those operations, then move the unchanged file without copying its payload.
     if (!aurora_selector::PrepareReturnFiles(selector_original, SelectorSize(), staged,
                                              sizeof(staged)) ||
         !Authenticate(index) ||
-        !aurora_selector::WriteNewFile(aurora_selector::InstallPath, staged,
-                                       aurora_selector::Images[index].size, staged,
-                                       sizeof(staged)) ||
+        !aurora_selector::MoveInstallFile(index) ||
         !AuthenticatePath(index, aurora_selector::InstallPath) ||
         !aurora_selector::CheckInstallRoot(aurora_selector::InstallRoot::DirtOnly) ||
         f_mount(nullptr, filesystem.GetUSBPath(), 0) != FR_OK)

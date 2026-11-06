@@ -20,8 +20,9 @@ See [How it works](../how_it_works.md) for the design and memory contract.
 ## Memory and startup contract
 
 The stock loader installs the selector at `0x90040000` and copies it to
-`0x24000000` at boot. Read-only access to the installed image supplies the exact
-selector backup; live RAM contains globals changed by startup.
+`0x24000000` at boot. The complete AXI load image stays unchanged: startup copies
+mutable `.data` into DTCM and keeps BSS/stack there. Linker assertions preserve this separation.
+USB installer/backup checks compare against that image, without QSPI reads.
 
 | Region | Role |
 | --- | --- |
@@ -69,14 +70,16 @@ Two separate Freeze presses authenticate and confirm. Root-directory checks
 reject unrelated BINs, case-insensitive `.bin` substrings, short-name aliases and
 hidden installers. An existing `AuroraSwitch.bin` must match the entire installed
 selector byte-for-byte; its extent comes from the pinned linker's initialized
-`.data` load extent, not the running RAM image.
+`.data` load extent. Its AXI bytes remain unchanged when globals run in DTCM.
 
 After confirmation, rename that exact installer to `AuroraSwitch.disabled`.
-If it was removed, create the backup from the installed image. Existing backup
-and return-text files must match exactly and be visible; never overwrite them.
+If it was removed, require an exact existing backup instead. No BIN payload is
+copied or reconstructed. Existing backup and return-text files must match exactly
+and be visible; never overwrite them.
 Write `RETURN TO AURORASWITCH.txt`, then reload/authenticate Dirt because backup
-checks use staging as scratch. Create root `DIRTVERB.BIN` from those bytes, retain
-the original in `aurora/`, and authenticate the complete destination again.
+checks use staging as scratch. Move the file to root `DirtVerb 1.1.bin`, check
+the source is absent, and authenticate the complete destination again. The same data chain and filename
+are retained; only the directory entries move.
 
 Check that Dirt is the sole root BIN, close files/directories, unmount, stop USB
 and request ordinary `NVIC_SystemReset()`. Do not manipulate the hardware boot

@@ -4,9 +4,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="reference-sha256" content="e65f58ebaef5516f6d4aabd2e73a3989559d27f0af2e11cff208418afcc17a9a">
+<meta name="reference-sha256" content="2241bf71df517aed0701912d12c29aa95032316595dd700e65af4e03ebe5bf7c">
 <meta name="renderer-sha256" content="df648671e72005958071eb3a462b15a37c465b6bc452e9a0bba4a3decba3550e">
-<meta name="setup-sha256" content="2b3edec91c7eb036ec564ed3c91207f29feb0bd65db6b221b6df9dc3be4150c8">
+<meta name="setup-sha256" content="3db37ede3bf62a0a1c56c8961396935e320b6f7b178566e52c5fe768a727d84c">
 <meta name="description" content="AuroraSwitch startup categories, firmware colors and controls.">
 <title>Dirt Verb 1.1 · AuroraSwitch</title>
 <link rel="stylesheet" href="style.css?v=19f29e9977e67d06b65e70d55177889de497c2be181e1958610696d160800fb5">
@@ -97,9 +97,10 @@ firmware files, then press Freeze to retry.</p>
 returning requires a computer.</strong> Use exact <code class="notranslate">DirtVerb 1.1.bin</code> in <code class="notranslate">aurora/</code>.<br>
 Freeze verifies; a second press during alternating amber/red confirms installation<br>
 and restart. Shift/Reverse cancels. The switch preserves <code class="notranslate">AuroraSwitch.bin</code> as<br>
-<code class="notranslate">AuroraSwitch.disabled</code>, keeps Dirt's original, and writes return instructions.<br>
-To return: delete root <code class="notranslate">DIRTVERB.BIN</code>, rename <code class="notranslate">AuroraSwitch.disabled</code> to<br>
-<code class="notranslate">AuroraSwitch.bin</code>, safely eject and restart.<br>
+<code class="notranslate">AuroraSwitch.disabled</code>, moves <code class="notranslate">DirtVerb 1.1.bin</code> to the root without changing<br>
+its filename, and writes return instructions. No BIN payload is copied.<br>
+To return: move root <code class="notranslate">DirtVerb 1.1.bin</code> back into <code class="notranslate">aurora/</code>, rename<br>
+<code class="notranslate">AuroraSwitch.disabled</code> to <code class="notranslate">AuroraSwitch.bin</code>, safely eject and restart.<br>
 See <a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/user_guide.md#dirt-verb-install-and-restart">installation and return steps</a>.</p>
 <div class="control-layout"><figure class="panel-map">
 <img src="aurora-panel.svg" width="280" height="580" alt="Aurora panel: knobs 1 Warp, 2 Time, 3 Blur, 4 Reflect, 5 Mix, 6 Atmosphere; buttons 7 Reverse, 8 Freeze, 9 Shift.">

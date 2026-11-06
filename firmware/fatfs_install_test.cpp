@@ -50,6 +50,7 @@ int main(int argc, char** argv) {
     assert(f_open(&usb_file, source, FA_WRITE | FA_CREATE_NEW) == FR_OK);
     UINT written = 0;
     assert(f_write(&usb_file, original.data(), original.size(), &written) == FR_OK);
+    const auto original_cluster = usb_file.obj.sclust;
     assert(written == original.size() && f_close(&usb_file) == FR_OK);
     // Normal installation leaves the root selector BIN. Use patterned bytes
     // here; production compares against the installed selector's exact BIN.
@@ -70,17 +71,20 @@ int main(int argc, char** argv) {
     assert(MatchesFile(ReturnPath, ReturnBytes(), sizeof(ReturnInstructions) - 1, readback.data(),
                        readback.size()));
     assert(ReadImageFile(source, dirt, readback.data(), readback.size()));
-    assert(WriteNewFile(InstallPath, readback.data(), original.size(), readback.data(),
-                        readback.size()));
+    assert(MoveInstallFile(dirt));
     assert(f_mount(nullptr, "0:/", 0) == FR_OK);
     assert(f_mount(&filesystem, "0:/", 1) == FR_OK);
     assert(CheckInstallRoot(InstallRoot::DirtOnly));
+    assert(f_open(&usb_file, InstallPath, FA_READ) == FR_OK);
+    assert(usb_file.obj.sclust == original_cluster); // Rename reuses the original data chain.
+    assert(f_close(&usb_file) == FR_OK);
     assert(ReadImageFile(InstallPath, dirt, readback.data(), readback.size()));
     assert(std::equal(original.begin(), original.end(), readback.begin()));
+    assert(MissingFile(source));
+    // Return by moving the unchanged filename back, then re-enable the selector.
+    assert(f_rename(InstallPath, source) == FR_OK);
     assert(ReadImageFile(source, dirt, readback.data(), readback.size()));
     assert(std::equal(original.begin(), original.end(), readback.begin()));
-    // The computer only needs to delete Dirt's copy and re-enable the selector.
-    assert(f_unlink(InstallPath) == FR_OK);
     assert(f_rename(SelectorBackupPath, SelectorPath) == FR_OK);
     assert(MatchesFile(SelectorPath, selector.data(), selector.size(), readback.data(),
                        readback.size()));
