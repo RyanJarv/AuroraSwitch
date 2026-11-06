@@ -82,6 +82,23 @@ def check(args, base):
             browser.wait(
                 "document.querySelectorAll('.category-overview .category-group').length === 3"
             )
+            for name, close_label in (("setup", "Close setup"), ("guide", "Close user guide")):
+                if javascript:
+                    browser.execute(f"document.getElementById('{name}-open').focus(); document.getElementById('{name}-open').click()")
+                    browser.wait(f"document.getElementById('{name}-dialog').open")
+                    assert browser.execute(f"return document.activeElement.getAttribute('aria-label') === '{close_label}'")
+                    browser.request("POST", "/actions", {"actions": [{
+                        "type": "key", "id": "setup-keyboard", "actions": [
+                            {"type": "keyDown", "value": "\ue00c"},
+                            {"type": "keyUp", "value": "\ue00c"},
+                        ]
+                    }]})
+                    browser.wait(f"!document.getElementById('{name}-dialog').open")
+                    assert browser.execute(f"return document.activeElement.id === '{name}-open'")
+                    browser.execute(f"document.getElementById('{name}-open').click(); document.querySelector('#{name}-dialog button').click()")
+                    browser.wait(f"!document.getElementById('{name}-dialog').open")
+                else:
+                    assert browser.execute(f"return !document.getElementById('{name}-fallback').hidden && document.getElementById('{name}-open').hidden")
             # Activate the ordinary link with real keyboard input.
             browser.execute(
                 "document.querySelector('.category-overview a[href=\"fdn-122.html\"]').focus()"
@@ -104,7 +121,7 @@ def check(args, base):
             )
             browser.wait("document.title.startsWith('FDN')")
             browser.wait("document.querySelector('.panel-map img').naturalWidth > 0")
-            assert browser.execute("return !document.querySelector('details, summary, script')")
+            assert browser.execute("return !document.querySelector('details, summary')")
             browser.request("POST", "/back", {})
             browser.wait("document.title.startsWith('Firmware reference')")
             browser.request("POST", "/forward", {})
@@ -128,6 +145,14 @@ def check(args, base):
                         return frame.contentDocument.documentElement.scrollWidth <= frame.contentWindow.innerWidth;
                     """
                     ), (width, page)
+                    if javascript:
+                        browser.execute("document.querySelector('iframe').contentDocument.getElementById('setup-open').click()")
+                        assert browser.execute("""const frame = document.querySelector('iframe');
+                            const dialog = frame.contentDocument.getElementById('setup-dialog');
+                            const bounds = dialog.getBoundingClientRect();
+                            return dialog.open && bounds.left >= 0 && bounds.right <= frame.contentWindow.innerWidth
+                                && dialog.scrollWidth <= dialog.clientWidth;"""), (width, page, 'setup')
+                        browser.execute("document.querySelector('iframe').contentDocument.querySelector('#setup-dialog button').click()")
             browser.open(base + "morse.html")
             browser.wait("document.title.startsWith('Morse')")
             assert browser.execute(

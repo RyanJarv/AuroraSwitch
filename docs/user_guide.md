@@ -19,15 +19,14 @@ keep their ordinary USB locations. FataMorgana's USB wavetable path remains unqu
 ## Controls
 
 **Shift — next category. Reverse — next firmware. Freeze — verify & launch.**
-Hold **Shift + Reverse at power-on** for the menu. Otherwise the valid saved choice
-starts when USB and the exact firmware are available. An absent, corrupt or
-unsupported choice opens the menu without substituting another firmware.
+Hold **Shift + Reverse at power-on** for the menu. Keep USB connected: your last
+RAM firmware choice starts automatically when its file is available. Missing or
+invalid files leave the menu open.
 
-Menu colors and firmware controls are in the [reference](firmware_reference.md).
-The arc shows position within the category; Reverse shows the firmware color.
-Amber Freeze means loading; persistent red means unavailable USB, no usable files
-or a failed load. Reconnect USB to rescan, or press Freeze to retry. If a retry
-finds files on an empty menu, review the selection and press Freeze again to launch.
+Amber Freeze means loading. Red means loading failed; reconnect USB or check the
+firmware files, then press Freeze to retry.
+
+## Saved choice
 
 The selector saves changed authenticated choices to `aurora/choice.dat`. A brief
 red Freeze warning before launch means saving failed; verified firmware can run

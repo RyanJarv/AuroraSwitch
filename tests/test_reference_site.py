@@ -15,7 +15,6 @@ from scripts.render_reference import (
     PANEL_CONTROLS,
     label_controls,
     navigation,
-    read_quick_start,
     read_reference,
     slug,
     swatch,
@@ -123,8 +122,8 @@ class ReferenceSiteTests(unittest.TestCase):
                     ensure_ascii=False,
                 ).encode()
             ).hexdigest(),
-            "quickstart-sha256": hashlib.sha256(
-                read_quick_start((ROOT / "README.md").read_text()).encode()
+            "setup-sha256": hashlib.sha256(
+                (ROOT / "docs/user_guide.md").read_bytes()
             ).hexdigest(),
         }
         for filename, parser in self.pages.items():
@@ -154,20 +153,19 @@ class ReferenceSiteTests(unittest.TestCase):
                         self.assertIn(destination, self.pages, link)
                         self.assertIn(target.fragment, self.pages[destination].ids, link)
 
-    def test_index_has_grouped_firmware_and_compact_install_directions(self):
+    def test_index_keeps_firmware_visible_and_setup_in_dialog(self):
         parser = self.pages["index.html"]
         self.assertEqual(parser.swatches, self.navigation_swatches * 3 // 2)
         self.assertEqual(len(self.entries), 14)
         page = (SITE / "index.html").read_text()
         body = re.search(r'<main id="main">\n(.*?)\n</main>', page, re.S)[1]
-        self.assertIn('id="quick-start"', body)
-        self.assertIn('id="select-firmware"', body)
-        self.assertIn("USB is required", body)
-        self.assertIn("only root BIN", body)
-        self.assertIn("verify, remember and launch", body)
-        self.assertNotIn("preparer", body)
+        self.assertNotIn('class="setup-guide"', body)
+        self.assertNotIn("only root BIN", body)
         self.assertIn('class="category-overview"', body)
-        self.assertIn('<section class="setup-guide">', body)
+        self.assertIn('<dialog id="setup-dialog" aria-labelledby="setup-title">', page)
+        self.assertIn("only root BIN", page)
+        self.assertIn("automatic boot", page)
+        self.assertIn("Shift + Reverse at power-on", page)
         self.assertNotIn("Choose your sound", body)
         for category in CATEGORIES:
             self.assertIn(category, body)
@@ -232,7 +230,7 @@ class ReferenceSiteTests(unittest.TestCase):
                 self.assertIn("main", parser.ids)
                 self.assertIn("Firmware directory", parser.nav_labels)
                 self.assertIn("Mobile firmware directory", parser.nav_labels)
-                self.assertEqual(parser.scripts, [])
+                self.assertEqual(parser.scripts, [{"src": "dialogs.js", "defer": None}])
                 self.assertIn('name="viewport"', page)
                 self.assertIn('lang="en"', page)
                 self.assertIn('class="mobile-menu"', page)
@@ -375,19 +373,6 @@ class ReferenceSiteTests(unittest.TestCase):
         self.assertNotIn("Development additions", menu)
         self.assertNotIn("outside-the-selector-catalog.html", menu)
         self.assertNotIn("outside-the-selector-catalog.html", self.pages)
-
-    def test_quick_start_extraction_is_exact_and_fail_closed(self):
-        source = (
-            "# Project\n\n## Quick start\n\nInstall.\n\n### Select\nUse.\n\n## Other\nIgnore.\n"
-        )
-        self.assertEqual(read_quick_start(source), "## Quick start\nInstall.\n\n### Select\nUse.\n")
-        for invalid in (
-            "# No quick start\n",
-            "## Quick start\n\n",
-            source + "\n## Quick start\nDuplicate.\n",
-        ):
-            with self.assertRaisesRegex(ValueError, "one README Quick start"):
-                read_quick_start(invalid)
 
     def test_navigation_rejects_missing_link_targets(self):
         with self.assertRaisesRegex(ValueError, "Missing firmware section"):

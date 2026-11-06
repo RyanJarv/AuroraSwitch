@@ -18,17 +18,17 @@ and refresh the browser. CSS changes are served directly.
 
 The home page groups firmware into blue Reverbs, green Delays, and amber
 Synths / Other. Firmware pages share the same grouped sidebar/mobile directory.
-The startup strip labels Shift, Reverse, and Freeze directly; firmware colors
+The User Guide dialog labels Shift, Reverse, and Freeze directly; firmware colors
 stay unchanged. Family order within each group matches the selector catalog.
-Installation stays visible below the categories. Unsupported-firmware notes
+Setup and User Guide buttons open native dialogs; without JavaScript, links open the full guide. Unsupported-firmware notes
 stay in the Markdown reference, not a separate website page.
 
 Every firmware view is a complete static page. Ordinary links provide navigation
 and browser history with or without JavaScript. There is no client-side router
 or duplicate JSON content bundle.
 
-Edit `docs/firmware_reference.md` for controls or `README.md`'s Quick start for
-installation. The home page renders that exact section, not a separate copy.
+Edit `docs/firmware_reference.md` for firmware controls and `docs/user_guide.md`
+for installation and selection instructions. Dialogs reuse the guide sections.
 Refresh the HTML using GitHub's Markdown
 renderer (requires authenticated `gh` and network):
 
@@ -46,8 +46,8 @@ pages. Website UX rules live in `AGENTS.md`: prefer clear labels and structure,
 not paragraphs explaining website widgets.
 The renderer uses GitHub Markdown and writes complete HTML pages; shared styling
 is in `site/style.css`. Regenerate after changing the reference or renderer.
-Commit source and generated files together. Offline tests check source/Quick
-start fingerprints, links, versions and colors. The Pages workflow refuses
+Commit source and generated files together. Offline tests check source/guide
+fingerprints, links, versions and colors. The Pages workflow refuses
 stale pages.
 
 `site/aurora-panel.svg` is an original simplified drawing of the manual's panel

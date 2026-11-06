@@ -5,21 +5,38 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="reference-sha256" content="2e243db820b2e1f5042b1be9bee7f71433bd669d69050a6fe924bf215efc1515">
-<meta name="renderer-sha256" content="336fe70a3244546336cf8374293049b45f4d454aac2707f9057fd24931634c1b">
-<meta name="quickstart-sha256" content="e93a604ec30fc1205cca5ad1c7778f00151d37c918d171a619b8176181b6aec8">
+<meta name="renderer-sha256" content="60a256b8966b8622095884558bb9ef2caa96fee118bee685f79b718ffe220134">
+<meta name="setup-sha256" content="3959a0124bf1c1482e1f415adf424a4b02411ea66802a6ba983410ece91d319b">
 <meta name="description" content="AuroraSwitch startup categories, firmware colors and controls.">
 <title>Morse · AuroraSwitch</title>
-<link rel="stylesheet" href="style.css?v=0ca56c0559e2d38bb6339bbb0836aff286a7cce6e3e90421b78fe525559ff7ca">
+<link rel="stylesheet" href="style.css?v=470079f118fe61809e6c6c92c50f788a7df88e119fe14ce04646b03b530d8962">
 </head>
 <body data-page="morse.html">
 <a class="skip-link" href="#main">Skip to controls</a>
 <header class="site-header">
 <a class="brand" href="index.html">AuroraSwitch <span>Firmware reference</span></a>
 <nav aria-label="Site navigation">
-<a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/user_guide.md">Setup guide</a>
-<a href="https://github.com/RyanJarv/AuroraSwitch">GitHub</a>
+<a id="setup-fallback" class="download-button" href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/user_guide.md">Setup</a>
+<button id="setup-open" class="download-button" type="button" aria-haspopup="dialog" aria-controls="setup-dialog" hidden>Setup</button>
+<a id="guide-fallback" class="download-button" href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/user_guide.md#controls">User Guide</a>
+<button id="guide-open" class="download-button" type="button" aria-haspopup="dialog" aria-controls="guide-dialog" hidden>User Guide</button>
 </nav>
 </header>
+<div class="github-ribbon"><a href="https://github.com/RyanJarv/AuroraSwitch" aria-label="AuroraSwitch on GitHub">GitHub</a></div>
+<dialog id="setup-dialog" aria-labelledby="setup-title">
+<div class="dialog-heading"><h2 id="setup-title">Setup</h2><form method="dialog"><button class="download-button" aria-label="Close setup">Close</button></form></div>
+<ol>
+<li>Build <code class="notranslate">AuroraSwitch.bin</code> with <code class="notranslate">make package</code> (<a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/development/README.md">build setup</a>).</li>
+<li>Back up a FAT32 USB drive. Put that selector BIN at the root as the only root BIN.</li>
+<li>Safely eject, insert into Aurora, then follow the ordinary stock USB update procedure.</li>
+<li>Leave <code class="notranslate">AuroraSwitch.bin</code> at the root. Create <code class="notranslate">aurora/</code><br>
+and put supported original firmware BINs there with their exact catalog filenames.</li>
+<li>Keep the drive connected for firmware selection and automatic boot.</li>
+</ol>
+<p><a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/user_guide.md">Full installation and recovery guide</a></p>
+</dialog>
+<dialog id="guide-dialog" aria-labelledby="guide-title">
+<div class="dialog-heading"><h2 id="guide-title">User Guide</h2><form method="dialog"><button class="download-button" aria-label="Close user guide">Close</button></form></div>
 <section class="selector-controls" aria-label="Aurora startup menu controls">
 <dl>
 <div><dt><kbd>Shift</kbd></dt><dd>Next category</dd></div>
@@ -27,6 +44,14 @@
 <div><dt><kbd>Freeze</kbd></dt><dd>Verify &amp; launch</dd></div>
 </dl>
 </section>
+<p>Hold <strong>Shift + Reverse at power-on</strong> for the menu. Keep USB connected: your last<br>
+RAM firmware choice starts automatically when its file is available. Missing or<br>
+invalid files leave the menu open.</p>
+<p>Amber Freeze means loading. Red means loading failed; reconnect USB or check the<br>
+firmware files, then press Freeze to retry.</p>
+<p><strong>Dirt Verb replaces the selector; returning requires a computer.</strong> <a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/user_guide.md#dirt-verb-install-and-restart">Dirt installation and return steps</a></p>
+</dialog>
+<script src="dialogs.js" defer></script>
 <div class="layout">
 <aside class="sidebar"><nav aria-label="Firmware directory"><a class="index-link" href="index.html">Overview</a>
 <section class="category-group" style="--category-color:#3787ff"><h2><span class="swatch" style="background:#3787ff" aria-hidden="true"></span>Reverbs<small>Blue</small></h2><ul>
