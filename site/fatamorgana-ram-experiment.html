@@ -4,9 +4,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="reference-sha256" content="d0e9312e315811275809aa5166795c705072bdd6743cdb8a9874d72589d35288">
+<meta name="reference-sha256" content="4085b8bfba5de988f0b59087cf7ddb955573217617be6099b48d2023d376ba1b">
 <meta name="renderer-sha256" content="02735cc6b3cabf3e1daa61c25f0d4f7487f5c5308e0cc0294f49aa9aabaaf3f3">
-<meta name="setup-sha256" content="301d1ebc1fcbb3b7ca315383d8c19d2a82dbdf35871f93ec4fc02c826ba41e76">
+<meta name="setup-sha256" content="87e7f91e197af6656fc21be864bb8fd972482449a248c4ed88ced907ae966fab">
 <meta name="description" content="AuroraSwitch startup categories, firmware colors and controls.">
 <title>FataMorgana RAM experiment · AuroraSwitch</title>
 <link rel="stylesheet" href="style.css?v=19f29e9977e67d06b65e70d55177889de497c2be181e1958610696d160800fb5">
@@ -27,11 +27,10 @@
 <div class="dialog-heading"><h2 id="setup-title">Setup</h2><form method="dialog"><button class="download-button" aria-label="Close setup">Close</button></form></div>
 <ol>
 <li>Download <a href="https://github.com/RyanJarv/AuroraSwitch/releases/latest/download/AuroraSwitch.bin">AuroraSwitch.bin</a>.</li>
-<li>Back up a FAT32 USB drive. Put that selector BIN at the root as the only root BIN.</li>
-<li>Safely eject, insert into Aurora, then follow the ordinary stock USB update procedure.</li>
-<li>Leave <code class="notranslate">AuroraSwitch.bin</code> at the root. Create <code class="notranslate">aurora/</code><br>
-and put supported original firmware BINs there with their exact catalog filenames.</li>
-<li>Keep the drive connected for firmware selection and automatic boot.</li>
+<li>Back up a FAT32 USB drive. Put <code class="notranslate">AuroraSwitch.bin</code> at its root as the only root BIN.</li>
+<li>Add supported firmware to <code class="notranslate">aurora/</code>, using the exact filenames in the <a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/firmware_reference.md">reference</a>.</li>
+<li>Safely eject, insert into Aurora and follow <a href="https://www.qubitelectronix.com/faq" rel="nofollow">Qu-Bit's USB update procedure</a>.<br>
+Leave <code class="notranslate">AuroraSwitch.bin</code> at the root. Keep USB connected for selection and automatic boot.</li>
 </ol>
 <p><a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/user_guide.md">Full installation and recovery guide</a></p>
 </dialog>
@@ -44,11 +43,10 @@ and put supported original firmware BINs there with their exact catalog filename
 <div><dt><kbd>Freeze</kbd></dt><dd>Verify &amp; launch</dd></div>
 </dl>
 </section>
-<p>Hold <strong>any button at power-on</strong> for the menu. Keep USB connected: your last<br>
-RAM firmware choice starts automatically when its file is available. Missing or<br>
-invalid files leave the menu open.</p>
-<p>Amber Freeze means loading. Red means loading failed; reconnect USB or check the<br>
-firmware files, then press Freeze to retry.</p>
+<p>Your last selection starts automatically with USB connected. Hold <strong>any button at power-on</strong> for the menu.<br>
+Missing or invalid files leave the menu open.</p>
+<p><strong>Amber Freeze:</strong> loading. <strong>Red:</strong> check the files or reconnect USB, then press Freeze to retry.<br>
+A brief red flash means the choice could not be saved; firmware still launches.</p>
 <p><strong>Dirt Verb replaces the selector; returning requires a computer.</strong> <a href="https://github.com/RyanJarv/AuroraSwitch/blob/main/docs/user_guide.md#dirt-verb-install-and-restart">Dirt installation and return steps</a></p>
 </dialog>
 <script src="dialogs.js" defer></script>
