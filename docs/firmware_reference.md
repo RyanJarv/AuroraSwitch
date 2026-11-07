@@ -14,6 +14,7 @@
 | Delays | Yellow | [Flux Capacitor 0.1.0](#flux-capacitor--yellow) | Tape pitch, stop, wow/flutter | Development |
 | Delays | Yellow | [Flux Capacitor 0.2.0](#flux-capacitor--yellow) | Adds tape delay | Development |
 | Synths / Other | White | [Morse 0.1.0](#morse--white) | Three-pattern rhythmic VCA | Development |
+| Synths / Other | Red | [Tempest 1.1.0rc1](#tempest-100--red) | Multi-bank distortion (release candidate) | Development |
 | Synths / Other | Red | [Tempest 1.0.0](#tempest-100--red) | Multi-bank distortion | Development |
 | Synths / Other | Azure | [FataMorgana RAM experiment](#fatamorgana-ram-experiment--azure) | Dual wavetable synthesizer | Development |
 | Reverbs | Lime | [Aurora HP-filter variant](#aurora-hp-filter-variant--lime) | Spectral reverb with dry-input high-pass | Development |
@@ -322,11 +323,16 @@ and `main.cpp`, `pattern.h`, `envelope.h` at tags 0.1.0/0.2.0.
 
 ## Tempest 1.0.0 — Red
 
-[Download](https://github.com/jfriess/Aurora-Firmwares/releases/download/Tempest-v1.0.0/Tempest_v1_0_0.bin)
+[Download 1.1.0rc1](https://github.com/jfriess/Aurora-Firmwares/releases/download/Tempest-v1.1.0rc1/Tempest_v110rc1.bin)
+[Download 1.0.0](https://github.com/jfriess/Aurora-Firmwares/releases/download/Tempest-v1.0.0/Tempest_v1_0_0.bin)
 
 By [jfriess](https://github.com/jfriess) · [Project details](https://github.com/jfriess/Aurora-Firmwares/tree/main/Tempest)
 
 Stereo distortion with a clean low-frequency bypass. **Mix is not dry/wet.**
+
+Latest supported: **1.1.0rc1 (prerelease)**. It reworks Odd mode and settings-save
+handling; controls remain the same. Keep only the desired Tempest version in
+`aurora/`, since both versions use red in the selector.
 
 ### Knobs and CV
 

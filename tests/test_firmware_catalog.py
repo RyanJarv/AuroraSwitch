@@ -53,6 +53,7 @@ class FirmwareCatalogTests(unittest.TestCase):
     def test_new_family_needs_only_catalog_and_documentation(self):
         # Compile a modified COPY of the real catalog; no alternate test catalog
         # or launch implementation. The real exporter and constexpr views run.
+        original_count = len(firmware_catalog.read_catalog()["images"])
         with tempfile.TemporaryDirectory(prefix="aurora-onboarding-") as temporary:
             root = Path(temporary)
             for directory in ("firmware", "support"):
@@ -91,7 +92,7 @@ class FirmwareCatalogTests(unittest.TestCase):
                     catalog = firmware_catalog.read_catalog()
             finally:
                 firmware_catalog.read_catalog.cache_clear()
-            self.assertEqual(len(catalog["images"]), 15)
+            self.assertEqual(len(catalog["images"]), original_count + 1)
             self.assertEqual(catalog["staging_capacity"], 200000)
             self.assertEqual(catalog["images"][-1]["category"], "Delays")
             self.assertEqual(catalog["images"][-1]["rgb"], [0, 0, 0.4])

@@ -150,6 +150,21 @@
     "id": "morse-0.1.0"
   },
   {
+    "filename": "Tempest_v110rc1.bin",
+    "bytes": 103148,
+    "sha256": "06ff9a1e3baf8c2d1ddcf66f861f75873dc9b5a1b691cd62cdbc795c17dc6ec0",
+    "stack": 537001984,
+    "reset": 603986149,
+    "execution": "sram",
+    "rgb": [
+      0.4,
+      0,
+      0
+    ],
+    "category": 2,
+    "id": "tempest-1.1.0rc1"
+  },
+  {
     "filename": "Tempest_v1_0_0.bin",
     "bytes": 109872,
     "sha256": "6fdb962135b2784813523a70e73bd1644b1d5b1e6637bb042c714dd7830931eb",

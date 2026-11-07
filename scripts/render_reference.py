@@ -210,12 +210,12 @@ def swatch(color: str) -> str:
     return f'<span class="swatch" style="background:{COLORS[color]}" aria-hidden="true"></span>'
 
 
-def version_list(section: Section, entries: list[Entry]) -> str:
+def version_list(entries: list[Entry]) -> str:
     """Show version differences without repeating the family name or color."""
     if len(entries) < 2:
         return ""
     versions = [
-        html.escape(entry.name.removeprefix(section.title).strip())
+        html.escape(entry.name.removeprefix(entry.family_name).strip())
         + (" (development)" if entry.availability == "Development" else "")
         for entry in entries
     ]
@@ -364,13 +364,15 @@ def render_pages() -> dict[str, str]:
         if not re.fullmatch(r"<p>(?:<a\b[^>]*>[^<]+</a>\s*)+", actions):
             raise ValueError(f"Expected leading download links: {section.filename}")
         actions = actions.removeprefix("<p>").replace("<a ", '<a class="download-button" ')
-        body = f'<div class="firmware-heading"><h1 id="{section.anchor}">{html.escape(section.title)}</h1>'
+        # Keep legacy filenames/anchors while showing shared version pages by family.
+        title = versions[0].family_name if len(versions) > 1 else section.title
+        body = f'<div class="firmware-heading"><h1 id="{section.anchor}">{html.escape(title)}</h1>'
         body += f'<div class="firmware-downloads">{actions}</div></div>'
         color = versions[0].color
         category = versions[0].category
         category_color = CATEGORIES[category]
         body += f'<p class="firmware-meta"><span class="category-label">{swatch(category_color)}{html.escape(category)}</span>'
-        body += f'<span class="color-label">{swatch(color)}{color}</span>{version_list(section, versions)}</p>'
+        body += f'<span class="color-label">{swatch(color)}{color}</span>{version_list(versions)}</p>'
         # The original drawing maps physical positions; all functions remain in Markdown.
         intro, separator, controls = content.partition("<h2 ")
         body += intro
@@ -379,7 +381,7 @@ def render_pages() -> dict[str, str]:
 </figure><div class="control-tables">"""
         body += separator + controls + "</div></div>"
         pages[section.filename] = document(
-            section.title,
+            title,
             body,
             navigation(sections, entries, section.filename),
             digest,

@@ -170,7 +170,7 @@ class ReferenceSiteTests(unittest.TestCase):
     def test_index_keeps_firmware_visible_and_setup_in_dialog(self):
         parser = self.pages["index.html"]
         self.assertEqual(parser.swatches, self.navigation_swatches * 3 // 2)
-        self.assertEqual(len(self.entries), 14)
+        self.assertEqual(len(self.entries), len(read_catalog()["images"]))
         page = (SITE / "index.html").read_text()
         body = re.search(r'<main id="main">\n(.*?)\n</main>', page, re.S)[1]
         self.assertNotIn('class="setup-guide"', body)
@@ -226,7 +226,7 @@ class ReferenceSiteTests(unittest.TestCase):
                 self.assertNotIn('class="version-label"', page)
                 for entry in entries:
                     if len(entries) > 1:
-                        version = entry.name.removeprefix(section.title).strip()
+                        version = entry.name.removeprefix(entry.family_name).strip()
                         self.assertIn(
                             version
                             + (" (development)" if entry.availability == "Development" else ""),
