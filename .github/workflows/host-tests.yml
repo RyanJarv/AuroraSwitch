@@ -5,6 +5,22 @@ permissions:
 jobs:
   host-tests:
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - run: make test
+      - run: make check
+      - run: make test-sanitize
+      - name: Prepare real FatFs regression
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes dosfstools
+          make setup
+      - name: Check USB installation with pinned FatFs
+        run: python3 scripts/check_fatfs_install.py
+  arm-builds:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Compile USB-backed selector with the pinned SDK/toolchain
+        run: sh scripts/docker_build.sh make build

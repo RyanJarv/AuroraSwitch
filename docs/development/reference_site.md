@@ -1,63 +1,47 @@
 # Reference site
 
-GitHub Pages serves the checked-in files in `site/`: no Jekyll or deployment-time
-build. Firmware and evidence are not uploaded.
+GitHub Pages serves the checked-in `site/` files without a deployment-time build.
+Pushes to `main` deploy through `.github/workflows/pages.yml`; local preview and
+regeneration do not publish. Pages must use **GitHub Actions** as its source.
+The public URL is <https://aurora-switch.ryanjarv.sh/>.
 
-The home page groups firmware into blue Reverbs, green Delays, and amber
-Synths / Other. Firmware pages share the same grouped sidebar/mobile directory.
-The startup strip labels Shift, Reverse, and Freeze directly; firmware colors
-stay unchanged. Family order within each group matches the selector catalog.
-Installation stays visible below the categories. Unsupported-firmware notes
-stay in the Markdown reference, not a separate website page.
+## Edit and preview
 
-A small `navigation.js` loads `reference.json` once and replaces only the main content
-on navigation. The sidebar, mobile directory and footer stay as ordinary HTML.
-Back/Forward and direct links work; if JavaScript or the content bundle is
-unavailable, links load the static pages normally. There is no framework,
-service worker or Node toolchain. The generated bundle avoids fetching another
-page on each click; it is not a second source of content.
-
-Edit `docs/firmware_reference.md` for controls or `README.md`'s Quick start for
-installation. The home page renders that exact section, not a separate copy.
-Refresh the HTML using GitHub's Markdown
-renderer (requires authenticated `gh` and network):
+| Source | Content |
+| --- | --- |
+| `docs/firmware_reference.md` | Firmware controls, credits and source links |
+| `docs/user_guide.md` | Setup and startup/status instructions reused by dialogs |
+| `firmware/images.hpp` | Catalog, category order, family labels and colors |
+| `scripts/render_reference.py` | Static page generation and navigation |
+| `site/style.css`, `site/dialogs.js` | Shared presentation and native dialogs |
 
 ```sh
 make reference-html
-make test
+make check
+make dev
 ```
 
-The category/color table drives navigation, so there is no second firmware catalog to edit.
-Versions on the same family page share one color, matching `menu_colors` in
-`firmware/images.hpp`; different families must use distinct colors.
-Tests bind category membership/order to `firmware/images.hpp`. The directory shows
-family names with adjacent color dots and labels; version numbers stay on control
-pages. Website UX rules live in `AGENTS.md`: prefer clear labels and structure,
-not paragraphs explaining website widgets.
-The renderer uses GitHub Markdown and writes the HTML fallbacks and
-SPA data from identical content; shared styling is in `site/style.css`. Regenerate
-after changing the reference, renderer or `navigation.js` (its URL is content-versioned).
-Commit source and generated files together.
-Offline tests check reference/Quick start fingerprints, links, versions, colors
-and equality between SPA content and fallbacks. The Pages workflow refuses stale pages.
+Regeneration needs authenticated `gh`, network access and a native C++17 compiler
+for the catalog exporter; it needs no SDK. Commit source and generated pages
+together. Offline tests check source/catalog/guide fingerprints, links and colors;
+the Pages workflow rejects stale pages.
 
-`site/aurora-panel.svg` is an original simplified drawing of the manual's panel
-layout, not copied artwork. Knobs 1–6 and buttons 7–9 match table labels added by
-the renderer; functions still come only from Markdown. Secondary LED/settings
-details and source caveats remain visible below the controls.
+Preview at <http://127.0.0.1:8000/> and stop with Ctrl+C. Override `PORT` or use
+`HOST=0.0.0.0` for a VM browser. Preview serves only `site/` and needs no compiler,
+login or network. Regenerate after CSS changes too: HTML records its content hash.
 
-For changes to navigation, also run the real-browser smoke test against an
-installed Firefox and a running `geckodriver` (no Python packages required):
+## Page structure and checks
 
-```sh
-geckodriver --port 4444
-# In another terminal; use --firefox /path/to/firefox if necessary:
-python3 scripts/check_reference_browser.py --webdriver http://127.0.0.1:4444
-```
+The home page groups firmware in selector category order. Firmware pages share a
+grouped sidebar/mobile directory; versions share their family's page and color.
+Each page is complete HTML with ordinary links and browser history. Setup and
+User Guide use native dialogs, with ordinary guide links when JavaScript is
+unavailable. Unsupported-firmware notes stay in Markdown rather than adding pages.
 
-It checks grouped navigation, startup labels, no-reload switching, the panel
-drawing, Back/Forward, mobile/dark layouts, keyboard access, and static fallbacks.
+`site/aurora-panel.svg` is an original simplified panel drawing. The renderer
+numbers controls 1–9 against it; descriptions remain in Markdown. Website rules
+are in `AGENTS.md`.
 
-Repository **Settings → Pages → Source** must be **GitHub Actions**.
-Pushes to `main` deploy automatically; the workflow can also be run manually.
-The public URL is https://aurora-switch.ryanjarv.sh/.
+For presentation or navigation changes, run the [browser checks](testing.md#browser-checks),
+including both dialogs, mobile/dark layouts, keyboard access and no-JavaScript
+fallbacks. Firmware and generated run evidence are never site assets.

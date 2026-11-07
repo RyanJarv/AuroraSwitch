@@ -22,11 +22,15 @@ GitHub operations. Preserve unrelated local changes.
 - Keep public text brief. Development rationale belongs in `docs/development/`,
   not user-facing prose. Do not mention sibling/internal projects on the site.
 - Edit `docs/firmware_reference.md`, `scripts/render_reference.py`, and shared
-  site assets; regenerate HTML and `reference.json` with `make reference-html`.
+  site assets; regenerate static HTML with `make reference-html`.
   Do not hand-edit generated pages. Run the browser smoke test for UI changes,
   including mobile, dark theme, keyboard access, and no-JavaScript fallbacks.
 
 ## Firmware and evidence
+
+- Keep external virtualization integration code and run instructions in its
+  owning repository. Retain firmware tests and validation commands here, but
+  keep generated run reports and evidence in ignored local artifact storage.
 
 - Preserve exact-image authentication, launch-time staged-byte verification,
   DMA cleanup, reviewed memory bounds, and ordinary stock USB recovery.

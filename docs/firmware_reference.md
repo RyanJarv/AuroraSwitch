@@ -4,8 +4,8 @@
 
 | Category | Selector color | Firmware | What it does | Availability |
 | --- | --- | --- | --- | --- |
-| Reverbs | Blue | [FDN 1.2.2](#fdn-122--blue) | Conventional reverb | Release |
 | Reverbs | Green | [Aurora 1.4.4](#aurora-144--green) | Spectral reverb | Release |
+| Reverbs | Blue | [FDN 1.2.2](#fdn-122--blue) | Conventional reverb | Release |
 | Delays | Cyan | [EchoGarden 0.3.1](#echogarden-031--cyan) | Multi-line echo and ambience | Release |
 | Delays | Magenta | [CloudscapeX](#cloudscapex--magenta) | Modulated delay, diffusion and filter delay | Release |
 | Synths / Other | Amber | [The Oscillator Is a Lie 0.0.2](#the-oscillator-is-a-lie-002--amber) | Aliasing/ring-mod oscillator | Release |
@@ -14,24 +14,26 @@
 | Delays | Yellow | [Flux Capacitor 0.1.0](#flux-capacitor--yellow) | Tape pitch, stop, wow/flutter | Development |
 | Delays | Yellow | [Flux Capacitor 0.2.0](#flux-capacitor--yellow) | Adds tape delay | Development |
 | Synths / Other | White | [Morse 0.1.0](#morse--white) | Three-pattern rhythmic VCA | Development |
-| Synths / Other | Pale red | [Tempest 1.0.0](#tempest-100--pale-red) | Multi-bank distortion | Development |
+| Synths / Other | Red | [Tempest 1.1.0rc1](#tempest-100--red) | Multi-bank distortion (release candidate) | Development |
+| Synths / Other | Red | [Tempest 1.0.0](#tempest-100--red) | Multi-bank distortion | Development |
 | Synths / Other | Azure | [FataMorgana RAM experiment](#fatamorgana-ram-experiment--azure) | Dual wavetable synthesizer | Development |
-| Reverbs | Red-pink | [Dirt Verb 1.1](#dirt-verb-11--red-pink) | Driven reverb with chorus and pitch shifting | Development |
 | Reverbs | Lime | [Aurora HP-filter variant](#aurora-hp-filter-variant--lime) | Spectral reverb with dry-input high-pass | Development |
+| Reverbs | Pink | [Dirt Verb 1.1](#dirt-verb-11--pink) | Installs Dirt; computer required to return | Development |
 
 Current source build: **Shift** → category, **Reverse** → firmware,
 **Freeze** → verify and launch. Category colors: blue reverbs, green delays,
-amber synths/other. Firmware colors are unchanged.
+amber synths/other.
 The older published release uses Reverse → Freeze → Shift.
-Power cycle with the selector USB attached to return. [Setup guide](user_guide.md).
+Hold **any button at power-on** for the menu. USB is required to launch firmware, including automatic boot. [Setup guide](user_guide.md).
 
-Dirt Verb and HP-filter are included in current source builds, not
-the older published release. Virtual screening is not physical compatibility or
-recovery testing. FataMorgana uses our RAM build; its duplicate QSPI option is retired.
+The HP-filter variant is a source-build addition. Virtual screening is not physical
+compatibility or recovery testing. FataMorgana uses the reviewed RAM build.
 
 ## FDN 1.2.2 — Blue
 
 [Download](https://www.qubitelectronix.com/s/AR_FDN_v1_2_2.bin)
+
+By [Qu-Bit Electronix](https://www.qubitelectronix.com/) · [Firmware details](https://www.qubitelectronix.com/alternate-firmware/p/fdn-verb)
 
 Stereo feedback-delay-network reverb. Start with moderate Time; high settings feed back.
 
@@ -66,6 +68,8 @@ Source: Qu-Bit's [FDN getting started guide](https://www.qubitelectronix.com/alt
 ## Aurora 1.4.4 — Green
 
 [Download ZIP](https://www.qubitelectronix.com/s/Aurora_v1_4_4.zip)
+
+By [Qu-Bit Electronix](https://www.qubitelectronix.com/) · [Firmware details](https://www.qubitelectronix.com/alternate-firmware/p/aurora-spectral-reverb)
 
 Stock spectral reverb: pitch manipulation, spectral smearing and stereo delays.
 
@@ -118,6 +122,8 @@ covering firmware 1.4.4. Calibration is maintenance, not a performance control.
 
 [Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
 
+By **andy** on the QuBit Discord.
+
 Multi-line echoes with diffusion/reverb around the repeats.
 
 ### Knobs
@@ -151,6 +157,8 @@ Source: author-supplied EchoGarden v0.3.1 Parameter Manual.
 ## CloudscapeX — Magenta
 
 [Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
+
+By **andy** on the QuBit Discord.
 
 Modulated delay, diffusion and filter delay.
 
@@ -191,6 +199,8 @@ identified as the only release paired with `CloudscapeX.bin`.
 
 [Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
 
+By **jonmackenzie** on the QuBit Discord.
+
 Aliasing/ring-mod oscillator, not a reverb. Raise Blur above zero to hear it.
 
 ### Knobs
@@ -228,6 +238,8 @@ Source: supplied author notes, February 10–11, 2026.
 [Download 0.3.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/download/v0.3.0/flux-capacitor-0.3.0.bin)
 [Download 0.2.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/download/v0.2.0/flux-capacitor-0.2.0.bin)
 [Download 0.1.0](https://github.com/DaveParr/aurora-flux-capacitor/releases/download/v0.1.0/flux-capacitor-0.1.0.bin)
+
+By [Dave Parr](https://github.com/DaveParr) · [Project & releases](https://github.com/DaveParr/aurora-flux-capacitor)
 
 Stereo tape-style pitch, braking, delay and coloration.
 
@@ -273,6 +285,8 @@ and versioned `main.cpp` / `tape_delay.h` at tags 0.1.0 and 0.2.0.
 [Download 0.2.0](https://github.com/DaveParr/Aurora-Morse/releases/download/v0.2.0/aurora-morse-0.2.0.bin)
 [Download 0.1.0](https://github.com/DaveParr/Aurora-Morse/releases/download/v0.1.0/aurora-morse-0.1.0.bin)
 
+By [Dave Parr](https://github.com/DaveParr) · [Project & releases](https://github.com/DaveParr/Aurora-Morse)
+
 Clocked stereo VCA: **audio input + clock into Freeze gate + Mix above zero**.
 Freeze button alone does not clock it.
 
@@ -307,11 +321,18 @@ Pattern changes apply at a step boundary or reset, not only the next Reset.
 Sources: [0.2.0 guide](https://github.com/DaveParr/Aurora-Morse/blob/v0.2.0/README.md)
 and `main.cpp`, `pattern.h`, `envelope.h` at tags 0.1.0/0.2.0.
 
-## Tempest 1.0.0 — Pale red
+## Tempest 1.0.0 — Red
 
-[Download](https://github.com/jfriess/Aurora-Firmwares/releases/download/Tempest-v1.0.0/Tempest_v1_0_0.bin)
+[Download 1.1.0rc1](https://github.com/jfriess/Aurora-Firmwares/releases/download/Tempest-v1.1.0rc1/Tempest_v110rc1.bin)
+[Download 1.0.0](https://github.com/jfriess/Aurora-Firmwares/releases/download/Tempest-v1.0.0/Tempest_v1_0_0.bin)
+
+By [jfriess](https://github.com/jfriess) · [Project details](https://github.com/jfriess/Aurora-Firmwares/tree/main/Tempest)
 
 Stereo distortion with a clean low-frequency bypass. **Mix is not dry/wet.**
+
+Latest supported: **1.1.0rc1 (prerelease)**. It reworks Odd mode and settings-save
+handling; controls remain the same. Keep only the desired Tempest version in
+`aurora/`, since both versions use red in the selector.
 
 ### Knobs and CV
 
@@ -357,7 +378,9 @@ and [algorithm details](https://github.com/jfriess/Aurora-Firmwares/blob/d5504d7
 
 ## FataMorgana RAM experiment — Azure
 
-[Build RAM firmware](user_guide.md#fatamorgana)
+[Build RAM firmware](development/README.md#fatamorgana-build)
+
+By [jfriess](https://github.com/jfriess) · [Upstream project](https://github.com/jfriess/Aurora-Firmwares/tree/main/FataMorgana)
 
 Dual wavetable synth: A left, B right. External audio can modulate or be waveshaped.
 Only the exact development RAM build is supported, not upstream QSPI.
@@ -414,15 +437,53 @@ and `src/FataMorgana.cpp` at the same commit.
 
 No selector color; these cannot launch with the published RAM selector.
 
-- **HSO, tape-delay WIP and Phazr:** mentioned in community notes, but not onboarded;
-  controls and compatibility are not covered here.
+Mentioned in community notes; controls and compatibility are not covered here.
 
-## Dirt Verb 1.1 — Red-pink
+- **Harmonic Shift Operator:** Andrew Groot · [Project](https://github.com/thesquaregroot/aurora-hso)
+- **Aurora Tape Delay:** bread on the QuBit Discord.
+- **Phazr:** As'teka on the QuBit Discord.
+- **FFT Jump Select:** michael on the QuBit Discord.
+
+
+## Aurora HP-filter variant — Lime
 
 [Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
 
-Driven reverb with optional chorus and pitch shifting. Only the exact
-`DirtVerb 1.1.bin` is supported by the current source build.
+By **michael** on the QuBit Discord.
+
+Stock Aurora controls with two shifted changes. Add the exact supplied
+`Aurora_v1-4-6_hpfilt.bin` in the USB `aurora/` folder.
+
+### Shifted controls
+
+| Control | Function |
+| --- | --- |
+| Shift + Atmosphere | Dry-input high-pass |
+| Shift + Blur | Wet level |
+
+Other controls follow the [stock Aurora reference](#aurora-144--green).
+
+### Details and sources
+
+- RAM launch; no selector QSPI programming for this payload.
+- Changes are described in the supplied community notes. Physical behavior
+  remains unverified; this is not an official Aurora release.
+
+## Dirt Verb 1.1 — Pink
+
+[Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
+
+By **SarahRex** on the QuBit Discord.
+
+Driven reverb with chorus and pitch shifting. **Dirt replaces the selector;
+returning requires a computer.** Use exact `DirtVerb 1.1.bin` in `aurora/`.
+Freeze verifies; a second press during alternating amber/red confirms installation
+and restart. Shift/Reverse cancels. The switch preserves `AuroraSwitch.bin` as
+`AuroraSwitch.disabled`, moves `DirtVerb 1.1.bin` to the root without changing
+its filename, and writes return instructions. No BIN payload is copied.
+To return: move root `DirtVerb 1.1.bin` back into `aurora/`, rename
+`AuroraSwitch.disabled` to `AuroraSwitch.bin`, safely eject and restart.
+See [installation and return steps](user_guide.md#dirt-verb-install-and-restart).
 
 ### Knobs
 
@@ -444,33 +505,9 @@ Driven reverb with optional chorus and pitch shifting. Only the exact
 
 ### Details and sources
 
+- The stock USB updater installs Dirt; the selector does not program flash.
+- Dirt is never an automatic selector choice. Installed Dirt boots normally.
 - Running LEDs: gold at infinite feedback; white when overdrive is bypassed;
-  red increases with drive. These are not selector menu colors.
-- Shift, CV and gate behavior is not documented in the supplied author notes.
-- Launch programs application QSPI. Menu re-entry requires ready USB media
-  containing AuroraSwitch as the only root BIN; reset alone is not a recovery guarantee.
-- Controls come from community-supplied author notes, not a reviewed source build.
-  Physical handoff and stock USB recovery remain unverified.
-
-## Aurora HP-filter variant — Lime
-
-[Discord download](https://discord.com/channels/1171549067122311298/1257378715944484864)
-
-Stock Aurora controls with two shifted changes. Place the exact supplied
-`Aurora_v1-4-6_hpfilt.bin` in `aurora/`; the current source build's selector
-has enough reviewed staging capacity for this image.
-
-### Shifted controls
-
-| Control | Function |
-| --- | --- |
-| Shift + Atmosphere | Dry-input high-pass |
-| Shift + Blur | Wet level |
-
-Other controls follow the [stock Aurora reference](#aurora-144--green).
-
-### Details and sources
-
-- RAM launch; no selector QSPI programming for this payload.
-- Changes are described in the supplied community notes. Physical behavior
-  remains unverified; this is not an official Aurora release.
+  red increases with drive. These differ from the selector color.
+- Controls come from community-supplied author notes. Shift/CV/gate behavior is
+  not documented there. Physical installation and recovery remain unverified.
