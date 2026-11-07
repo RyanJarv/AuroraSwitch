@@ -5,7 +5,7 @@ build still needs physical installation, handoff and stock recovery qualificatio
 
 ## Prepare and install
 
-1. Build `AuroraSwitch.bin` with `make package` ([build setup](development/README.md)).
+1. Download [AuroraSwitch.bin](https://github.com/RyanJarv/AuroraSwitch/releases/latest/download/AuroraSwitch.bin).
 2. Back up a FAT32 USB drive. Put that selector BIN at the root as the only root BIN.
 3. Safely eject, insert into Aurora, then follow the ordinary stock USB update procedure.
 4. Leave `AuroraSwitch.bin` at the root. Create `aurora/`

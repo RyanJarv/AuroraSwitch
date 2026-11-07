@@ -10,7 +10,7 @@ Switch RAM firmware without a computer.
 
 **USB is required for RAM firmware, including automatic boot, and to install Dirt.**
 
-1. Build `AuroraSwitch.bin` with `make package` ([build setup](docs/development/README.md)).
+1. Download [AuroraSwitch.bin](https://github.com/RyanJarv/AuroraSwitch/releases/latest/download/AuroraSwitch.bin).
 2. Back up a FAT32 USB drive. Put the selector BIN at its root as the only root BIN.
    Follow the stock USB installation procedure.
 3. Put exact supported originals in an `aurora/` folder on that drive, using
