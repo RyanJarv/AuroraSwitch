@@ -44,12 +44,10 @@ installation action instead of the RAM handoff: verify, confirm with a separate
 Freeze press, prepare USB, and restart into the stock updater. Navigation or USB
 disconnection cancels confirmation. Dirt is never remembered or auto-installed.
 
-The selector preserves its own installer as `AuroraSwitch.disabled`, writes
-return instructions, and moves Dirt from `aurora/` to the root as `DirtVerb 1.1.bin`. The filename
-and payload stay unchanged. An exact selector installer/disabled backup is required;
-there is no BIN-copy fallback. It checks every resulting file before resetting. After a failed
-file-changing operation it stops without reset, rollback or write retries;
-inspect the drive on a computer. FAT operations are not power-loss atomic.
+The selector renames its installer to `AuroraSwitch.disabled`, writes return
+instructions, and moves Dirt to root `DirtVerb 1.1.bin`. It checks the resulting
+files before resetting. A failed file change stops the switch without reset or
+write retries; inspect USB on a computer. FAT operations are not power-loss atomic.
 
 The stock updater replaces the selector with Dirt. Returning requires a computer:
 [move Dirt back into `aurora/` and re-enable the selector](user_guide.md#dirt-verb-install-and-restart).

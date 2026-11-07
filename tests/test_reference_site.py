@@ -177,6 +177,12 @@ class ReferenceSiteTests(unittest.TestCase):
         self.assertNotIn("only root BIN", body)
         self.assertIn('class="category-overview"', body)
         self.assertIn('<dialog id="setup-dialog" aria-labelledby="setup-title">', page)
+        setup = re.search(r'<dialog id="setup-dialog".*?</dialog>', page, re.S)[0]
+        self.assertIn(
+            'href="https://github.com/RyanJarv/AuroraSwitch/releases/latest/download/AuroraSwitch.bin"',
+            setup,
+        )
+        self.assertNotIn("make package", setup)
         self.assertIn("only root BIN", page)
         self.assertIn("automatic boot", page)
         self.assertIn("any button at power-on", page)
