@@ -88,12 +88,14 @@ inline bool CheckInstallRoot(InstallRoot state = InstallRoot::Empty) {
         }
         if (!info.fname[0])
             break;
-        if (!(info.fattrib & AM_DIR) && (IsBinName(info.fname) || IsBinName(info.altname))) {
+        // The pinned stock updater skips FAT-hidden files, including macOS ._ metadata.
+        // A leading dot without AM_HID is still a potential installer.
+        if (!(info.fattrib & (AM_DIR | AM_HID)) &&
+            (IsBinName(info.fname) || IsBinName(info.altname))) {
             ++matches;
             const char* allowed =
                 state == InstallRoot::DirtOnly ? InstallPath + 3 : SelectorPath + 3;
-            if (state == InstallRoot::Empty || (info.fattrib & AM_HID) ||
-                !SameFilename(info.fname, allowed)) {
+            if (state == InstallRoot::Empty || !SameFilename(info.fname, allowed)) {
                 valid = false;
                 break;
             }
@@ -167,7 +169,7 @@ inline bool CheckReturnFiles(const std::uint8_t* selector, std::size_t size, std
     if (!CheckInstallRoot(InstallRoot::SelectorAllowed))
         return false;
     if (!MissingFile(SelectorPath)) {
-        if (!MissingFile(SelectorBackupPath) ||
+        if (!VisibleFile(SelectorPath) || !MissingFile(SelectorBackupPath) ||
             !MatchesFile(SelectorPath, selector, size, scratch, capacity))
             return false;
     } else if (!VisibleFile(SelectorBackupPath) ||
