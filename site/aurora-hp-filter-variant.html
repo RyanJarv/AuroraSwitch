@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="reference-sha256" content="4085b8bfba5de988f0b59087cf7ddb955573217617be6099b48d2023d376ba1b">
+<meta name="reference-sha256" content="371b19182280df5f998dc81ea637ca5118799518aa183c0482ef3bb7efa4d9c8">
 <meta name="renderer-sha256" content="02735cc6b3cabf3e1daa61c25f0d4f7487f5c5308e0cc0294f49aa9aabaaf3f3">
 <meta name="setup-sha256" content="87e7f91e197af6656fc21be864bb8fd972482449a248c4ed88ced907ae966fab">
 <meta name="description" content="AuroraSwitch startup categories, firmware colors and controls.">
@@ -91,8 +91,8 @@ A brief red flash means the choice could not be saved; firmware still launches.<
 <main id="main">
 <div class="firmware-heading"><h1 id="aurora-hp-filter-variant--lime">Aurora HP-filter variant</h1><div class="firmware-downloads"><a class="download-button" href="https://discord.com/channels/1171549067122311298/1257378715944484864" rel="nofollow">Discord download</a></div></div><p class="firmware-meta"><span class="category-label"><span class="swatch" style="background:#3787ff" aria-hidden="true"></span>Reverbs</span><span class="color-label"><span class="swatch" style="background:#9bd43b" aria-hidden="true"></span>Lime</span></p>
 <p>By <strong>michael</strong> on the QuBit Discord.</p>
-<p>Stock Aurora controls with two shifted changes. Add the exact supplied<br>
-<code class="notranslate">Aurora_v1-4-6_hpfilt.bin</code> in the USB <code class="notranslate">aurora/</code> folder.</p>
+<p>This community version of Aurora’s spectral reverb lets you cut bass from the dry signal and adjust the reverb level separately. Try it on a bass-heavy pad to make room for a kick or bass line while keeping the reverb audible.</p>
+<p>Add the exact supplied <code class="notranslate">Aurora_v1-4-6_hpfilt.bin</code> to the USB <code class="notranslate">aurora/</code> folder.</p>
 <div class="control-layout"><figure class="panel-map">
 <img src="aurora-panel.svg" width="280" height="580" alt="Aurora panel: knobs 1 Warp, 2 Time, 3 Blur, 4 Reflect, 5 Mix, 6 Atmosphere; buttons 7 Reverse, 8 Freeze, 9 Shift.">
 </figure><div class="control-tables"><h2 id="shifted-controls">Shifted controls</h2>
@@ -105,14 +105,14 @@ A brief red flash means the choice could not be saved; firmware still launches.<
 </thead>
 <tbody>
 <tr><td><span class="control-number">9</span><span class="control-number">6</span> Shift + Atmosphere</td>
-<td>Dry-input high-pass</td>
+<td>High-pass filter. Reduces bass and rumble in the dry (unprocessed) signal.</td>
 </tr>
 <tr><td><span class="control-number">9</span><span class="control-number">3</span> Shift + Blur</td>
-<td>Wet level</td>
+<td>Wet level. Sets how loud the processed reverb signal is.</td>
 </tr>
 </tbody>
 </table></markdown-accessiblity-table>
-<p>Other controls follow the <a href="aurora-144.html#aurora-144--green">stock Aurora reference</a>.</p>
+<p><strong>Mix</strong> still blends dry and wet. The other controls follow the <a href="aurora-144.html#aurora-144--green">stock Aurora reference</a>.</p>
 <h2 id="details-and-sources">Details &amp; sources</h2>
 <ul>
 <li>RAM launch; no selector QSPI programming for this payload.</li>

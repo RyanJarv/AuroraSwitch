@@ -451,17 +451,18 @@ Mentioned in community notes; controls and compatibility are not covered here.
 
 By **michael** on the QuBit Discord.
 
-Stock Aurora controls with two shifted changes. Add the exact supplied
-`Aurora_v1-4-6_hpfilt.bin` in the USB `aurora/` folder.
+This community version of Aurora’s spectral reverb lets you cut bass from the dry signal and adjust the reverb level separately. Try it on a bass-heavy pad to make room for a kick or bass line while keeping the reverb audible.
+
+Add the exact supplied `Aurora_v1-4-6_hpfilt.bin` to the USB `aurora/` folder.
 
 ### Shifted controls
 
 | Control | Function |
 | --- | --- |
-| Shift + Atmosphere | Dry-input high-pass |
-| Shift + Blur | Wet level |
+| Shift + Atmosphere | High-pass filter. Reduces bass and rumble in the dry (unprocessed) signal. |
+| Shift + Blur | Wet level. Sets how loud the processed reverb signal is. |
 
-Other controls follow the [stock Aurora reference](#aurora-144--green).
+**Mix** still blends dry and wet. The other controls follow the [stock Aurora reference](#aurora-144--green).
 
 ### Details and sources
 
