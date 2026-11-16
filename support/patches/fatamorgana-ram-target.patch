@@ -1,0 +1,39 @@
+diff --git a/FataMorgana/Makefile b/FataMorgana/Makefile
+index 4fefeef..f535813 100644
+--- a/FataMorgana/Makefile
++++ b/FataMorgana/Makefile
+@@ -35,6 +35,11 @@ DIST_DIR = dist
+ SYSTEM_FILES_DIR = $(LIBDAISY_DIR)/core
+ include $(SYSTEM_FILES_DIR)/Makefile
+ 
++# Keep RAM objects and binaries separate from the QSPI build.
++.PHONY: ram
++ram:
++	$(MAKE) APP_TYPE=BOOT_SRAM BUILD_DIR=build-ram all
++
+ # Distribution target - creates versioned binary in dist/
+ .PHONY: dist clean-dist
+ 
+diff --git a/FataMorgana/README.md b/FataMorgana/README.md
+index a488f85..d3236d3 100644
+--- a/FataMorgana/README.md
++++ b/FataMorgana/README.md
+@@ -160,6 +160,18 @@ make
+ 
+ Output: `build/FataMorgana.bin`
+ 
++### Experimental RAM build
++
++From the same directory, run `make ram` to build with `APP_TYPE=BOOT_SRAM`.
++The RAM binary is written to `build-ram/FataMorgana.bin`. If the SDK is in a
++separate checkout, pass `AURORA_SDK_PATH=/path/to/Aurora-SDK` to `make ram`.
++
++USB host support has known issues in `BOOT_SRAM`, so custom USB wavetable
++loading may fail. The installation steps below apply to the default QSPI build.
++The [AuroraSwitch RAM experiment](https://aurora-switch.ryanjarv.sh/fatamorgana-ram-experiment.html)
++requires a byte-for-byte match with its catalog entry. Follow its pinned build
++instructions when building firmware for that selector.
++
+ ## Installation
+ 
+ Copy `FataMorgana.bin` to a USB drive and insert into the Aurora module while holding the appropriate button combination (see Aurora manual for firmware update procedure).
