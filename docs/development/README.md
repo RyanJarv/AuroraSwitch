@@ -60,3 +60,25 @@ Compare the resulting BIN with the exact catalog entry using
 A build alone does not grant admission: only the exact catalog bytes can launch.
 USB wavetable loading and physical behavior remain unqualified; keep the
 firmware's tables in their ordinary USB locations.
+
+### Optional upstream build target
+
+The [archived patch](../../support/patches/fatamorgana-ram-target.patch) preserves
+commit `043d92b97622228930c57efedff793e460cfa6b6` from the standalone build
+experiment. It applies to [upstream `d5504d7`](https://github.com/jfriess/Aurora-Firmwares/tree/d5504d76370c370fdb40adcf755d8a4b9c07ee6b)
+under the [upstream Unlicense](https://github.com/jfriess/Aurora-Firmwares/blob/d5504d76370c370fdb40adcf755d8a4b9c07ee6b/LICENSE).
+From the root of that clean upstream checkout:
+
+```sh
+git apply /path/to/AuroraSwitch/support/patches/fatamorgana-ram-target.patch
+make -C FataMorgana ram AURORA_SDK_PATH=/path/to/pinned/Aurora-SDK
+```
+
+Use the SDK, libDaisy and DaisySP revisions pinned by
+[`scripts/build_fatamorgana.py`](../../scripts/build_fatamorgana.py) and
+[`scripts/setup_dependencies.py`](../../scripts/setup_dependencies.py).
+The patch adds a convenience target that keeps RAM output under `build-ram/`
+and leaves the default QSPI build in `build/`. For selector reproduction use
+`make fata-ram-probe` above. It builds the same RAM configuration from the
+unpatched pinned source, isolates tracked inputs and records the output hashes.
+The catalog remains the authority for the accepted RAM image.
