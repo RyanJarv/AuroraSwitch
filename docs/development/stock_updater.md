@@ -10,6 +10,11 @@ investigation; they do not establish physical installation or recovery.
   inactive backups must contain neither. Dirt selection accepts our exact
   root installer, preserves it as `AuroraSwitch.disabled`, moves the authenticated
   original to root `DirtVerb 1.1.bin`, preserving its filename, and resets only when it is the sole root BIN.
+- The pinned loader skips entries with FAT hidden or directory attributes
+  (attribute mask `0x12` at `0x080064a0`–`0x080064a8`). The selector skips these
+  during root conflict scans too, so hidden macOS `._` metadata does not block Dirt.
+  A leading dot alone is insufficient. The actual Dirt and selector files must
+  remain visible, including the disabled selector backup used for restoration.
 - It compares file bytes against flash beginning at `0x90040000` and skips an
   unchanged file. The comparison covers file length, not the unused flash tail.
 - Its application destination is fixed. Storing a vendor image at another

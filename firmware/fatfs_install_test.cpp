@@ -58,6 +58,25 @@ int main(int argc, char** argv) {
     std::vector<std::uint8_t> readback(StagingCapacity());
     assert(WriteNewFile(SelectorPath, selector.data(), selector.size(), readback.data(),
                         readback.size()));
+    const char* metadata = "0:/._AuroraSwitch.bin";
+    const std::uint8_t metadata_bytes[] = {0, 5, 22, 7};
+    assert(WriteNewFile(metadata, metadata_bytes, sizeof(metadata_bytes), readback.data(),
+                        readback.size()));
+    assert(!CheckInstallFiles(dirt)); // Dot-prefixed but visible: stock may select it.
+    // The SDK disables f_chmod. Set the on-disk attribute as macOS would, then
+    // remount so production FatFs reads it from the disposable image.
+    assert(f_open(&usb_file, metadata, FA_WRITE) == FR_OK);
+    const long attribute_offset = long(usb_file.dir_sect) * 512 +
+                                 (usb_file.dir_ptr - filesystem.win) + 11;
+    assert(f_close(&usb_file) == FR_OK);
+    assert(f_mount(nullptr, "0:/", 0) == FR_OK);
+    assert(std::fseek(disk, attribute_offset, SEEK_SET) == 0);
+    const int metadata_attributes = std::fgetc(disk);
+    assert(metadata_attributes != EOF);
+    assert(std::fseek(disk, attribute_offset, SEEK_SET) == 0);
+    assert(std::fputc(metadata_attributes | AM_HID, disk) != EOF && std::fflush(disk) == 0);
+    assert(f_mount(&filesystem, "0:/", 1) == FR_OK);
+    assert(CheckInstallFiles(dirt));
     assert(f_open(&usb_file, "0:/another.bin.disabled", FA_WRITE | FA_CREATE_NEW) == FR_OK);
     assert(f_close(&usb_file) == FR_OK);
     assert(!CheckInstallFiles(dirt));
@@ -75,6 +94,8 @@ int main(int argc, char** argv) {
     assert(f_mount(nullptr, "0:/", 0) == FR_OK);
     assert(f_mount(&filesystem, "0:/", 1) == FR_OK);
     assert(CheckInstallRoot(InstallRoot::DirtOnly));
+    assert(MatchesFile(metadata, metadata_bytes, sizeof(metadata_bytes), readback.data(),
+                       readback.size())); // Metadata is left untouched.
     assert(f_open(&usb_file, InstallPath, FA_READ) == FR_OK);
     assert(usb_file.obj.sclust == original_cluster); // Rename reuses the original data chain.
     assert(f_close(&usb_file) == FR_OK);

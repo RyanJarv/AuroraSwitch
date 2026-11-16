@@ -186,6 +186,12 @@ int main() {
     // overwrite an existing file, even one with the expected install name.
     files.clear();
     assert(CheckInstallRoot());
+    files["0:/._AuroraSwitch.bin"] = {1, 2, 3};
+    attributes["0:/._AuroraSwitch.bin"] = AM_HID;
+    assert(CheckInstallRoot()); // Stock updater skips FAT-hidden macOS metadata.
+    attributes["0:/._AuroraSwitch.bin"] = 0;
+    assert(!CheckInstallRoot()); // A dot prefix alone does not make a file safe.
+    files.erase("0:/._AuroraSwitch.bin");
     for (const auto* name :
          {"AuroraSwitch.bin", "OTHER.BIN", "other.BiN.disabled", "DIRTVERB.BIN"}) {
         const std::string path = std::string("0:/") + name;
@@ -220,6 +226,9 @@ int main() {
     };
     files[SelectorPath] = selector;
     assert(CheckInstallFiles(dirt) && preflight() && renames == 0);
+    attributes[SelectorPath] = AM_HID;
+    assert(!preflight() && renames == 0);
+    attributes[SelectorPath] = 0;
     files[SelectorPath].back() ^= 1;
     assert(!preflight() && renames == 0);
     files[SelectorPath] = selector;
